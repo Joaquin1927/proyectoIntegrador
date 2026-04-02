@@ -1,0 +1,83 @@
+/*
+  CO2X dMRV – styles.css
+  Vibe: climate-tech (verde bosque), sobrio, accesible.
+*/
+:root{
+  --bg: #0f1412;            /* petróleo oscuro */
+  --panel: #151c19;
+  --text: #edf1ef;
+  --muted:#a4b0aa;
+  --brand:#2bd48d;          /* verde */
+  --brand-2:#1aa36a;
+  --accent:#8ad9ff;         /* acento fresco */
+  --danger:#ff5d5d;
+  --ok:#42e38d;
+  --warning:#ffd166;
+  --border:#1f2925;
+}
+
+.light{
+  --bg:#f5faf7; --panel:#ffffff; --text:#17211c; --muted:#60746a; --brand:#1aa36a; --brand-2:#117a4e; --accent:#1282a2; --danger:#cc2936; --ok:#1aa36a; --warning:#b07900; --border:#e6eee9;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background:var(--bg); color:var(--text);} 
+
+.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--border); backdrop-filter:saturate(140%) blur(6px); position:sticky; top:0; background:color-mix(in srgb, var(--bg), transparent 20%);} 
+.brand{display:flex; align-items:center; gap:12px}
+.logo{font-weight:800; font-size:20px; letter-spacing:1px; padding:6px 10px; border-radius:8px; background:linear-gradient(135deg, var(--brand), var(--brand-2)); color:#0a120e}
+.subtitle{color:var(--muted); font-size:12px}
+.top-actions{display:flex; gap:8px; align-items:center}
+.user-pill{padding:6px 10px; border:1px solid var(--border); border-radius:999px; color:var(--muted)}
+
+.layout{display:grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 56px);} 
+.sidebar{border-right:1px solid var(--border); padding:12px; position:sticky; top:56px; align-self:start; height:calc(100vh - 56px); overflow:auto}
+.nav-item{display:block; padding:10px 12px; border-radius:8px; color:var(--text); text-decoration:none}
+.nav-item:hover{background:color-mix(in srgb, var(--brand) 12%, transparent 88%)}
+.nav-sep{height:1px; background:var(--border); margin:8px 0}
+
+.content{padding:20px;}
+.panel{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow: 0 0 0 1px rgba(0,0,0,0.04) inset}
+.panel.sub{margin-top:16px}
+
+h1{margin:0 0 8px 0}
+.muted{color:var(--muted)}
+
+.grid{display:grid; gap:12px}
+.grid.two{grid-template-columns: repeat(2, minmax(0,1fr));}
+.grid.three{grid-template-columns: repeat(3, minmax(0,1fr));}
+.grid.four{grid-template-columns: repeat(4, minmax(0,1fr));}
+@media (max-width: 980px){ .layout{grid-template-columns: 1fr} .sidebar{display:none} .grid.two, .grid.three, .grid.four{grid-template-columns:1fr}}
+
+.field{display:flex; flex-direction:column; gap:6px}
+.field input, .field select, .field textarea{padding:10px 12px; background:transparent; color:var(--text); border:1px solid var(--border); border-radius:10px}
+.field input:invalid, .field select:invalid{border-color: #5b2b2b}
+.field .hint{font-size:12px; color:var(--muted)}
+
+.actions{display:flex; gap:8px; align-items:center}
+button{padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer}
+button.primary{background:linear-gradient(135deg, var(--brand), var(--brand-2)); border:none; color:#06100c; font-weight:700}
+button.ghost{background:transparent}
+button.small{padding:6px 10px}
+button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%); color:#fff; border-color: color-mix(in srgb, var(--danger) 50%, transparent 50%)}
+
+.table{width:100%; border-collapse: collapse;}
+.table th, .table td{border-bottom:1px solid var(--border); padding:10px; text-align:left}
+.badge{padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border)}
+.badge.pendiente{background: #2a2f2d}
+.badge.en_revision{background:#2a2a1f}
+.badge.aprobado{background: color-mix(in srgb, var(--ok) 10%, transparent 90%); color:#0b1b14}
+.badge.rechazado{background: color-mix(in srgb, var(--danger) 15%, transparent 85%)}
+
+.kpi{background:linear-gradient(180deg, color-mix(in srgb, var(--brand) 12%, transparent 88%), transparent); border:1px solid var(--border); border-radius:12px; padding:14px}
+.kpi-title{color:var(--muted); font-size:12px}
+.kpi-value{font-size:28px; font-weight:800}
+
+/* Barras simples (sin librerías) */
+.bars{display:flex; align-items:flex-end; gap:10px; height:160px}
+.bar{width:22%; background:linear-gradient(180deg, var(--accent), transparent); border:1px solid var(--border); border-radius:6px 6px 0 0; position:relative}
+.bar .label{position:absolute; bottom:-22px; left:0; right:0; text-align:center; font-size:12px; color:var(--muted)}
+.bar .value{position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-weight:700; font-size:12px}
+
+.toast{position:fixed; right:16px; bottom:16px; padding:10px 12px; background:var(--panel); border:1px solid var(--border); border-radius:10px}
