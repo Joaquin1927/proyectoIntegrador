@@ -11,8 +11,16 @@ export default function Login() {
       name: data.name,
       role: data.role,
     });
-    window.location.hash = "#dashboard";
+    if (data.role === "empleado") {
+      window.location.hash = "#registrar";
+    } else if (data.role === "auditor") {
+      window.location.hash = "#pendientes";
+    } else {
+      window.location.hash = "#dashboard";
+    }
   };
+
+  
 
   return (
     <section className="panel">

@@ -1,6 +1,21 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AppContext = createContext();
+const DB_KEY = "co2x_db_v1";
+
+function loadPaquetes() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function savePaquetes(paquetes) {
+  localStorage.setItem(DB_KEY, JSON.stringify(paquetes));
+}
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -11,17 +26,15 @@ export function AppProvider({ children }) {
     { id: "PL-003", nombre: "Planta Sur" },
   ];
 
-  const [paquetes, setPaquetes] = useState([]);
+  const [paquetes, setPaquetes] = useState(() => loadPaquetes());
+
+  useEffect(() => {
+    savePaquetes(paquetes);
+  }, [paquetes]);
 
   return (
     <AppContext.Provider
-      value={{
-        user,
-        setUser,
-        plantas,
-        paquetes,
-        setPaquetes,
-      }}
+      value={{ user, setUser, plantas, paquetes, setPaquetes }}
     >
       {children}
     </AppContext.Provider>
@@ -31,4 +44,3 @@ export function AppProvider({ children }) {
 export function useApp() {
   return useContext(AppContext);
 }
-``
