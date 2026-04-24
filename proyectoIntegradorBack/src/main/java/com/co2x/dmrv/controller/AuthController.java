@@ -1,9 +1,11 @@
 package com.co2x.dmrv.controller;
 
 import com.co2x.dmrv.dto.LoginRequestDTO;
+import com.co2x.dmrv.dto.RegisterRequestDTO;
 import com.co2x.dmrv.dto.UsuarioDTO;
 import com.co2x.dmrv.model.Rol;
 import com.co2x.dmrv.model.Usuario;
+import com.co2x.dmrv.service.SistemaAcceso;
 import com.co2x.dmrv.service.UsuarioService;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,24 +14,27 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class AuthController {
 
-    private final UsuarioService usuarioService;
+    private final SistemaAcceso sistemaAcceso;
 
-    public AuthController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
+    public AuthController(SistemaAcceso sistemaAcceso) {
+        this.sistemaAcceso = sistemaAcceso;
+    }
+
+    @PostMapping("/register")
+    public UsuarioDTO register(@RequestBody RegisterRequestDTO request) {
+        Usuario usuario = sistemaAcceso.agregarUsuario(
+                request.getEmail(),
+                request.getNombre(),
+                request.getPassword(),
+                request.getRol()
+        );
+
+        return new UsuarioDTO(usuario.getId(), usuario.getNombre(), usuario.getRol());
     }
 
     @PostMapping("/login")
     public UsuarioDTO login(@RequestBody LoginRequestDTO request) {
-        Usuario usuario = usuarioService.login(
-                request.getEmail(),
-                request.getNombre(),
-                Rol.valueOf(request.getRol().toUpperCase())
-        );
-
-        return new UsuarioDTO(
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getRol()
-        );
+        Usuario usuario = sistemaAcceso.login(request.getEmail(), request.getPassword());
+        return new UsuarioDTO(usuario.getId(), usuario.getNombre(), usuario.getRol());
     }
 }
