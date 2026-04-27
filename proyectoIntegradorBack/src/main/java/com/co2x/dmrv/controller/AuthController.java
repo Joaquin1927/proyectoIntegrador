@@ -19,7 +19,15 @@ public class AuthController {
     public AuthController(SistemaAcceso sistemaAcceso) {
         this.sistemaAcceso = sistemaAcceso;
     }
+    @GetMapping("/public/test")
+    public String publico() {
+        return "endpoint público";
+    }
 
+    @GetMapping("/privado/test")
+    public String privado() {
+        return "endpoint privado OK";
+    }
     @PostMapping("/register")
     public UsuarioDTO register(@RequestBody RegisterRequestDTO request) {
         Usuario usuario = sistemaAcceso.agregarUsuario(
