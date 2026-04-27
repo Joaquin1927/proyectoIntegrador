@@ -3,7 +3,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/co2x
     username: postgres
     password: postgre
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/co2x
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,3 +18,4 @@ spring:
 
   server:
     port: 5432
+
