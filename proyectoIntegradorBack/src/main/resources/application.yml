@@ -17,5 +17,5 @@ spring:
         format_sql: true
 
   server:
-    port: 5432
+    port: 8080
 

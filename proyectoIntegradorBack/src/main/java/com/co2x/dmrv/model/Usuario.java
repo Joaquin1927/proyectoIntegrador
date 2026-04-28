@@ -26,6 +26,9 @@ public class Usuario {
     private String totpSecret;
     private boolean totpSetupConfirmed;
 
+    public Usuario(String email, String nombre, Rol rol) {
+    }
+
     public boolean validarPassword(String password, PasswordEncoder encoder) {
         return encoder.matches(password, this.passwordHash);
     }
