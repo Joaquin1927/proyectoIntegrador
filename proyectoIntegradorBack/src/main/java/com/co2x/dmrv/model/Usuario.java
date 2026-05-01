@@ -1,47 +1,31 @@
 package com.co2x.dmrv.model;
 
 import jakarta.persistence.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
 
     @Id
-    private String id; // email como identificador único
+    private String id;
 
+    private String idKeycloak;
+
+    private String email;
     private String nombre;
-
-    @Column(nullable = false)
-    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     private Rol rol;
 
     private boolean activo = true;
 
-    private boolean mfaEnabled;
-    @Enumerated(EnumType.STRING)
-    private MFAMethod mfaMethod = MFAMethod.NONE; //mas adelante implementaremos la funcion que cambie el valor de este atributo
-    private String totpSecret;
-    private boolean totpSetupConfirmed;
+    public Usuario() {}
 
-    public Usuario(String email, String nombre, Rol rol) {
-    }
-
-    public boolean validarPassword(String password, PasswordEncoder encoder) {
-        return encoder.matches(password, this.passwordHash);
-    }
-
-    public Usuario() {
-    }
-
-    public Usuario(String id, String nombre, String passwordHash, Rol rol) {
-        this.id = id;
+    public Usuario(String idKeycloak, String email, String nombre, Rol rol) {
+        this.idKeycloak = idKeycloak;
+        this.email = email;
         this.nombre = nombre;
-        this.passwordHash = passwordHash;
         this.rol = rol;
-
     }
 
     // ===== Getters y Setters =====
@@ -62,13 +46,7 @@ public class Usuario {
         this.nombre = nombre;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
 
     public Rol getRol() {
         return rol;
@@ -84,6 +62,10 @@ public class Usuario {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
 

@@ -14,16 +14,17 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario login(String email, String nombre, Rol rol) {
-        return usuarioRepository.findById(email)
+    public Usuario obtenerOCrearUsuario(String idKeycloak, String email, String nombre, Rol rol) {
+        return usuarioRepository.findByIdKeycloak(idKeycloak)
+                .map(usuario -> {
+                    usuario.setEmail(email);
+                    usuario.setNombre(nombre);
+                    usuario.setRol(rol);
+                    return usuarioRepository.save(usuario);
+                })
                 .orElseGet(() -> {
-                    Usuario nuevo = new Usuario(email, nombre, rol);
+                    Usuario nuevo = new Usuario(idKeycloak, email, nombre, rol);
                     return usuarioRepository.save(nuevo);
                 });
-    }
-
-    public Usuario obtenerUsuario(String id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 }

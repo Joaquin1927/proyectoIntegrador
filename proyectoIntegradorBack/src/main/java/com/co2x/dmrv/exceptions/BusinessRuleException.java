@@ -1,4 +1,4 @@
-package com.co2x.dmrv.exception;
+package com.co2x.dmrv.exceptions;
 
 public class BusinessRuleException extends RuntimeException {
 
