@@ -1,30 +1,26 @@
 package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.model.Usuario;
-import com.co2x.dmrv.model.Rol;
-import com.co2x.dmrv.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
-
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public List<Usuario> listar() {
+        throw new RuntimeException("Implementar listar()");
     }
 
-    public Usuario obtenerOCrearUsuario(String idKeycloak, String email, String nombre, Rol rol) {
-        return usuarioRepository.findByIdKeycloak(idKeycloak)
-                .map(usuario -> {
-                    usuario.setEmail(email);
-                    usuario.setNombre(nombre);
-                    usuario.setRol(rol);
-                    return usuarioRepository.save(usuario);
-                })
-                .orElseGet(() -> {
-                    Usuario nuevo = new Usuario(idKeycloak, email, nombre, rol);
-                    return usuarioRepository.save(nuevo);
-                });
+    public Usuario crear(Usuario u) {
+        throw new RuntimeException("Implementar crear()");
+    }
+
+    public Usuario miPerfil() {
+        throw new RuntimeException("Implementar miPerfil()");
+    }
+
+    public List<String> auditoria() {
+        throw new RuntimeException("Implementar auditoria()");
     }
 }
