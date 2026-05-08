@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d9d58c0-e49c-4d1c-9ec3-a37fc3ddeeb7" name="Changes" comment="">
+    <list default="true" id="5d9d58c0-e49c-4d1c-9ec3-a37fc3ddeeb7" name="Changes" comment="arreglo application properties">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proyectoIntegradorBack/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/proyectoIntegradorBack/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyectoIntegradorBack/src/main/java/com/co2x/dmrv/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/proyectoIntegradorBack/src/main/java/com/co2x/dmrv/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyectoIntegradorBack/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/proyectoIntegradorBack/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +31,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/Joaquin1927/proyectoIntegrador.git&quot;,
-    &quot;accountId&quot;: &quot;09c9895e-1743-4b2a-b650-6e6f84577042&quot;
+    &quot;accountId&quot;: &quot;2baf6461-b315-4c07-a441-8d93f46656c5&quot;
   }
 }</component>
   <component name="ProjectColorInfo">{
@@ -78,10 +79,25 @@
       <updated>1774966080227</updated>
       <workItem from="1776265258160" duration="306000" />
       <workItem from="1776793807918" duration="302000" />
+      <workItem from="1778020700663" duration="598000" />
+      <workItem from="1778079912797" duration="1858000" />
     </task>
+    <task id="LOCAL-00001" summary="arreglo application properties">
+      <option name="closed" value="true" />
+      <created>1777391273851</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1777391273851</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="arreglo application properties" />
+    <option name="LAST_COMMIT_MESSAGE" value="arreglo application properties" />
   </component>
 </project>
