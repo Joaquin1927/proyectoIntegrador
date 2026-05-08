@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
-    boolean existsByIdAndActivoTrue(String id);
+    Optional<Usuario> findByExternalId(String externalId);
 
-    Optional<Usuario> findByIdKeycloak(String idKeycloak);
+    Optional<Usuario> findByEmail(String email);
 }
