@@ -1,7 +1,8 @@
 package com.co2x.dmrv.model;
-
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "usuarios")
 public class Usuario {

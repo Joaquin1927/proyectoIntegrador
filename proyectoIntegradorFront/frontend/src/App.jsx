@@ -22,7 +22,7 @@ export default function App() {
   if (hash === "#login") Page = Login;
   if (hash === "#registrar") Page = Registrar;
   if (hash === "#dashboard") Page = Dashboard;
-   if (hash === "#pendientes") Page = Pendientes;
+  if (hash === "#pendientes") Page = Pendientes;
 
   return (
     <Layout>

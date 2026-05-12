@@ -1,9 +1,12 @@
 package com.co2x.dmrv.model;
 
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class Reporte implements Observable{
     private final List<Observador> observadores = new ArrayList<>();
 
