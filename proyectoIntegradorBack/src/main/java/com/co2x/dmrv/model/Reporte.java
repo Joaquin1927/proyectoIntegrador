@@ -26,4 +26,7 @@ public class Reporte implements Observable{
             observador.actualizar(this);
         }
     }
+
+
+
 }
