@@ -17,4 +17,8 @@ public class PaqueteController {
     public String crear() {
         return "Paquete creado";
     }
+
+    // post para crear un paquete, agregarle una ruta y procesar JSON.
+    // buscar que java tiene funciones reservadas ya para procesarlo
+    // De aca se llama a un dto
 }
