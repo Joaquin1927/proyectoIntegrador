@@ -1,7 +1,7 @@
 package com.co2x.dmrv.controller;
 
 import com.co2x.dmrv.repository.RecordRepository;
-import com.co2x.dmrv.service.MetadataService;
+import com.co2x.dmrv.service.RecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,19 +17,12 @@ public class RecordController {
     private RecordRepository repository;
 
     @Autowired
-    private MetadataService metadataService;
+    private RecordService recordService;
 
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id) {
-
-        Record record = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Record no encontrado: " + id));
-
-        record.setStatus("APPROVED");
-        repository.save(record);
-
-        metadataService.processApprovedRecord(record);
-
+        recordService.approveRecord(id);
         return "Record aprobado";
     }
+
 }

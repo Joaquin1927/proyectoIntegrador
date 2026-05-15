@@ -10,23 +10,28 @@ public class MetadataService {
     @Autowired
     private RecordRepository repository;
 
-    public void processApprovedRecord(Record record) {
-        try {
-            String metadata = buildMetadata(record);
+    public String processApprovedRecord(Record record) {
 
-            System.out.println(metadata); // para probar
+            // 1. generar JSON metadata
+            String metadataJson = generarMetadata(record);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            // 2. subir a IPFS
+            String cid = uploadToIPFS(metadataJson);
+
+            return cid;
     }
 
-    // 👇 ACA VA TU MÉTODO
-    private String buildMetadata(Record record) {
+    private String uploadToIPFS(String json) {
+            // llamada real a IPFS (Pinata, Infura, etc)
+            return "Qm123abc..."; // ejemplo
+    }
+
+    private String generarMetadata(Record record) {
         return "{"
                 + "\"id\": \"" + record.getId() + "\","
                 + "\"data\": \"" + record.getData() + "\","
                 + "\"status\": \"" + record.getStatus() + "\""
                 + "}";
     }
+
 }
