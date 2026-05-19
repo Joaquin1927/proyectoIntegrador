@@ -1,24 +1,39 @@
 package com.co2x.dmrv.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.co2x.dmrv.dto.PaqueteCO2DTO;
+import com.co2x.dmrv.service.PaqueteCO2Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/paquetes")
 public class PaqueteController {
-    @GetMapping
-    public String listar() {
-        return "Listado de paquetes";
-    }
+
+    @Autowired
+    private PaqueteCO2Service service;
 
     @PostMapping
-    public String crear() {
-        return "Paquete creado";
+    public ResponseEntity<PaqueteCO2DTO> crear(@RequestBody PaqueteCO2DTO dto) {
+        PaqueteCO2DTO creado = service.crear(dto);
+        return ResponseEntity.ok(creado);
     }
 
-    // post para crear un paquete, agregarle una ruta y procesar JSON.
-    // buscar que java tiene funciones reservadas ya para procesarlo
-    // De aca se llama a un dto
+//    @GetMapping
+//    public ResponseEntity<List<PaqueteCO2DTO>> listar() {
+//        return ResponseEntity.ok(service.listar());
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Long id) {
+//        return ResponseEntity.ok(service.obtenerPorId(id));
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+//        service.eliminar(id);
+//        return ResponseEntity.noContent().build();
+//    }
 }
