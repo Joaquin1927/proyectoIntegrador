@@ -1,32 +1,24 @@
 package com.co2x.dmrv.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class Reporte implements Observable{
-    private final List<Observador> observadores = new ArrayList<>();
+@Entity
+public class Reporte {
 
-    @Override
-    public void agregarObservador(Observador observador) {
-        observadores.add(observador);
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Override
-    public void quitarObservador(Observador observador) {
-        observadores.remove(observador);
-    }
+    private LocalDate fechaCaptura;
+    private Double toneladasCO2;
+    private String locacion;
 
-    @Override
-    public void notificarObservadores() {
-        for (Observador observador : observadores) {
-            observador.actualizar(this);
-        }
-    }
-
-
+    @OneToMany(mappedBy = "reporte")
+    private List<PaqueteCO2> paquetes;
 
 }
