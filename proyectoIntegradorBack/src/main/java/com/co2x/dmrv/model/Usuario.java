@@ -2,79 +2,39 @@ package com.co2x.dmrv.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
-@Table(name = "usuarios")
+@Table(name = "\"Usuario\"")
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "\"Id\"")
+    private Integer id;
 
-    // ID del usuario en el proveedor IAM (Entra, Keycloak, etc.)
-    @Column(unique = true)
-    private String externalId;
-
+    @Column(name = "\"Email\"")
     private String email;
+
+    @Column(name = "\"Nombre\"")
     private String nombre;
 
+    @Column(name = "\"Password\"")
+    private String password;
+
     @Enumerated(EnumType.STRING)
+    @Column(name = "\"Rol\"")
     private Rol rol;
 
-    private boolean activo = true;
 
-    public Usuario() {}
+    @ManyToOne
+    @JoinColumn(name = "\"Empresa\"")
+    private Empresa empresa;
 
-    public Usuario(String externalId, String email, String nombre, Rol rol) {
-        this.externalId = externalId;
-        this.email = email;
-        this.nombre = nombre;
-        this.rol = rol;
-    }
+    @OneToMany(mappedBy = "empleado")
+    private List<Reporte> reportes;
 
-    // ===== Getters y Setters =====
-
-    public String getId() {
-        return id;
-    }
-
-    public String getExternalId() {
-        return externalId;
-    }
-
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Rol getRol() {
-        return rol;
-    }
-
-    public void setRol(Rol rol) {
-        this.rol = rol;
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public void setActivo(boolean activo) {
-        this.activo = activo;
-    }
+    @OneToMany(mappedBy = "auditor")
+    private List<PaqueteCO2> paquetesVerificados;
 }

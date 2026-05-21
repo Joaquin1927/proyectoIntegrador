@@ -1,9 +1,39 @@
 package com.co2x.dmrv.model;
+
+import jakarta.persistence.*;
 import lombok.Data;
 
-@Data
-public class Planta {
-    private Long id;
+import java.util.List;
 
+@Data
+@Entity
+@Table(name = "\"Planta\"")
+public class Planta {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "\"Id\"")
+    private Integer id;
+
+    @Column(name = "\"Nombre\"")
     private String nombre;
+
+    @Column(name = "\"Direccion\"")
+    private String direccion;
+
+    @Column(name = "\"Latitud\"")
+    private Double latitud;
+
+    @Column(name = "\"Longitud\"")
+    private Double longitud;
+
+    // =========================
+    // Relaciones
+    // =========================
+
+    @OneToMany(mappedBy = "planta")
+    private List<PaqueteCO2> paquetesCO2;
+
+    @OneToMany(mappedBy = "planta")
+    private List<Reporte> reportes;
 }

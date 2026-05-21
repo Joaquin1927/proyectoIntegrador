@@ -33,6 +33,11 @@ public class UsuarioController {
         return servicio.miPerfil();
     }
 
+    @GetMapping("/test")
+    public String test() {
+        return "Backend funcionando";
+    }
+
     @GetMapping("/auditoria")
     @PreAuthorize("hasRole('AUDITOR')")
     public List<String> verAuditoria() {
