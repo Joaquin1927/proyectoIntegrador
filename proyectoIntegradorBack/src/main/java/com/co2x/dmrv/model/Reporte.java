@@ -8,17 +8,47 @@ import java.util.List;
 
 @Data
 @Entity
+@Table(name = "\"Reporte\"")
 public class Reporte {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "\"Id\"")
+    private Integer id;
 
-    private LocalDate fechaCaptura;
+    @Column(name = "\"fechaReporte\"")
+    private LocalDate fechaReporte;
+
+    @Column(name = "\"toneladasCO2\"")
     private Double toneladasCO2;
-    private String locacion;
+
+    @Column(name = "\"ubicacion\"")
+    private String ubicacion;
+
+    @Column(name = "\"tipoCaptura\"")
+    private String tipoCaptura;
+
+    @Column(name = "\"metodologia\"")
+    private String metodologia;
+
+    @Column(name = "\"estado\"")
+    private String estado;
+
+    @Column(name = "\"observaciones\"")
+    private String observaciones;
+
+    @Column(name = "\"usuarioResponsable\"")
+    private String usuarioResponsable;
+
+
+    @ManyToOne
+    @JoinColumn(name = "\"empleado_Id\"")
+    private Usuario empleado;
+
+    @ManyToOne
+    @JoinColumn(name = "\"planta_Id\"")
+    private Planta planta;
 
     @OneToMany(mappedBy = "reporte")
     private List<PaqueteCO2> paquetes;
-
 }
