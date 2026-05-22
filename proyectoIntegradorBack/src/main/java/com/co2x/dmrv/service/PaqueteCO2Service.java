@@ -1,8 +1,8 @@
 package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
-import com.co2x.dmrv.model.PaqueteCO2;
-import com.co2x.dmrv.model.Reporte;
+import com.co2x.dmrv.entity.PaqueteCO2;
+import com.co2x.dmrv.entity.Reporte;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.utils.Factory;

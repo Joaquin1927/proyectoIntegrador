@@ -1,6 +1,6 @@
 package com.co2x.dmrv.controller;
 
-import com.co2x.dmrv.model.Usuario;
+import com.co2x.dmrv.entity.Usuario;
 import com.co2x.dmrv.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

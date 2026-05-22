@@ -1,7 +1,7 @@
-package com.co2x.dmrv.model;
+package com.co2x.dmrv.entity;
 import jakarta.persistence.*;
 import lombok.Data;
-
+import com.co2x.dmrv.model.Empresa;
 import java.util.List;
 
 @Data
@@ -26,7 +26,6 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(name = "\"Rol\"")
     private Rol rol;
-
 
     @ManyToOne
     @JoinColumn(name = "\"Empresa\"")

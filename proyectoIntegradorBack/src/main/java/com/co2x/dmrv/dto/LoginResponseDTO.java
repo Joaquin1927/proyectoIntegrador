@@ -1,6 +1,6 @@
 package com.co2x.dmrv.dto;
 
-import com.co2x.dmrv.model.Rol;
+import com.co2x.dmrv.entity.Rol;
 import jakarta.security.auth.message.AuthStatus;
 
 public class LoginResponseDTO {

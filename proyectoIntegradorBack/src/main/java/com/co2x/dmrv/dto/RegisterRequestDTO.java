@@ -1,6 +1,6 @@
 package com.co2x.dmrv.dto;
 
-import com.co2x.dmrv.model.Rol;
+import com.co2x.dmrv.entity.Rol;
 
 public class RegisterRequestDTO {
     private String email;

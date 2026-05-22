@@ -1,4 +1,4 @@
-package com.co2x.dmrv.model;
+package com.co2x.dmrv.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

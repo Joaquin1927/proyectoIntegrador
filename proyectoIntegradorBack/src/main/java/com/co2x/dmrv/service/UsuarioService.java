@@ -1,6 +1,6 @@
 package com.co2x.dmrv.service;
 
-import com.co2x.dmrv.model.Usuario;
+import com.co2x.dmrv.entity.Usuario;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

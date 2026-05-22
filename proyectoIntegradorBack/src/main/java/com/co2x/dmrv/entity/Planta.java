@@ -1,5 +1,7 @@
-package com.co2x.dmrv.model;
+package com.co2x.dmrv.entity;
 
+import com.co2x.dmrv.entity.PaqueteCO2;
+import com.co2x.dmrv.entity.Reporte;
 import jakarta.persistence.*;
 import lombok.Data;
 
