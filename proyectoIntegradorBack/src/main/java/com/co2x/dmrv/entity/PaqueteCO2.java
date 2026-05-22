@@ -51,7 +51,6 @@ public class PaqueteCO2 {
     @Column(name = "\"external_url\"")
     private String externalUrl;
 
-
     @ManyToOne
     @JoinColumn(name = "\"verifiedBy\"")
     private Usuario auditor;
@@ -60,7 +59,4 @@ public class PaqueteCO2 {
     @JoinColumn(name = "\"ubicacion\"")
     private Planta planta;
 
-    @ManyToOne
-    @JoinColumn(name = "\"reporte_id\"")
-    private Reporte reporte;
 }

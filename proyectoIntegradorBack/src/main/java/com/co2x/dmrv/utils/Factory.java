@@ -5,7 +5,10 @@ package com.co2x.dmrv.utils;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.ReporteDTO;
+import com.co2x.dmrv.dto.PlantaDTO;
+import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.PaqueteCO2;
+import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.Reporte;
 import org.springframework.stereotype.Component;
 
@@ -16,17 +19,15 @@ public class Factory {
     // PAQUETE CO2
     // =========================
 
-    public PaqueteCO2 toPaqueteEntity(PaqueteCO2DTO dto, Reporte reporte) {
+    public PaqueteCO2 toPaqueteEntity(PaqueteCO2DTO dto, Planta planta) {
 
         PaqueteCO2 p = new PaqueteCO2();
 
+        // ⚠️ nunca seteamos ID
 
-        p.setCertId(dto.id != null ? dto.certId : dto.certId);
+        p.setCertId(dto.certId);
         p.setProjectName(dto.projectName);
         p.setCaptureDate(dto.captureDate);
-        p.setVerifiedBy(dto.verifiedBy);
-        p.setMethodology(dto.methodology);
-        p.setLocation(dto.location);
         p.setTonCO2eq(dto.tonCO2eq);
         p.setIssuanceDate(dto.issuanceDate);
         p.setRetirementStatus(dto.retirementStatus);
@@ -36,7 +37,7 @@ public class Factory {
         p.setProjectType(dto.projectType);
         p.setExternalUrl(dto.externalUrl);
 
-        p.setReporte(reporte);
+        p.setPlanta(planta);
 
         return p;
     }
@@ -49,9 +50,6 @@ public class Factory {
         dto.certId = entity.getCertId();
         dto.projectName = entity.getProjectName();
         dto.captureDate = entity.getCaptureDate();
-        dto.verifiedBy = entity.getVerifiedBy();
-        dto.methodology = entity.getMethodology();
-        dto.location = entity.getLocation();
         dto.tonCO2eq = entity.getTonCO2eq();
         dto.issuanceDate = entity.getIssuanceDate();
         dto.retirementStatus = entity.getRetirementStatus();
@@ -61,44 +59,39 @@ public class Factory {
         dto.projectType = entity.getProjectType();
         dto.externalUrl = entity.getExternalUrl();
 
-        if (entity.getReporte() != null) {
-            dto.reporteId = entity.getReporte().getId();
+        if (entity.getPlanta() != null) {
+            dto.id = entity.getPlanta().getId();
         }
 
         return dto;
     }
 
-    // =========================
-    //  REPORTE
-    // =========================
 
-    public Reporte toReporteEntity(ReporteDTO dto) {
+    public Planta toPlantaEntity(PlantaDTO dto) {
 
-        Reporte r = new Reporte();
+        Planta p = new Planta();
 
-        r.setFechaCaptura(dto.fechaCaptura);
-        r.setToneladasCO2(dto.toneladasCO2);
-        r.setLocacion(dto.locacion);
+        p.setNombre(dto.nombre);
+        p.setDireccion(dto.direccion);
+        p.setLatitud(dto.latitud);
+        p.setLongitud(dto.longitud);
 
-        // falta
-        // empleado y planta
-
-        return r;
+        return p;
     }
 
-    public ReporteDTO toReporteDTO(Reporte entity) {
+    public PlantaDTO toPlantaDTO(Planta entity) {
 
-        ReporteDTO dto = new ReporteDTO();
+        PlantaDTO dto = new PlantaDTO();
 
         dto.id = entity.getId();
-        dto.fechaCaptura = entity.getFechaCaptura();
-        dto.toneladasCO2 = entity.getToneladasCO2();
-        dto.locacion = entity.getLocacion();
-
-        // ver si agregar relaciones:
-        // dto.empleadoId = entity.getEmpleado().getId();
-        // dto.plantaId = entity.getPlanta().getId();
+        dto.nombre = entity.getNombre();
+        dto.direccion = entity.getDireccion();
+        dto.latitud = entity.getLatitud();
+        dto.longitud = entity.getLongitud();
 
         return dto;
     }
+
 }
+
+
