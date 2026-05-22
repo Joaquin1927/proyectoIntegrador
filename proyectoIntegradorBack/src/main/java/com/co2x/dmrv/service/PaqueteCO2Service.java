@@ -2,9 +2,9 @@ package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.PaqueteCO2;
-import com.co2x.dmrv.entity.Reporte;
+import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
-import com.co2x.dmrv.repository.ReporteRepository;
+import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.utils.Factory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,19 +16,18 @@ public class PaqueteCO2Service {
     private PaqueteCO2Repository paqueteRepo;
 
     @Autowired
-    private ReporteRepository reporteRepo;
+    private Factory factory;
 
     @Autowired
-    private Factory factory;
+    private PlantaService plantaService;
+
 
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) {
 
-        // 1. Busco el reporte
-        Reporte reporte = reporteRepo.findById(dto.reporteId)
-                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
+        Planta planta = plantaService.getEntity(dto.id);
 
         // 2. Paso DTO → Entity
-        PaqueteCO2 entity = factory.toPaqueteEntity(dto, reporte);
+        PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
         // 3. Guardo en DB
         PaqueteCO2 guardado = paqueteRepo.save(entity);

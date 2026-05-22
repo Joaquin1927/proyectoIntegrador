@@ -40,7 +40,6 @@ public class Reporte {
     @Column(name = "\"usuarioResponsable\"")
     private String usuarioResponsable;
 
-
     @ManyToOne
     @JoinColumn(name = "\"empleado_Id\"")
     private Usuario empleado;

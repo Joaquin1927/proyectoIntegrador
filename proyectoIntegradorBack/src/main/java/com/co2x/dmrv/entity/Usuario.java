@@ -1,7 +1,7 @@
 package com.co2x.dmrv.entity;
 import jakarta.persistence.*;
 import lombok.Data;
-import com.co2x.dmrv.model.Empresa;
+import com.co2x.dmrv.entity.Empresa;
 import java.util.List;
 
 @Data
