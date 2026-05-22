@@ -3,7 +3,7 @@ package com.co2x.dmrv.service;
 import com.co2x.dmrv.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.co2x.dmrv.model.Record;
+import com.co2x.dmrv.entity.Record;
 
 @Service
 public class RecordService {

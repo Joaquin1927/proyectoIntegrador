@@ -5,8 +5,8 @@ package com.co2x.dmrv.utils;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.ReporteDTO;
-import com.co2x.dmrv.model.PaqueteCO2;
-import com.co2x.dmrv.model.Reporte;
+import com.co2x.dmrv.entity.PaqueteCO2;
+import com.co2x.dmrv.entity.Reporte;
 import org.springframework.stereotype.Component;
 
 @Component

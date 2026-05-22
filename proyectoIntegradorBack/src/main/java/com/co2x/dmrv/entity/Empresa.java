@@ -1,5 +1,6 @@
-package com.co2x.dmrv.model;
+package com.co2x.dmrv.entity;
 
+import com.co2x.dmrv.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.Data;
 

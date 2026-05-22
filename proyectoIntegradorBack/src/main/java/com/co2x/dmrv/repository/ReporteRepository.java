@@ -1,6 +1,6 @@
 package com.co2x.dmrv.repository;
 
-import com.co2x.dmrv.model.Reporte;
+import com.co2x.dmrv.entity.Reporte;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
