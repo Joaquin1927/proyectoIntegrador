@@ -29,6 +29,11 @@ public class Planta {
     @Column(name = "\"Longitud\"")
     private Double longitud;
 
+    // ✅ RELACIÓN CON EMPRESA (ESTA FALTABA)
+    @ManyToOne
+    @JoinColumn(name = "empresa_id")
+    private Empresa empresa;
+
     // =========================
     // Relaciones
     // =========================

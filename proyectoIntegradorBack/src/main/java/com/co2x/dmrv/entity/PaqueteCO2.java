@@ -59,4 +59,7 @@ public class PaqueteCO2 {
     @JoinColumn(name = "\"ubicacion\"")
     private Planta planta;
 
+    @ManyToOne
+    @JoinColumn(name = "\"reporte_Id\"")
+    private Reporte reporte;
 }

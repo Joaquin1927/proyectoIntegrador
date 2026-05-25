@@ -27,6 +27,9 @@ public class Usuario {
     @Column(name = "\"Rol\"")
     private Rol rol;
 
+    @Column(name = "\"ExternalId\"")
+    private String externalId;   // ← AGREGADO
+
     @ManyToOne
     @JoinColumn(name = "\"Empresa\"")
     private Empresa empresa;
