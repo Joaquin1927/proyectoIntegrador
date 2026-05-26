@@ -1,30 +1,63 @@
 import { useApp } from "../context/AppContext";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { setUser } = useApp();
+  const navigate = useNavigate();
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+
     const data = Object.fromEntries(new FormData(e.target));
-    setUser({
-      id: data.email,
-      name: data.name,
-      role: data.role,
-    });
-    if (data.role === "empleado") {
-      window.location.hash = "#registrar";
-    } else if (data.role === "auditor") {
-      window.location.hash = "#pendientes";
-    } else {
-      window.location.hash = "#dashboard";
+
+    try {
+      // ✅ 🔥 AHORA LLAMÁS A TU BACKEND JAVA
+      const res = await axios.post("http://localhost:8080/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
+
+      console.log(res.data);
+
+      // ✅ guardar token
+      localStorage.setItem("token", res.data.access_token);
+
+      // ✅ determinar rol (provisorio)
+      let role = "";
+
+      if (data.email.includes("admin")) {
+        role = "admin";
+      } else if (data.email.includes("auditor")) {
+        role = "auditor";
+      } else {
+        role = "empleado";
+      }
+
+      // ✅ guardar usuario en contexto
+      setUser({
+        email: data.email,
+        role,
+      });
+
+      // ✅ redirigir según rol
+      if (role === "empleado") {
+        navigate("/registrar");
+      } else if (role === "auditor") {
+        navigate("/pendientes");
+      } else {
+        navigate("/dashboard");
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Login incorrecto");
     }
   };
 
-  
-
   return (
     <section className="panel">
-      <h1>Bienvenida/o</h1>
+      <h1>Login</h1>
 
       <form className="grid two" onSubmit={submit}>
         <div className="field">
@@ -33,17 +66,8 @@ export default function Login() {
         </div>
 
         <div className="field">
-          <label>Nombre</label>
-          <input name="name" required />
-        </div>
-
-        <div className="field">
-          <label>Rol</label>
-          <select name="role">
-            <option value="empleado">Empleado</option>
-            <option value="auditor">Auditor</option>
-            <option value="admin">Admin</option>
-          </select>
+          <label>Password</label>
+          <input name="password" type="password" required />
         </div>
 
         <div className="actions span-2">
