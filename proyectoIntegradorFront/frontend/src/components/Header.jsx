@@ -1,7 +1,15 @@
 import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { user, setUser } = useApp();
+   const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.clear();
+    setUser(null);
+    navigate("/");
+  };
 
   return (
     <header className="topbar">
@@ -22,7 +30,7 @@ export default function Header() {
         {user && (
           <button
             className="danger small"
-            onClick={() => setUser(null)}
+            onClick={logout}
           >
             Cerrar sesión
           </button>
