@@ -12,4 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
         public String home() {
             return "CO2X API funcionando";
         }
+        @GetMapping("/test")
+        public String test() {
+            return "backend actualizado";
+        }
     }
