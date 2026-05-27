@@ -16,7 +16,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // convertir roles del token
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter =
                 new JwtGrantedAuthoritiesConverter();
 
@@ -31,20 +30,24 @@ public class SecurityConfig {
         );
 
         http
-                //  desactiva CSRF (API REST)
+
+                // ✅ HABILITAR CORS
+                .cors(cors -> {})
+
+                // desactiva CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // stateless (no sesiones)
+                // stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // ✅ rutas públicas vs protegidas
+                // rutas
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
                 )
 
-                // configuración JWT
+                // JWT
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt ->
                                 jwt.jwtAuthenticationConverter(
