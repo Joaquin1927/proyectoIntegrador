@@ -13,7 +13,7 @@ export default function Login() {
 
     try {
       // ✅ 🔥 AHORA LLAMÁS A TU BACKEND JAVA
-      const res = await axios.post("http://localhost:8080/auth/login", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {
         email: data.email,
         password: data.password,
       });
