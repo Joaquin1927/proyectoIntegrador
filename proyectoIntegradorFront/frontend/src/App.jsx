@@ -7,13 +7,10 @@ import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Login />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="registrar" element={<Registrar />} />
-        <Route path="pendientes" element={<Pendientes />} />
-      </Route>
-    </Routes>
+  <Route path="/" element={<Layout />}>
+    <Route index element={<Login />} />
+    <Route path="dashboard" element={<Dashboard />} />
+    <Route path="pendientes" element={<Pendientes />} />
+  </Route>
   );
 }

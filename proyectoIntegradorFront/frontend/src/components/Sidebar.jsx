@@ -1,25 +1,37 @@
-import { useApp } from "../context/AppContext";
-
-const links = [
-  { hash: "#login", label: "Iniciar sesión", roles: ["anon"] },
-  { hash: "#registrar", label: "➕ Registrar paquete", roles: ["empleado", "admin"] },
-  { hash: "#dashboard", label: "📈 Dashboard", roles: ["empleado", "auditor", "admin"] },
-];
+import { useMsal } from "@azure/msal-react";
+import { Link } from "react-router-dom";
 
 export default function Sidebar() {
-  const { user } = useApp();
-  const role = user?.role ?? "anon";
+  const { accounts } = useMsal();
+
+  const user = accounts[0];
 
   return (
     <aside className="sidebar">
       <nav>
-        {links
-          .filter(l => l.roles.includes(role))
-          .map(l => (
-            <a key={l.hash} href={l.hash} className="nav-item">
-              {l.label}
-            </a>
-          ))}
+        {!user && (
+          <Link to="/" className="nav-item">
+            Iniciar sesión
+          </Link>
+        )}
+
+        {user && (
+          <>
+            <Link
+              to="/dashboard"
+              className="nav-item"
+            >
+              📈 Dashboard
+            </Link>
+
+            <Link
+              to="/pendientes"
+              className="nav-item"
+            >
+              📋 Pendientes
+            </Link>
+          </>
+        )}
       </nav>
     </aside>
   );

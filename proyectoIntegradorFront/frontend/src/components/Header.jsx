@@ -1,13 +1,15 @@
-import { useApp } from "../context/AppContext";
+import { useMsal } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
-  const { user, setUser } = useApp();
-   const navigate = useNavigate();
+  const { instance, accounts } = useMsal();
 
-  const logout = () => {
-    localStorage.clear();
-    setUser(null);
+  const navigate = useNavigate();
+
+  const user = accounts[0];
+
+  const logout = async () => {
+    await instance.logoutPopup();
     navigate("/");
   };
 
@@ -15,16 +17,21 @@ export default function Header() {
     <header className="topbar">
       <div className="brand">
         <div className="logo">CO₂X</div>
-        <div className="subtitle">Plataforma dMRV • Demo</div>
+        <div className="subtitle">
+          Plataforma dMRV • Demo
+        </div>
       </div>
 
       <div className="top-actions">
-        <button className="ghost" title="Alternar tema">
+        <button
+          className="ghost"
+          title="Alternar tema"
+        >
           🌓
         </button>
 
         <div className="user-pill">
-          {user ? `${user.name} · ${user.role}` : "Invitado"}
+          {user ? user.name : "Invitado"}
         </div>
 
         {user && (

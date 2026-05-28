@@ -1,16 +1,21 @@
 import { useEffect } from "react";
+import { useMsal } from "@azure/msal-react";
 import { useApp } from "../context/AppContext";
 
 export default function Pendientes() {
-  const { paquetes, setPaquetes, user } = useApp();
+  const { paquetes, setPaquetes } = useApp();
+
+const { accounts } = useMsal();
+
+const user = accounts[0];
 
   useEffect(() => {
-    if (!user || !["auditor", "admin"].includes(user.role)) {
-      window.location.hash = "#login";
-    }
-  }, [user]);
+  if (!user) {
+    window.location.href = "/";
+  }
+}, [user]);
 
-  if (!user) return null;
+if (!user) return null;
 
   const pendientes = paquetes.filter(p =>
     ["pendiente", "en_revision"].includes(p.estado)

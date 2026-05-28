@@ -1,13 +1,18 @@
 import { useEffect, useRef } from "react";
+import { useMsal } from "@azure/msal-react";
 import { useApp } from "../context/AppContext";
 
 export default function Dashboard() {
-  const { paquetes, user } = useApp();
+const { paquetes } = useApp();
+
+const { accounts } = useMsal();
+
+const user = accounts[0];
   const canvasRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
-      window.location.hash = "#login";
+      window.location.href = "/";
     }
   }, [user]);
 
