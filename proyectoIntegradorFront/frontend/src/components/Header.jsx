@@ -1,44 +1,36 @@
-import { useMsal } from "@azure/msal-react";
+import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { useMsal } from "@azure/msal-react";
 
 export default function Header() {
-  const { instance, accounts } = useMsal();
-
+  const { user, logout: logoutContext } = useApp();
   const navigate = useNavigate();
 
-  const user = accounts[0];
+  const { instance, accounts } = useMsal();
 
-  const logout = async () => {
-    await instance.logoutPopup();
-    navigate("/");
+  const handleLogout = async () => {
+    logoutContext();
+
+    await instance.logoutRedirect({
+      account: accounts[0],
+      postLogoutRedirectUri: "http://localhost:5173",
+    });
   };
 
   return (
     <header className="topbar">
       <div className="brand">
         <div className="logo">CO₂X</div>
-        <div className="subtitle">
-          Plataforma dMRV • Demo
-        </div>
+        <div className="subtitle">Plataforma dMRV • Demo</div>
       </div>
 
       <div className="top-actions">
-        <button
-          className="ghost"
-          title="Alternar tema"
-        >
-          🌓
-        </button>
+        <button className="ghost">🌓</button>
 
-        <div className="user-pill">
-          {user ? user.name : "Invitado"}
-        </div>
+        <div className="user-pill">{user ? user.name : "Invitado"}</div>
 
         {user && (
-          <button
-            className="danger small"
-            onClick={logout}
-          >
+          <button className="danger small" onClick={handleLogout}>
             Cerrar sesión
           </button>
         )}

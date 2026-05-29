@@ -5,13 +5,17 @@ import { MsalProvider } from "@azure/msal-react";
 
 import App from "./App";
 import { msalInstance } from "./authConfig";
+import { AppProvider } from "./context/AppProvider";
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <MsalProvider instance={msalInstance}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <AppProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AppProvider>
     </MsalProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

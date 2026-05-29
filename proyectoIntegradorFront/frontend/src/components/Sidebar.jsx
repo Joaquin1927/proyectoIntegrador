@@ -10,7 +10,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <nav>
         {!user && (
-          <Link to="/" className="nav-item">
+          <Link to="/login" className="nav-item">
             Iniciar sesión
           </Link>
         )}
