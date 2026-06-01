@@ -9,9 +9,10 @@ import Dashboard from "./pages/Dashboard";
 import Pendientes from "./pages/Pendientes";
 import Registrar from "./pages/Registrar";
 import Home from "./pages/Home";
+import "./styles.css";
 
 export default function App() {
-  const { instance, accounts } = useMsal();
+  const { instance } = useMsal();
   const { setUser } = useApp();
   const navigate = useNavigate();
 
@@ -19,9 +20,16 @@ export default function App() {
     const init = async () => {
       const accountsList = instance.getAllAccounts();
 
-      if (accountsList.length > 0) {
-        const account = accountsList[0];
+      // ✅ Si NO está logueado → ir a login
+      if (accountsList.length === 0) {
+        navigate("/");
+        return;
+      }
 
+      // ✅ Si está logueado → obtener token
+      const account = accountsList[0];
+
+      try {
         const response = await instance.acquireTokenSilent({
           scopes: [import.meta.env.VITE_SCOPE],
           account,
@@ -43,22 +51,34 @@ export default function App() {
           role,
         });
 
+        // ✅ redirigir solo si está logueado
         navigate("/dashboard");
+
+      } catch (error) {
+        console.error("Error obteniendo token:", error);
+
+        // ✅ si falla, volver a login
+        navigate("/");
       }
     };
 
     init();
-  }, []);
+  }, [instance, navigate]);
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
+        
+        {/* ✅ Login */}
         <Route index element={<Login />} />
+
+        {/* ✅ Rutas protegidas */}
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="registrar" element={<Registrar />} />
         <Route path="pendientes" element={<Pendientes />} />
         <Route path="home" element={<Home />} />
 
+        {/* ✅ fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>

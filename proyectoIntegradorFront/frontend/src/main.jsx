@@ -6,6 +6,8 @@ import { MsalProvider } from "@azure/msal-react";
 import App from "./App";
 import { msalInstance } from "./auth/msalConfig";
 import { AppProvider } from "./context/AppProvider";
+import "./styles.css";
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

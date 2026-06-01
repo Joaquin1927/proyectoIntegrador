@@ -11,8 +11,8 @@ export default function Login() {
       await msalInstance.initialize();
 
       await msalInstance.loginRedirect({
-        scopes: [import.meta.env.VITE_SCOPE], 
-        prompt: "select_account", 
+        scopes: [import.meta.env.VITE_SCOPE],
+        prompt: "select_account",
       });
 
     } catch (error) {
@@ -33,5 +33,3 @@ export default function Login() {
     </section>
   );
 }
- 
-export default Login;
