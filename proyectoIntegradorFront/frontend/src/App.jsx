@@ -28,8 +28,15 @@ export default function App() {
         return;
       }
 
-      const account = accounts[0];
+      const account = accounts[0] || instance.getActiveAccount();
+
+      if (!account) {
+        console.log("No hay cuenta activa");
+        return;
+      }
+
       instance.setActiveAccount(account);
+
 
       try {
         const response = await instance.acquireTokenSilent({
