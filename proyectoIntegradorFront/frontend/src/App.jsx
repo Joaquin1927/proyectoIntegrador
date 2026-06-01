@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Pendientes from "./pages/Pendientes";
 import Registrar from "./pages/Registrar";
 import Home from "./pages/Home";
+
 import "./styles.css";
 
 export default function App() {
@@ -20,13 +21,14 @@ export default function App() {
     const init = async () => {
       const accountsList = instance.getAllAccounts();
 
-      // ✅ Si NO está logueado → ir a login
+      // ✅ NO logueado → limpiar y mandar a login
       if (accountsList.length === 0) {
+        localStorage.removeItem("token");
         navigate("/");
         return;
       }
 
-      // ✅ Si está logueado → obtener token
+      // ✅ SI logueado → obtener token
       const account = accountsList[0];
 
       try {
@@ -51,13 +53,13 @@ export default function App() {
           role,
         });
 
-        // ✅ redirigir solo si está logueado
+        // ✅ redirige solo si está logueado
         navigate("/dashboard");
 
       } catch (error) {
         console.error("Error obteniendo token:", error);
 
-        // ✅ si falla, volver a login
+        localStorage.removeItem("token");
         navigate("/");
       }
     };
@@ -65,21 +67,36 @@ export default function App() {
     init();
   }, [instance, navigate]);
 
+  const isAuthenticated = !!localStorage.getItem("token");
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        
-        {/* ✅ Login */}
+
+        {/* ✅ LOGIN SIEMPRE DISPONIBLE */}
         <Route index element={<Login />} />
 
-        {/* ✅ Rutas protegidas */}
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="registrar" element={<Registrar />} />
-        <Route path="pendientes" element={<Pendientes />} />
-        <Route path="home" element={<Home />} />
+        {/* ✅ RUTAS PROTEGIDAS */}
+        <Route
+          path="dashboard"
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
+        />
+        <Route
+          path="registrar"
+          element={isAuthenticated ? <Registrar /> : <Navigate to="/" />}
+        />
+        <Route
+          path="pendientes"
+          element={isAuthenticated ? <Pendientes /> : <Navigate to="/" />}
+        />
+        <Route
+          path="home"
+          element={isAuthenticated ? <Home /> : <Navigate to="/" />}
+        />
 
         {/* ✅ fallback */}
         <Route path="*" element={<Navigate to="/" />} />
+
       </Route>
     </Routes>
   );
