@@ -6,19 +6,19 @@ export default function Pendientes() {
   const { paquetes, setPaquetes, user } = useApp();
   const navigate = useNavigate();
 
-  // ✅ proteger por login + rol
   useEffect(() => {
-    if (!user) {
-      navigate("/");
-      return;
-    }
+      if (user === null) return; // esperar
+
+      if (!user) {
+        navigate("/");
+      }
 
     if (!["auditor", "admin"].includes(user.role)) {
       navigate("/dashboard");
     }
   }, [user]);
 
-  if (!user) return null;
+  if (!user) return <p>Cargando...</p>;
 
   // ✅ estados adaptados a main
   const pendientes = paquetes.filter(p =>

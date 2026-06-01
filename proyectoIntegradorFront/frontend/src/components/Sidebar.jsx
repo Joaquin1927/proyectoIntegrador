@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 
 export default function Sidebar() {
-  const { user } = useApp(); // ✅ FIX
+  const { user } = useApp();
 
   return (
     <aside className="sidebar">
       <nav>
+
         {!user && (
           <Link to="/" className="nav-item">
             Iniciar sesión
@@ -28,6 +29,7 @@ export default function Sidebar() {
             </Link>
           </>
         )}
+
       </nav>
     </aside>
   );

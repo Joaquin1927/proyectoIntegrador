@@ -8,21 +8,20 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Pendientes from "./pages/Pendientes";
 import Registrar from "./pages/Registrar";
-import Home from "./pages/Home";
 
 import "./styles.css";
 
 export default function App() {
   const { instance, accounts } = useMsal();
-  const { setUser } = useApp();
+  const { setUser, user } = useApp();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true); // ✅ CLAVE
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const init = async () => {
 
-      // ⛔ todavía cargando MSAL
+      // ⛔ todavía no hay sesión en MSAL
       if (accounts.length === 0) {
         setLoading(false);
         return;
@@ -31,12 +30,12 @@ export default function App() {
       const account = accounts[0] || instance.getActiveAccount();
 
       if (!account) {
-        console.log("No hay cuenta activa");
+        setLoading(false);
         return;
       }
 
+      // ✅ asegurar account activa
       instance.setActiveAccount(account);
-
 
       try {
         const response = await instance.acquireTokenSilent({
@@ -45,7 +44,6 @@ export default function App() {
         });
 
         const token = response.accessToken;
-
         localStorage.setItem("token", token);
 
         const payload = JSON.parse(atob(token.split(".")[1]));
@@ -60,9 +58,12 @@ export default function App() {
           role,
         });
 
-        setLoading(false); // ✅ listo
+        setLoading(false);
 
-        navigate("/dashboard");
+        // ✅ SOLO redirigir si estás en login
+        if (window.location.pathname === "/") {
+          navigate("/dashboard");
+        }
 
       } catch (error) {
         console.error("Error obteniendo token:", error);
@@ -74,36 +75,37 @@ export default function App() {
     init();
   }, [accounts, instance, navigate]);
 
-  // ✅ evitar render prematuro
+  // ✅ evitar render mientras MSAL carga
   if (loading) {
     return <p>Cargando...</p>;
   }
 
-  const isAuthenticated = accounts.length > 0;
+  const isAuthenticated = !!user; // ✅ CLAVE
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
 
+        {/* ✅ LOGIN */}
         <Route index element={<Login />} />
 
+        {/* ✅ RUTAS PROTEGIDAS */}
         <Route
           path="dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
         />
+
         <Route
           path="registrar"
           element={isAuthenticated ? <Registrar /> : <Navigate to="/" />}
         />
+
         <Route
           path="pendientes"
           element={isAuthenticated ? <Pendientes /> : <Navigate to="/" />}
         />
-        <Route
-          path="home"
-          element={isAuthenticated ? <Home /> : <Navigate to="/" />}
-        />
 
+        {/* fallback */}
         <Route path="*" element={<Navigate to="/" />} />
 
       </Route>

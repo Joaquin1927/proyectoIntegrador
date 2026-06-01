@@ -6,10 +6,12 @@ export default function Header() {
   const { instance, accounts } = useMsal();
 
   const handleLogout = async () => {
+    const account = accounts[0];
+
     logoutContext();
 
     await instance.logoutRedirect({
-      account: accounts[0],
+      account: account || undefined,
       postLogoutRedirectUri: import.meta.env.VITE_REDIRECT_URI,
     });
   };
