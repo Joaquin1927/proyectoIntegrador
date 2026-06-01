@@ -13,7 +13,7 @@ export default function Header() {
 
     await instance.logoutRedirect({
       account: accounts[0],
-      postLogoutRedirectUri: "http://localhost:5173",
+      postLogoutRedirectUri: import.meta.env.VITE_REDIRECT_URI, // ✅ FIX
     });
   };
 
@@ -27,7 +27,9 @@ export default function Header() {
       <div className="top-actions">
         <button className="ghost">🌓</button>
 
-        <div className="user-pill">{user ? user.name : "Invitado"}</div>
+        <div className="user-pill">
+          {user ? user.email || user.name : "Invitado"}
+        </div>
 
         {user && (
           <button className="danger small" onClick={handleLogout}>
