@@ -12,10 +12,6 @@ export default function Pendientes() {
       if (!user) {
         navigate("/");
       }
-
-    if (!["auditor", "admin"].includes(user.role)) {
-      navigate("/dashboard");
-    }
   }, [user]);
 
   if (!user) return <p>Cargando...</p>;
