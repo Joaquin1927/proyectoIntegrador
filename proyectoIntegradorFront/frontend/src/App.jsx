@@ -29,6 +29,7 @@ export default function App() {
       }
 
       const account = accounts[0];
+      instance.setActiveAccount(account);
 
       try {
         const response = await instance.acquireTokenSilent({
