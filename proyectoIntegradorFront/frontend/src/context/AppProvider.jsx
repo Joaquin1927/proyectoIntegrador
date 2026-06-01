@@ -31,8 +31,12 @@ export function AppProvider({ children }) {
     savePaquetes(paquetes);
   }, [paquetes]);
 
+  // ✅ helpers
   const login = (userData) => setUser(userData);
-  const logout = () => setUser(null);
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("token");
+  };
 
   return (
     <AppContext.Provider
@@ -40,7 +44,12 @@ export function AppProvider({ children }) {
         plantas,
         paquetes,
         setPaquetes,
+
+        // ✅ USER STATE
         user,
+        setUser,   // 🔥 IMPORTANTE (esto faltaba)
+
+        // ✅ helpers opcionales
         login,
         logout,
       }}
