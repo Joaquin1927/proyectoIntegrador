@@ -1,58 +1,33 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { msalInstance } from "./auth/msalConfig";
+import { useMsal } from "@azure/msal-react";
 import { useApp } from "./context/AppContext";
 
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Pendientes from "./pages/Pendientes";
+import Registrar from "./pages/Registrar";
 import Home from "./pages/Home";
-import "./styles.css";
-
-import { useApp } from "./context/AppContext";
 
 export default function App() {
-<<<<<<< HEAD
-  const { user } = useApp();
-
-  return (
-    <Routes>
-      {/* Dashboard como página principal */}
-      <Route path="/" element={<Dashboard />} />
-
-      {/* Login */}
-      <Route path="/login" element={<Login />} />
-
-      {/* Home después del login */}
-      <Route path="/home" element={<Home />} />
-
-      {/* Rutas protegidas dentro del layout */}
-      <Route path="/app" element={<Layout />}>
-        <Route
-          path="dashboard"
-          element={user ? <Dashboard /> : <Navigate to="/login" replace />}
-        />
-
-        <Route
-          path="pendientes"
-          element={user ? <Pendientes /> : <Navigate to="/login" replace />}
-        />
-=======
+  const { instance, accounts } = useMsal();
   const { setUser } = useApp();
   const navigate = useNavigate();
 
   useEffect(() => {
     const init = async () => {
-      await msalInstance.initialize();
+      const accountsList = instance.getAllAccounts();
 
-      const response = await msalInstance.handleRedirectPromise();
+      if (accountsList.length > 0) {
+        const account = accountsList[0];
 
-      // ✅ si vuelve de Azure
-      if (response) {
+        const response = await instance.acquireTokenSilent({
+          scopes: [import.meta.env.VITE_SCOPE],
+          account,
+        });
+
         const token = response.accessToken;
-
-        console.log("TOKEN OK:", token);
 
         localStorage.setItem("token", token);
 
@@ -68,7 +43,6 @@ export default function App() {
           role,
         });
 
-        // ✅ redirigir después de login
         navigate("/dashboard");
       }
     };
@@ -83,10 +57,9 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="registrar" element={<Registrar />} />
         <Route path="pendientes" element={<Pendientes />} />
+        <Route path="home" element={<Home />} />
 
-        {/* fallback */}
         <Route path="*" element={<Navigate to="/" />} />
->>>>>>> develop
       </Route>
     </Routes>
   );
