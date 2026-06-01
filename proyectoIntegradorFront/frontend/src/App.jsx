@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useApp } from "./context/AppContext";
 
@@ -17,9 +17,16 @@ export default function App() {
   const { setUser } = useApp();
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true); // ✅ CLAVE
+
   useEffect(() => {
     const init = async () => {
-      if (accounts.length === 0) return;
+
+      // ⛔ todavía cargando MSAL
+      if (accounts.length === 0) {
+        setLoading(false);
+        return;
+      }
 
       const account = accounts[0];
 
@@ -45,17 +52,25 @@ export default function App() {
           role,
         });
 
+        setLoading(false); // ✅ listo
+
         navigate("/dashboard");
 
       } catch (error) {
         console.error("Error obteniendo token:", error);
+        localStorage.removeItem("token");
+        setLoading(false);
       }
     };
 
     init();
   }, [accounts, instance, navigate]);
 
-  // ✅ usar accounts
+  // ✅ evitar render prematuro
+  if (loading) {
+    return <p>Cargando...</p>;
+  }
+
   const isAuthenticated = accounts.length > 0;
 
   return (
