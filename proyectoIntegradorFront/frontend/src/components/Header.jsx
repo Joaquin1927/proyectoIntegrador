@@ -1,11 +1,8 @@
 import { useApp } from "../context/AppContext";
-import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 
 export default function Header() {
   const { user, logout: logoutContext } = useApp();
-  const navigate = useNavigate();
-
   const { instance, accounts } = useMsal();
 
   const handleLogout = async () => {
@@ -13,7 +10,7 @@ export default function Header() {
 
     await instance.logoutRedirect({
       account: accounts[0],
-      postLogoutRedirectUri: import.meta.env.VITE_REDIRECT_URI, // ✅ FIX
+      postLogoutRedirectUri: import.meta.env.VITE_REDIRECT_URI,
     });
   };
 
@@ -28,7 +25,7 @@ export default function Header() {
         <button className="ghost">🌓</button>
 
         <div className="user-pill">
-          {user ? user.email || user.name : "Invitado"}
+          {user ? user.email : "Invitado"}
         </div>
 
         {user && (

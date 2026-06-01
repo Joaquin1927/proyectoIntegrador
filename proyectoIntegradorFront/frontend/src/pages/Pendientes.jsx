@@ -1,22 +1,26 @@
 import { useEffect } from "react";
-import { useMsal } from "@azure/msal-react";
 import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Pendientes() {
-  const { paquetes, setPaquetes } = useApp();
+  const { paquetes, setPaquetes, user } = useApp();
+  const navigate = useNavigate();
 
-const { accounts } = useMsal();
-
-const user = accounts[0];
-
+  // ✅ proteger por login + rol
   useEffect(() => {
-  if (!user) {
-    window.location.href = "/";
-  }
-}, [user]);
+    if (!user) {
+      navigate("/");
+      return;
+    }
 
-if (!user) return null;
+    if (!["auditor", "admin"].includes(user.role)) {
+      navigate("/dashboard");
+    }
+  }, [user]);
 
+  if (!user) return null;
+
+  // ✅ estados adaptados a main
   const pendientes = paquetes.filter(p =>
     ["pendiente", "en_revision"].includes(p.estado)
   );
@@ -43,24 +47,31 @@ if (!user) return null;
               <th>Planta</th>
               <th>Fecha</th>
               <th>Volumen</th>
-              <th>Pureza</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
+
           <tbody>
             {pendientes.map(p => (
               <tr key={p.id}>
                 <td>{p.id}</td>
-                <td>{p.plantaNombre}</td>
-                <td>{p.fecha} {p.hora}</td>
-                <td>{p.volumenTon.toFixed(3)}</td>
-                <td>{p.pureza.toFixed(1)}%</td>
+
+                {/* ✅ corregido */}
+                <td>{p.planta?.nombre}</td>
+
+                {/* ✅ corregido */}
+                <td>{p.captureDate}</td>
+
+                {/* ✅ corregido */}
+                <td>{p.tonCO2eq?.toFixed(3)}</td>
+
                 <td>
                   <span className={`badge ${p.estado}`}>
                     {p.estado}
                   </span>
                 </td>
+
                 <td>
                   <button
                     className="small"
@@ -68,12 +79,14 @@ if (!user) return null;
                   >
                     En revisión
                   </button>
+
                   <button
                     className="small"
                     onClick={() => updateEstado(p.id, "aprobado")}
                   >
                     Aprobar
                   </button>
+
                   <button
                     className="small danger"
                     onClick={() => updateEstado(p.id, "rechazado")}
