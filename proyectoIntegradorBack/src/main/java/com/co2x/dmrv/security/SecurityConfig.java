@@ -1,4 +1,5 @@
 package com.co2x.dmrv.security;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,49 +25,34 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-<<<<<<< HEAD
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
-=======
-                // CORS moderno (Spring Security 6)
+                // ✅ habilitar CORS
                 .cors(cors -> {})
 
-                // desactivar CSRF (API REST)
+                // ✅ desactivar CSRF (API REST)
                 .csrf(csrf -> csrf.disable())
 
-                // sin sesiones
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // por ahora todo permitido (podés restringir después)
->>>>>>> develop
+                // ✅ permitir todo por ahora
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/test").permitAll()
                         .anyRequest().authenticated()
                 )
+
+                // ✅ JWT (Azure)
                 .oauth2ResourceServer(oauth2 ->
-<<<<<<< HEAD
                         oauth2.jwt(jwt -> {})
-=======
-                        oauth2.jwt(jwt ->
-                                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
-                        )
->>>>>>> develop
                 );
 
         return http.build();
     }
-<<<<<<< HEAD
-}
-=======
 
-    // CONFIGURACIÓN GLOBAL DE CORS (ESTO ARREGLA TU ERROR)
+    // ✅ CORS dinámico (MULTI ENTORNO)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(frontendUrl));
+        // 🔥 permite varios orígenes separados por coma
+        config.setAllowedOrigins(List.of(frontendUrl.split(",")));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -77,4 +63,3 @@ public class SecurityConfig {
         return source;
     }
 }
->>>>>>> develop
