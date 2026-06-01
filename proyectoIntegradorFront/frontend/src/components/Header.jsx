@@ -14,7 +14,7 @@ export default function Header() {
   return (
     <header className="topbar">
       <div className="brand">
-        <div className="logo">CO₂X</div>
+        <div className="logo">CO2X</div>
         <div className="subtitle">Plataforma dMRV • Demo</div>
       </div>
 

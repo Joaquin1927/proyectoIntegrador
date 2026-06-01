@@ -1,79 +1,35 @@
 import { useApp } from "../context/AppContext";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { msalInstance } from "../auth/msalConfig";
 
 export default function Login() {
   const { setUser } = useApp();
   const navigate = useNavigate();
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const submit = async () => {
+  try {
+    await msalInstance.initialize();
 
-    const data = Object.fromEntries(new FormData(e.target));
+    await msalInstance.loginRedirect({
+      scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/.default"],
+      prompt: "select_account"
+    });
 
-    try {
-      // ✅ 🔥 AHORA LLAMÁS A TU BACKEND JAVA
-      const res = await axios.post("http://localhost:8080/auth/login", {
-        email: data.email,
-        password: data.password,
-      });
-
-      console.log(res.data);
-
-      // ✅ guardar token
-      localStorage.setItem("token", res.data.access_token);
-
-      // ✅ determinar rol (provisorio)
-      let role = "";
-
-      if (data.email.includes("admin")) {
-        role = "admin";
-      } else if (data.email.includes("auditor")) {
-        role = "auditor";
-      } else {
-        role = "empleado";
-      }
-
-      // ✅ guardar usuario en contexto
-      setUser({
-        email: data.email,
-        role,
-      });
-
-      // ✅ redirigir según rol
-      if (role === "empleado") {
-        navigate("/registrar");
-      } else if (role === "auditor") {
-        navigate("/pendientes");
-      } else {
-        navigate("/dashboard");
-      }
-
-    } catch (error) {
-      console.error(error);
-      alert("Login incorrecto");
-    }
-  };
+  } catch (error) {
+    console.error(error);
+  }
+};
+``
 
   return (
     <section className="panel">
       <h1>Login</h1>
 
-      <form className="grid two" onSubmit={submit}>
-        <div className="field">
-          <label>Email</label>
-          <input name="email" required />
-        </div>
-
-        <div className="field">
-          <label>Password</label>
-          <input name="password" type="password" required />
-        </div>
-
-        <div className="actions span-2">
-          <button className="primary">Entrar</button>
-        </div>
-      </form>
+      <div className="actions">
+        <button className="primary" onClick={submit}>
+          Iniciar sesión con Microsoft
+        </button>
+      </div>
     </section>
   );
 }
