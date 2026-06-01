@@ -13,23 +13,15 @@ import Home from "./pages/Home";
 import "./styles.css";
 
 export default function App() {
-  const { instance } = useMsal();
+  const { instance, accounts } = useMsal();
   const { setUser } = useApp();
   const navigate = useNavigate();
 
   useEffect(() => {
     const init = async () => {
-      const accountsList = instance.getAllAccounts();
+      if (accounts.length === 0) return;
 
-      // ✅ NO logueado → limpiar y mandar a login
-      if (accountsList.length === 0) {
-        localStorage.removeItem("token");
-        navigate("/");
-        return;
-      }
-
-      // ✅ SI logueado → obtener token
-      const account = accountsList[0];
+      const account = accounts[0];
 
       try {
         const response = await instance.acquireTokenSilent({
@@ -53,30 +45,25 @@ export default function App() {
           role,
         });
 
-        // ✅ redirige solo si está logueado
         navigate("/dashboard");
 
       } catch (error) {
         console.error("Error obteniendo token:", error);
-
-        localStorage.removeItem("token");
-        navigate("/");
       }
     };
 
     init();
-  }, [instance, navigate]);
+  }, [accounts, instance, navigate]);
 
-  const isAuthenticated = !!localStorage.getItem("token");
+  // ✅ usar accounts
+  const isAuthenticated = accounts.length > 0;
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
 
-        {/* ✅ LOGIN SIEMPRE DISPONIBLE */}
         <Route index element={<Login />} />
 
-        {/* ✅ RUTAS PROTEGIDAS */}
         <Route
           path="dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
@@ -94,7 +81,6 @@ export default function App() {
           element={isAuthenticated ? <Home /> : <Navigate to="/" />}
         />
 
-        {/* ✅ fallback */}
         <Route path="*" element={<Navigate to="/" />} />
 
       </Route>
