@@ -7,19 +7,19 @@ export default function Login() {
   const navigate = useNavigate();
 
   const submit = async () => {
-  try {
-    await msalInstance.initialize();
+    try {
+      await msalInstance.initialize();
 
-    await msalInstance.loginRedirect({
-      scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/.default"],
-      prompt: "select_account"
-    });
+      await msalInstance.loginRedirect({
+        scopes: [import.meta.env.VITE_SCOPE], 
+        prompt: "select_account", 
+      });
 
-  } catch (error) {
-    console.error(error);
-  }
-};
-``
+    } catch (error) {
+      console.error(error);
+      alert("Error al iniciar sesión");
+    }
+  };
 
   return (
     <section className="panel">

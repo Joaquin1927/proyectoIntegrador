@@ -8,6 +8,8 @@ export default function Registrar() {
   const { plantas, paquetes, setPaquetes, user } = useApp();
   const navigate = useNavigate();
 
+  const API = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     if (!user) {
       navigate("/");
@@ -40,13 +42,13 @@ export default function Registrar() {
       reporteId: data.reporteId ? parseInt(data.reporteId) : null,
 
       planta: {
-        id: parseInt(data.plantaId)
-      }
+        id: parseInt(data.plantaId),
+      },
     };
 
     try {
       const res = await axios.post(
-        "http://localhost:8080/paquetes",
+        `${API}/paquetes`, // ✅ usando variable
         payload,
         {
           headers: {
@@ -72,7 +74,6 @@ export default function Registrar() {
 
       <form className="grid three" onSubmit={submit}>
         
-        {/* Planta */}
         <div className="field">
           <label>Planta</label>
           <select name="plantaId" required>
@@ -84,7 +85,6 @@ export default function Registrar() {
           </select>
         </div>
 
-        {/* Certificado */}
         <div className="field">
           <label>Cert ID</label>
           <input name="certId" required />
@@ -95,7 +95,6 @@ export default function Registrar() {
           <input name="projectName" required />
         </div>
 
-        {/* Fechas */}
         <div className="field">
           <label>Fecha de captura</label>
           <input type="date" name="captureDate" required />
@@ -111,7 +110,6 @@ export default function Registrar() {
           <input type="date" name="retirementDate" />
         </div>
 
-        {/* Datos */}
         <div className="field">
           <label>CO₂ capturado (ton)</label>
           <input type="number" step="0.001" name="tonCO2eq" required />
@@ -155,7 +153,6 @@ export default function Registrar() {
         </div>
       </form>
 
-      {/* Tabla */}
       <div className="panel sub">
         <h2>Últimos paquetes cargados</h2>
         <TablePaquetes items={paquetes} />
