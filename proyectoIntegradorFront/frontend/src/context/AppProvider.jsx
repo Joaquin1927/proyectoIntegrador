@@ -18,11 +18,9 @@ function savePaquetes(paquetes) {
 }
 
 export function AppProvider({ children }) {
-  const plantas = [
-    { id: "PL-001", nombre: "Planta Norte" },
-    { id: "PL-002", nombre: "Planta Delta" },
-    { id: "PL-003", nombre: "Planta Sur" },
-  ];
+const plantas = [
+  { id: 1, nombre: "Planta Norte" }
+];
 
   const [paquetes, setPaquetes] = useState(() => loadPaquetes());
   const [user, setUser] = useState(null);

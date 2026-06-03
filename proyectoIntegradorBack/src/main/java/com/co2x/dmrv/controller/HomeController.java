@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
         @GetMapping("/")
         public String home() {
-            return "CO2X API funcionando";
+            return "PRUEBA JOAQUIN 123456";
         }
         @GetMapping("/test")
         public String test() {

@@ -24,15 +24,18 @@ public class PaqueteCO2Service {
 
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) {
 
-        Planta planta = plantaService.getEntity(dto.id);
+        System.out.println("DTO ID = " + dto.id);
 
-        // 2. Paso DTO → Entity
+        System.out.println("PLANTA DTO = " + dto.planta);
+
+        System.out.println("PLANTA ID = " + dto.planta.getId());
+
+        Planta planta = plantaService.getEntity(dto.planta.getId());
+
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
-        // 3. Guardo en DB
         PaqueteCO2 guardado = paqueteRepo.save(entity);
 
-        // 4. Devuelvo DTO
         return factory.toPaqueteDTO(guardado);
     }
 }

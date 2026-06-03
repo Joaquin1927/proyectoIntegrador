@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -17,29 +17,23 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+    static {
+        System.out.println("SECURITYCONFIG CARGADA");
+    }
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
+        System.out.println("SECURITY CONFIG NUEVA CARGADA");
+        System.out.println("SECURITY FILTER CHAIN CREADA");
         http
-                // ✅ habilitar CORS
                 .cors(cors -> {})
-
-                // ✅ desactivar CSRF (API REST)
                 .csrf(csrf -> csrf.disable())
 
-                // ✅ permitir todo por ahora
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/test").permitAll()
-                        .anyRequest().authenticated()
-                )
-
-                // ✅ JWT (Azure)
-                .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(jwt -> {})
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
@@ -48,18 +42,25 @@ public class SecurityConfig {
     // ✅ CORS dinámico (MULTI ENTORNO)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
+        System.out.println("CORS CONFIG CARGADA");
+
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 permite varios orígenes separados por coma
-        config.setAllowedOrigins(List.of(frontendUrl.split(",")));
+        config.setAllowedOriginPatterns(List.of("*"));
 
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("*"));
+
         config.setAllowedHeaders(List.of("*"));
+
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
 
         return source;
+
     }
 }

@@ -22,7 +22,9 @@ export default function Registrar() {
     e.preventDefault();
 
     const data = Object.fromEntries(new FormData(e.target));
-
+console.log("FORM DATA", data);
+console.log("plantaId =", data.plantaId);
+console.log("parseInt =", parseInt(data.plantaId));
     const payload = {
       certId: data.certId || null,
       projectName: data.projectName || null,
@@ -49,6 +51,7 @@ export default function Registrar() {
     };
 
     try {
+      console.log(payload);
       const res = await axios.post(
         `${API}/paquetes`, // ✅ usando variable
         payload,
@@ -69,7 +72,7 @@ export default function Registrar() {
       alert("Error al guardar paquete");
     }
   };
-
+console.log("PLANTAS:", plantas);
   return (
     <section className="panel">
       <h1>Registrar paquete de captura de CO₂</h1>
