@@ -1,6 +1,7 @@
 package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
+import com.co2x.dmrv.entity.EstadoPaquete;
 import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
@@ -28,7 +29,7 @@ public class PaqueteCO2Service {
     public List<PaqueteCO2DTO> listarPendientes() {
 
         return paqueteRepo
-                .findByEstado("pendiente")
+                .findByEstado(EstadoPaquete.PENDIENTE)
                 .stream()
                 .map(factory::toPaqueteDTO)
                 .toList();
