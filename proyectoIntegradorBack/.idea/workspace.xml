@@ -5,24 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PlantaController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_25_05_2026_12_55_[Changes]1/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_25_05_2026_12_55__Changes_1.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/AuditoriaDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/EstadoPaquete.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/Co2xApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/Co2xApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/HomeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/HomeController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/PaqueteCO2Repository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/PaqueteCO2Repository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/Co2xApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/Co2xApplication.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/config/CorsConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/config/WebConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/config/WebConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/HomeController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/HomeController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/security/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/security/SecurityConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/context/AppProvider.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/context/AppProvider.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Registrar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Registrar.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +19,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="100" />
+    <option name="cachedIndexableFilesCount" value="101" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -56,12 +45,12 @@
     &quot;assignee&quot;: &quot;Joaquin1927&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Joaquin1927/proyectoIntegrador.git",
-    "accountId": "09c9895e-1743-4b2a-b650-6e6f84577042"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Joaquin1927/proyectoIntegrador.git&quot;,
+    &quot;accountId&quot;: &quot;09c9895e-1743-4b2a-b650-6e6f84577042&quot;
   }
-}]]></component>
+}</component>
   <component name="MavenImportPreferences">
     <option name="importingSettings">
       <MavenImportingSettings>

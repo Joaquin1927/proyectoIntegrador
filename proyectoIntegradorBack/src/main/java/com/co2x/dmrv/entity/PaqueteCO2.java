@@ -62,4 +62,7 @@ public class PaqueteCO2 {
     @ManyToOne
     @JoinColumn(name = "\"reporte_Id\"")
     private Reporte reporte;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoPaquete estado;
 }

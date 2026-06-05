@@ -9,6 +9,10 @@ import com.co2x.dmrv.utils.Factory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+import static java.util.Arrays.stream;
+
 @Service
 public class PaqueteCO2Service {
 
@@ -21,7 +25,14 @@ public class PaqueteCO2Service {
     @Autowired
     private PlantaService plantaService;
 
+    public List<PaqueteCO2DTO> listarPendientes() {
 
+        return paqueteRepo
+                .findByEstado("pendiente")
+                .stream()
+                .map(factory::toPaqueteDTO)
+                .toList();
+    }
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) {
 
         System.out.println("DTO ID = " + dto.id);

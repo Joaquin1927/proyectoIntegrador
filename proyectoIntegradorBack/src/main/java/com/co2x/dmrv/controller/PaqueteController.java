@@ -14,7 +14,10 @@ public class PaqueteController {
 
     @Autowired
     private PaqueteCO2Service service;
-
+    @GetMapping("/pendientes")
+    public List<PaqueteCO2DTO> pendientes() {
+        return service.listarPendientes();
+    }
     @PostMapping
     public ResponseEntity<PaqueteCO2DTO> crear(@RequestBody PaqueteCO2DTO dto) {
         PaqueteCO2DTO creado = service.crear(dto);
