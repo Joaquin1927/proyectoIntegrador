@@ -24,11 +24,11 @@ public class PaqueteController {
         return ResponseEntity.ok(creado);
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<PaqueteCO2DTO>> listar() {
-//        return ResponseEntity.ok(service.listar());
-//    }
-//
+    @GetMapping
+    public ResponseEntity<List<PaqueteCO2DTO>> listar() {
+        return ResponseEntity.ok(service.listar());
+    }
+
 //    @GetMapping("/{id}")
 //    public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Long id) {
 //        return ResponseEntity.ok(service.obtenerPorId(id));

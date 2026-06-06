@@ -36,7 +36,7 @@ public class Factory {
         p.setCoBenefits(dto.coBenefits);
         p.setProjectType(dto.projectType);
         p.setExternalUrl(dto.externalUrl);
-
+        p.setEstado(dto.estado);
         p.setPlanta(planta);
 
         return p;
@@ -58,7 +58,7 @@ public class Factory {
         dto.coBenefits = entity.getCoBenefits();
         dto.projectType = entity.getProjectType();
         dto.externalUrl = entity.getExternalUrl();
-
+        dto.estado = entity.getEstado();
         if (entity.getPlanta() != null) {
             dto.id = entity.getPlanta().getId();
         }

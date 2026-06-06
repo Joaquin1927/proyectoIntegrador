@@ -26,6 +26,12 @@ public class PaqueteCO2Service {
     @Autowired
     private PlantaService plantaService;
 
+    public List<PaqueteCO2DTO> listar() {
+        return paqueteRepo.findAll()
+                .stream()
+                .map(factory::toPaqueteDTO)
+                .toList();
+    }
     public List<PaqueteCO2DTO> listarPendientes() {
 
         return paqueteRepo
@@ -38,7 +44,12 @@ public class PaqueteCO2Service {
 
         System.out.println("DTO ID = " + dto.id);
         System.out.println("PLANTA DTO = " + dto.planta);
+
+        Integer plantaId = dto.planta != null ? dto.planta.getId() : null;
+
+
         System.out.println("PLANTA ID = " + dto.planta.getId());
+
 
         Planta planta = plantaService.getEntity(dto.planta.getId());
 

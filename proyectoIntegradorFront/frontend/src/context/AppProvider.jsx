@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AppContext } from "./AppContext";
-
+import axios from "axios";
 const DB_KEY = "co2x_db_v1";
 
 function loadPaquetes() {
@@ -22,7 +22,19 @@ const plantas = [
   { id: 1, nombre: "Planta Norte" }
 ];
 
-  const [paquetes, setPaquetes] = useState(() => loadPaquetes());
+  const [paquetes, setPaquetes] = useState([]);
+
+useEffect(() => {
+  axios
+    .get("http://localhost:8080/paquetes")
+    .then((res) => {
+      console.log("PAQUETES BACKEND", res.data);
+      setPaquetes(res.data);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+}, []);
   const [user, setUser] = useState(null);
 
   useEffect(() => {

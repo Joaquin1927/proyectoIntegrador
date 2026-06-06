@@ -7,6 +7,7 @@ export default function Dashboard() {
 
   // ✅ mientras no hay user → mostrar cargando
   if (!user) {
+    console.log(paquetes);
     return (
       <section className="panel">
         <h1>Dashboard</h1>
@@ -72,7 +73,7 @@ export default function Dashboard() {
 
     ctx.stroke();
   }, [paquetes]);
-
+console.log(paquetes);
   return (
     <section className="panel">
       <h1>Dashboard</h1>

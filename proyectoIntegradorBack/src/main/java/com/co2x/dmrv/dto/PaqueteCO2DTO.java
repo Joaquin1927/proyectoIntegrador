@@ -1,4 +1,5 @@
 package com.co2x.dmrv.dto;
+import com.co2x.dmrv.entity.EstadoPaquete;
 
 import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.Reporte;
@@ -20,7 +21,7 @@ public class PaqueteCO2DTO {
     public String coBenefits;
     public String projectType;
     public String externalUrl;
-
+    public EstadoPaquete estado;
     public Long reporteId;
     public Planta planta;
 }
