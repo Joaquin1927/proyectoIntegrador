@@ -27,6 +27,10 @@ export default function Sidebar() {
             <Link to="/registrar" className="nav-item">
               ➕ Registrar
             </Link>
+
+            <Link to="/historial" className="nav-item">
+              📋 Historial
+            </Link>
           </>
         )}
 

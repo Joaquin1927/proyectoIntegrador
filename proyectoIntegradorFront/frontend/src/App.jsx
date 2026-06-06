@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Pendientes from "./pages/Pendientes";
 import Registrar from "./pages/Registrar";
+import Historial from "./pages/Historial";
 
 import "./styles.css";
 
@@ -111,6 +112,16 @@ console.log("ACCOUNTS", accounts);
         <Route
           path="pendientes"
           element={isAuthenticated ? <Pendientes /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="registrar"
+          element={isAuthenticated ? <Registrar /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="historial"
+          element={isAuthenticated ? <Historial /> : <Navigate to="/" />}
         />
 
         {/* fallback */}
