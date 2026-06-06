@@ -1,33 +1,71 @@
-import { useEffect } from "react";
-import { useApp } from "../context/AppContext";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
+import PaqueteModal from "../components/PaqueteModal";
 
 export default function Pendientes() {
-  const { paquetes, setPaquetes, user } = useApp();
+  const { user } = useApp();
   const navigate = useNavigate();
 
-  useEffect(() => {
-      if (user === null) return; // esperar
+  const [pendientes, setPendientes] = useState([]);
+  const [seleccionado, setSeleccionado] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-      if (!user) {
-        navigate("/");
-      }
+  const API = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    if (user === null) return;
+
+    if (!user) {
+      navigate("/");
+    } else {
+      cargarPendientes();
+    }
   }, [user]);
 
-  if (!user) return <p>Cargando...</p>;
-
-  // ✅ estados adaptados a main
-  const pendientes = paquetes.filter(p =>
-    ["pendiente", "en_revision"].includes(p.estado)
-  );
-
-  const updateEstado = (id, nuevoEstado) => {
-    setPaquetes(
-      paquetes.map(p =>
-        p.id === id ? { ...p, estado: nuevoEstado } : p
-      )
-    );
+  const cargarPendientes = async () => {
+    try {
+      const res = await fetch(`${API}/paquetes/pendientes`);
+      const data = await res.json();
+      setPendientes(data);
+    } catch (err) {
+      console.error("Error cargando pendientes:", err);
+    }
   };
+
+  const aceptarPaquete = async () => {
+    if (!seleccionado) return;
+
+    try {
+      setLoading(true);
+
+      // ✅ PUT → cambiar estado
+      await fetch(`${API}/paquetes/${seleccionado.id}/aceptar`, {
+        method: "PUT"
+      });
+
+      // ✅ POST → crear reporte
+      await fetch(`${API}/reportes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          paqueteId: seleccionado.id
+        })
+      });
+
+      setSeleccionado(null);
+      cargarPendientes();
+
+    } catch (err) {
+      console.error("Error al aceptar paquete:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user) return <p>Cargando...</p>;
 
   return (
     <section className="panel">
@@ -44,7 +82,7 @@ export default function Pendientes() {
               <th>Fecha</th>
               <th>Volumen</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              <th></th>
             </tr>
           </thead>
 
@@ -52,14 +90,8 @@ export default function Pendientes() {
             {pendientes.map(p => (
               <tr key={p.id}>
                 <td>{p.id}</td>
-
-                {/* ✅ corregido */}
                 <td>{p.planta?.nombre}</td>
-
-                {/* ✅ corregido */}
                 <td>{p.captureDate}</td>
-
-                {/* ✅ corregido */}
                 <td>{p.tonCO2eq?.toFixed(3)}</td>
 
                 <td>
@@ -71,23 +103,9 @@ export default function Pendientes() {
                 <td>
                   <button
                     className="small"
-                    onClick={() => updateEstado(p.id, "en_revision")}
+                    onClick={() => setSeleccionado(p)}
                   >
-                    En revisión
-                  </button>
-
-                  <button
-                    className="small"
-                    onClick={() => updateEstado(p.id, "aprobado")}
-                  >
-                    Aprobar
-                  </button>
-
-                  <button
-                    className="small danger"
-                    onClick={() => updateEstado(p.id, "rechazado")}
-                  >
-                    Rechazar
+                    Ver detalle
                   </button>
                 </td>
               </tr>
@@ -95,6 +113,14 @@ export default function Pendientes() {
           </tbody>
         </table>
       )}
+
+      {/* ✅ MODAL LIMPIO */}
+      <PaqueteModal
+        paquete={seleccionado}
+        onClose={() => setSeleccionado(null)}
+        onAceptar={aceptarPaquete}
+        loading={loading}
+      />
     </section>
   );
 }
