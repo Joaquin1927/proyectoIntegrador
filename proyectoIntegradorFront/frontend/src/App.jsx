@@ -19,29 +19,37 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const init = async () => {
+const init = async () => {
 
-      // ⛔ todavía no hay sesión en MSAL
-      if (accounts.length === 0) {
-        setLoading(false);
-        return;
-      }
+  await instance.initialize();
 
-      const account = accounts[0] || instance.getActiveAccount();
+  const redirectResponse =
+    await instance.handleRedirectPromise();
 
-      if (!account) {
-        setLoading(false);
-        return;
-      }
+  if (redirectResponse?.account) {
+    instance.setActiveAccount(
+      redirectResponse.account
+    );
+  }
 
-      // ✅ asegurar account activa
-      instance.setActiveAccount(account);
+  console.log("ACCOUNTS", instance.getAllAccounts());
 
-      try {
-        const response = await instance.acquireTokenSilent({
-          scopes: [import.meta.env.VITE_SCOPE],
-          account,
-        });
+  const account =
+    instance.getActiveAccount() ||
+    instance.getAllAccounts()[0];
+
+  if (!account) {
+    setLoading(false);
+    return;
+  }
+
+  instance.setActiveAccount(account);
+
+  try {
+    const response = await instance.acquireTokenSilent({
+      scopes: [import.meta.env.VITE_SCOPE],
+      account,
+    });
 
         const token = response.accessToken;
         localStorage.setItem("token", token);
@@ -71,7 +79,7 @@ export default function App() {
         setLoading(false);
       }
     };
-
+console.log("ACCOUNTS", accounts);
     init();
   }, [accounts, instance, navigate]);
 

@@ -37,14 +37,14 @@ public class PaqueteCO2Service {
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) {
 
         System.out.println("DTO ID = " + dto.id);
-
         System.out.println("PLANTA DTO = " + dto.planta);
-
         System.out.println("PLANTA ID = " + dto.planta.getId());
 
         Planta planta = plantaService.getEntity(dto.planta.getId());
 
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
+
+        entity.setEstado(EstadoPaquete.PENDIENTE);
 
         PaqueteCO2 guardado = paqueteRepo.save(entity);
 

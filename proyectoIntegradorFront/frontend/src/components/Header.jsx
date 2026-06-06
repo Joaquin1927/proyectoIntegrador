@@ -3,18 +3,17 @@ import { useMsal } from "@azure/msal-react";
 
 export default function Header() {
   const { user, logout: logoutContext } = useApp();
-  const { instance, accounts } = useMsal();
+  const { instance } = useMsal();
 
-  const handleLogout = async () => {
-    const account = accounts[0];
+const handleLogout = () => {
+  logoutContext();
 
-    logoutContext();
+  localStorage.removeItem("token");
 
-    await instance.logoutRedirect({
-      account: account || undefined,
-      postLogoutRedirectUri: import.meta.env.VITE_REDIRECT_URI,
-    });
-  };
+  instance.setActiveAccount(null);
+
+  window.location.href = "/";
+};
 
   return (
     <header className="topbar">

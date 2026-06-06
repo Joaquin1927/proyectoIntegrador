@@ -32,9 +32,12 @@ const plantas = [
   // ✅ helpers
   const login = (userData) => setUser(userData);
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("token");
-  };
+  setUser(null);
+
+  localStorage.removeItem("token");
+
+  sessionStorage.clear();
+};
 
   return (
     <AppContext.Provider
