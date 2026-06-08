@@ -65,4 +65,7 @@ public class PaqueteCO2 {
 
     @Enumerated(EnumType.STRING)
     private EstadoPaquete estado;
+
+    @Column(name = "\"createdBy\"")
+    private String createdBy;
 }

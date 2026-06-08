@@ -21,7 +21,7 @@ export default function TablePaquetes({ items }) {
             <td>{p.planta?.nombre}</td>
             <td>{p.captureDate}</td>
             <td>{p.tonCO2eq?.toFixed(3)}</td>
-            <td>{p.estado}</td> {/* ✅ FIX */}
+            <td>{p.estado}</td> 
           </tr>
         ))}
       </tbody>

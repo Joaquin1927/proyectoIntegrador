@@ -15,27 +15,62 @@ export default function Dashboard() {
       </section>
     );
   }
+console.log("USUARIO", user.email);
 
-  // ✅ lógica normal
-  const aprobados = paquetes.filter(p => p.estado === "aprobado");
-  const pendientes = paquetes.filter(p => p.estado === "pendiente");
-  const enRevision = paquetes.filter(p => p.estado === "en_revision");
-  const rechazados = paquetes.filter(p => p.estado === "rechazado");
 
-  const totalTon = aprobados.reduce(
-    (acc, p) => acc + (p.tonCO2eq || 0),
-    0
-  );
+const paquetesUsuario = paquetes.filter(
+  p => p.createdBy?.toLowerCase() === user?.email?.toLowerCase()
+);
 
-  const estados = [
-    { key: "pendiente", label: "pendiente", value: pendientes.length },
-    { key: "en_revision", label: "en_revision", value: enRevision.length },
-    { key: "aprobado", label: "aprobado", value: aprobados.length },
-    { key: "rechazado", label: "rechazado", value: rechazados.length },
-  ];
+const aprobados = paquetesUsuario.filter(
+  p => p.estado === "APROBADO"
+);
 
-  const max = Math.max(1, ...estados.map(e => e.value));
+const pendientes = paquetesUsuario.filter(
+  p => p.estado === "PENDIENTE"
+);
 
+const enRevision = paquetesUsuario.filter(
+  p => p.estado === "EN_REVISION"
+);
+
+const rechazados = paquetesUsuario.filter(
+  p => p.estado === "RECHAZADO"
+);
+
+const toneladasRegistradas = paquetesUsuario.reduce(
+  (acc, p) => acc + (p.tonCO2eq || 0),
+  0
+);
+
+const toneladasVerificadas = aprobados.reduce(
+  (acc, p) => acc + (p.tonCO2eq || 0),
+  0
+);
+console.log(
+  "PAQUETES USUARIO",
+  paquetesUsuario.map(p => ({
+    id: p.id,
+    createdBy: p.createdBy,
+    ton: p.tonCO2eq
+  }))
+);
+const paquetesAceptados = aprobados;
+
+const estados = [
+  { key: "PENDIENTE", label: "PENDIENTE", value: pendientes.length },
+  { key: "EN_REVISION", label: "EN_REVISION", value: enRevision.length },
+  { key: "APROBADO", label: "APROBADO", value: aprobados.length },
+  { key: "RECHAZADO", label: "RECHAZADO", value: rechazados.length },
+];
+
+const max = Math.max(1, ...estados.map(e => e.value));
+console.log(
+  "PAQUETES USUARIO",
+  paquetes.filter(
+    p => p.createdBy?.toLowerCase() === user?.email?.toLowerCase()
+  )
+);
   // ✅ gráfico
   useEffect(() => {
     const c = canvasRef.current;
@@ -52,10 +87,10 @@ export default function Dashboard() {
       d.setDate(d.getDate() - (6 - k));
       const key = d.toISOString().slice(0, 10);
 
-      const val = paquetes
+      const val = paquetesUsuario
         .filter(p => p.captureDate === key && p.estado === "aprobado")
         .reduce((a, b) => a + (b.tonCO2eq || 0), 0);
-
+      
       return { key, val };
     });
 
@@ -78,42 +113,37 @@ console.log(paquetes);
     <section className="panel">
       <h1>Dashboard</h1>
 
-      <div className="grid three">
-        <div className="kpi">
-          <div className="kpi-title">Toneladas capturadas</div>
-          <div className="kpi-value">{totalTon.toFixed(3)}</div>
-        </div>
+<div className="grid four">
 
-        <div className="kpi">
-          <div className="kpi-title">Paquetes totales</div>
-          <div className="kpi-value">{paquetes.length}</div>
-        </div>
+  <div className="kpi">
+    <div className="kpi-title">Toneladas registradas</div>
+    <div className="kpi-value">
+      {toneladasRegistradas.toFixed(3)}
+    </div>
+  </div>
 
-        <div className="kpi">
-          <div className="kpi-title">Aprobados</div>
-          <div className="kpi-value">{aprobados.length}</div>
-        </div>
-      </div>
+  <div className="kpi">
+    <div className="kpi-title">Toneladas verificadas</div>
+    <div className="kpi-value">
+      {toneladasVerificadas.toFixed(3)}
+    </div>
+  </div>
 
-      <div className="panel sub">
-        <h2>Distribución por estado</h2>
-        <div className="bars">
-          {estados.map(e => {
-            const h = Math.round((e.value / max) * 100);
-            return (
-              <div key={e.key} className="bar" style={{ height: `${h}%` }}>
-                <div className="value">{e.value}</div>
-                <div className="label">{e.label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+  <div className="kpi">
+    <div className="kpi-title">Paquetes totales</div>
+    <div className="kpi-value">
+      {paquetesUsuario.length}
+    </div>
+  </div>
 
-      <div className="panel sub">
-        <h2>Evolución últimos 7 días</h2>
-        <canvas ref={canvasRef} />
-      </div>
+  <div className="kpi">
+    <div className="kpi-title">Aceptados</div>
+    <div className="kpi-value">
+      {paquetesAceptados.length}
+    </div>
+  </div>
+
+</div>
     </section>
   );
 }

@@ -36,7 +36,7 @@ console.log("parseInt =", parseInt(data.plantaId));
       tonCO2eq: parseFloat(data.tonCO2eq),
       retirementStatus: data.retirementStatus === "true",
 
-      estado: "pendiente",
+      estado: "PENDIENTE",
 
       beneficiary: data.beneficiary || null,
       coBenefits: data.coBenefits || null,
@@ -44,14 +44,16 @@ console.log("parseInt =", parseInt(data.plantaId));
       externalUrl: data.externalUrl || null,
 
       reporteId: data.reporteId ? parseInt(data.reporteId) : null,
-
-      planta: {
-        id: parseInt(data.plantaId),
-      },
+      createdBy: user.email,
+      plantaId: parseInt(data.plantaId),
     };
 
     try {
       console.log(payload);
+      console.log(API);
+      console.log(
+  JSON.stringify(payload, null, 2)
+);
       const res = await axios.post(
         `${API}/paquetes`, // ✅ usando variable
         payload,
@@ -68,9 +70,15 @@ console.log("parseInt =", parseInt(data.plantaId));
       e.target.reset();
 
     } catch (error) {
-      console.error(error);
-      alert("Error al guardar paquete");
-    }
+  console.log("ERROR COMPLETO", error);
+
+  if (error.response) {
+    console.log("STATUS", error.response.status);
+    console.log("DATA", error.response.data);
+  }
+
+  alert("Error al guardar paquete");
+}
   };
 console.log("PLANTAS:", plantas);
   return (

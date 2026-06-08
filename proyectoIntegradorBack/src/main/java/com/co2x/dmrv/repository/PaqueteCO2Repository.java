@@ -13,4 +13,5 @@ public interface PaqueteCO2Repository
     List<PaqueteCO2> findByEstado(EstadoPaquete estado);
 
     List<PaqueteCO2> findByEstadoIn(List<EstadoPaquete> estados);
+    List<PaqueteCO2> findByCreatedBy(String createdBy);
 }

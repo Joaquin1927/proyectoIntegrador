@@ -19,11 +19,21 @@ public class PaqueteController {
         return service.listarPendientes();
     }
     @PostMapping
-    public ResponseEntity<PaqueteCO2DTO> crear(@RequestBody PaqueteCO2DTO dto) {
+    public ResponseEntity<PaqueteCO2DTO> crear(
+            @RequestBody PaqueteCO2DTO dto) {
+
+        System.out.println("ENTRO AL CONTROLLER");
+        System.out.println(dto.plantaId);
+
         PaqueteCO2DTO creado = service.crear(dto);
+
         return ResponseEntity.ok(creado);
     }
-
+    @GetMapping("/usuario/{email}")
+    public List<PaqueteCO2DTO> listarPorUsuario(
+            @PathVariable String email) {
+        return service.listarPorUsuario(email);
+    }
     @GetMapping
     public ResponseEntity<List<PaqueteCO2DTO>> listar() {
         return ResponseEntity.ok(service.listar());
