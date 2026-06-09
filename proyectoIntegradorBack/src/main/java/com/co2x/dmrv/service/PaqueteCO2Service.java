@@ -40,20 +40,21 @@ public class PaqueteCO2Service {
                 .map(factory::toPaqueteDTO)
                 .toList();
     }
+    public List<PaqueteCO2DTO> listarPorUsuario(String email) {
+        return paqueteRepo.findByCreatedBy(email)
+                .stream()
+                .map(factory::toPaqueteDTO)
+                .toList();
+    }
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) {
 
-        System.out.println("DTO ID = " + dto.id);
-        System.out.println("PLANTA DTO = " + dto.planta);
+        System.out.println("CREATED BY DTO = " + dto.createdBy);
 
-        Integer plantaId = dto.planta != null ? dto.planta.getId() : null;
-
-
-        System.out.println("PLANTA ID = " + dto.planta.getId());
-
-
-        Planta planta = plantaService.getEntity(dto.planta.getId());
+        Planta planta = plantaService.getEntity(dto.plantaId);
 
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
+
+        System.out.println("CREATED BY ENTITY = " + entity.getCreatedBy());
 
         entity.setEstado(EstadoPaquete.PENDIENTE);
 

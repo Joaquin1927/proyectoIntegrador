@@ -38,6 +38,7 @@ public class Factory {
         p.setExternalUrl(dto.externalUrl);
         p.setEstado(dto.estado);
         p.setPlanta(planta);
+        p.setCreatedBy(dto.createdBy);
 
         return p;
     }
@@ -59,9 +60,10 @@ public class Factory {
         dto.projectType = entity.getProjectType();
         dto.externalUrl = entity.getExternalUrl();
         dto.estado = entity.getEstado();
-        if (entity.getPlanta() != null) {
-            dto.id = entity.getPlanta().getId();
-        }
+        dto.createdBy = entity.getCreatedBy();
+        dto.plantaId = entity.getPlanta() != null
+                ? entity.getPlanta().getId()
+                : null;
 
         return dto;
     }

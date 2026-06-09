@@ -12,7 +12,8 @@ function loadPaquetes() {
     return [];
   }
 }
-
+//console.log("APP PROVIDER USER =", user);
+//console.log("APP PROVIDER PAQUETES =", paquetes);
 function savePaquetes(paquetes) {
   localStorage.setItem(DB_KEY, JSON.stringify(paquetes));
 }
@@ -25,15 +26,26 @@ const plantas = [
   const [paquetes, setPaquetes] = useState([]);
 
 useEffect(() => {
+
+  console.log("USE EFFECT ARRANCO");
+
   axios
     .get("http://localhost:8080/paquetes")
     .then((res) => {
-      console.log("PAQUETES BACKEND", res.data);
+
+      console.log("ENTRO AL THEN");
+      console.log("RES.DATA =", res.data);
+
       setPaquetes(res.data);
+
     })
     .catch((err) => {
+
+      console.log("ENTRO AL CATCH");
       console.error(err);
+
     });
+
 }, []);
   const [user, setUser] = useState(null);
 
@@ -50,7 +62,7 @@ useEffect(() => {
 
   sessionStorage.clear();
 };
-
+console.log("APP PROVIDER PAQUETES =", paquetes);
   return (
     <AppContext.Provider
       value={{
