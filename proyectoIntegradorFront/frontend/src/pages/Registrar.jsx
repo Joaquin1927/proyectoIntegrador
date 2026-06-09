@@ -18,6 +18,7 @@ export default function Registrar() {
 
   if (!user) return <p>Cargando...</p>;
 
+  // ✅ PARSEAR ARCHIVO
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -42,59 +43,50 @@ export default function Registrar() {
     }
   };
 
+  // ✅ EDITAR CAMPOS
   const handleChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
     setRows(updated);
   };
 
-  const fixedFields = [
-    "plantaId",
-    "certId",
-    "projectName",
-    "captureDate",
-    "tonCO2eq",
-    "beneficiary",
-  ];
-
-  const getExtraFields = (row) => {
-    return Object.keys(row).filter(
-      (key) => !fixedFields.includes(key)
-    );
+  // ✅ DETECTAR TIPO INPUT
+  const getInputType = (value) => {
+    if (typeof value === "number") return "number";
+    if (value === "true" || value === "false") return "text";
+    return "text";
   };
 
+  // ✅ CONVERTIR VALORES
+  const parseValue = (value) => {
+    if (value === "") return null;
+    if (!isNaN(value)) return parseFloat(value);
+    if (value === "true") return true;
+    if (value === "false") return false;
+    return value;
+  };
+
+  // ✅ GUARDAR TODO
   const saveAll = async () => {
     try {
       const results = [];
 
       for (const [index, row] of rows.entries()) {
+
+        // ✅ convertir todos los campos dinámicos
+        const parsedRow = {};
+        Object.entries(row).forEach(([key, value]) => {
+          parsedRow[key] = parseValue(value);
+        });
+
+        // 🔥 AQUÍ ES LA CLAVE PARA TU BACK
         const payload = {
-          certId: row.certId || null,
-          projectName: row.projectName || null,
-          captureDate: row.captureDate,
-
-          issuanceDate: row.issuanceDate || null,
-          retirementDate: row.retirementDate || null,
-
-          tonCO2eq: row.tonCO2eq ? parseFloat(row.tonCO2eq) : null,
-
-          retirementStatus:
-            row.retirementStatus === "true" ||
-            row.retirementStatus === true,
-
-          estado: "pendiente",
-
-          beneficiary: row.beneficiary || null,
-          coBenefits: row.coBenefits || null,
-          projectType: row.projectType || null,
-          externalUrl: row.externalUrl || null,
-
-          reporteId: row.reporteId ? parseInt(row.reporteId) : null,
-
-          planta: {
-            id: parseInt(row.plantaId || plantas[0]?.id),
-          },
+          data: parsedRow,   // ✅ TODO dinámico
+          plantaId: parseInt(row.plantaId || plantas[0]?.id),
+          estado: "pendiente"
         };
+
+        console.log("PAYLOAD:", payload);
 
         try {
           const res = await axios.post(`${API}/paquetes`, payload, {
@@ -104,8 +96,9 @@ export default function Registrar() {
           });
 
           results.push(res.data);
+
         } catch (err) {
-          console.error("Error fila", index, err);
+          console.error("ERROR FILA", index, err.response?.data || err);
           alert(`Error en fila ${index + 1}`);
         }
       }
@@ -123,6 +116,7 @@ export default function Registrar() {
     <section className="panel">
       <h1>Registrar paquete de captura de CO₂</h1>
 
+      {/* DROP ZONE */}
       <label
         className="panel sub"
         style={{
@@ -155,10 +149,12 @@ export default function Registrar() {
         />
       </label>
 
+      {/* FORM DINÁMICO */}
       {rows.map((row, index) => (
         <form key={index} className="grid three panel sub">
           <h3>Registro {index + 1}</h3>
 
+          {/* ✅ Planta (único campo controlado) */}
           <div className="field">
             <label>Planta</label>
             <select
@@ -175,11 +171,14 @@ export default function Registrar() {
             </select>
           </div>
 
-          {Object.keys(row).map((field) => (
+          {/* ✅ CAMPOS DINÁMICOS */}
+          {Object.entries(row).map(([field, value]) => (
             <div className="field" key={field}>
               <label>{field}</label>
+
               <input
-                value={row[field] || ""}
+                type={getInputType(value)}
+                value={value || ""}
                 onChange={(e) =>
                   handleChange(index, field, e.target.value)
                 }
@@ -189,6 +188,7 @@ export default function Registrar() {
         </form>
       ))}
 
+      {/* BOTÓN */}
       {rows.length > 0 && (
         <div className="actions">
           <button type="button" className="primary" onClick={saveAll}>

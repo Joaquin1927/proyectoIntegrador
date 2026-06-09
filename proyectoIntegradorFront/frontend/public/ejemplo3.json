@@ -1,0 +1,23 @@
+[
+  {
+    "certId": "C-5001",
+    "captureDate": "2024-01-01",
+    "tonCO2eq": 100,
+    "plantaId": 1
+  },
+  {
+    "certId": "C-5002",
+    "captureDate": "2024-02-01",
+    "tonCO2eq": 200,
+    "extraField": "dato extra",
+    "plantaId": 1
+  },
+  {
+    "certId": "C-5003",
+    "captureDate": "2024-03-01",
+    "tonCO2eq": 300,
+    "porosity": 0.45,
+    "temperature": 120,
+    "plantaId": 1
+  }
+]
