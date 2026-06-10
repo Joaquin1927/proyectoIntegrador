@@ -4,6 +4,13 @@ import { useApp } from "../context/AppContext";
 export default function Sidebar() {
   const { user } = useApp();
 
+console.log("USER COMPLETO:", user);
+
+if (user) {
+  console.log("USER EMAIL:", user.email);
+  console.log("USER ROLE:", user.role);
+}
+
   return (
     <aside className="sidebar">
       <nav>
@@ -20,13 +27,19 @@ export default function Sidebar() {
               📈 Dashboard
             </Link>
 
-            <Link to="/pendientes" className="nav-item">
-              📋 Pendientes
-            </Link>
+            {/* ✅ SOLO AUDITOR */}
+            {user.role === "auditor" && (
+              <Link to="/pendientes" className="nav-item">
+                📋 Pendientes
+              </Link>
+            )}
 
-            <Link to="/registrar" className="nav-item">
-              ➕ Registrar
-            </Link>
+            {/* ✅ SOLO EMPLEADO */}
+            {user.role === "empleado" && (
+              <Link to="/registrar" className="nav-item">
+                ➕ Registrar
+              </Link>
+            )}
 
             <Link to="/historial" className="nav-item">
               📋 Historial

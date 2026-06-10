@@ -3,6 +3,7 @@ import com.co2x.dmrv.entity.EstadoPaquete;
 
 import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.Reporte;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
 
@@ -12,7 +13,10 @@ public class PaqueteCO2DTO {
 
     public String certId;
     public String projectName;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     public LocalDate captureDate;
+
     public Double tonCO2eq;
 
     public LocalDate issuanceDate;
@@ -31,4 +35,6 @@ public class PaqueteCO2DTO {
     public Integer plantaId;
 
     public String createdBy;
+
+    public String metadata;
 }

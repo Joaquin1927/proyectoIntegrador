@@ -1,9 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
-
+import TablePaquetes from "../components/TablePaquetes";
 export default function Dashboard() {
   const { paquetes, user } = useApp();
   const canvasRef = useRef(null);
+  
+  const isAuditor = user.role === "auditor";
+  
+
 
   // ✅ mientras no hay user → mostrar cargando
   if (!user) {
@@ -18,10 +22,14 @@ export default function Dashboard() {
 console.log("USUARIO", user.email);
 
 
-const paquetesUsuario = paquetes.filter(
-  p => p.createdBy?.toLowerCase() === user?.email?.toLowerCase()
-);
 
+
+const paquetesUsuario = isAuditor
+  ? paquetes.filter(p => p.auditor?.email === user.email)
+  : paquetes.filter(p => p.createdBy === user.email);
+
+
+console.log("FILTRADOS:", paquetesUsuario.length);
 const aprobados = paquetesUsuario.filter(
   p => p.estado === "APROBADO"
 );
@@ -55,6 +63,12 @@ console.log(
     ton: p.tonCO2eq
   }))
 );
+
+console.log("PAQUETES DEBUG", paquetes.map(p => ({
+  createdBy: p.createdBy,
+  userEmail: user?.email
+})));
+
 const paquetesAceptados = aprobados;
 
 const estados = [
@@ -95,7 +109,7 @@ console.log(
     });
 
     const maxVal = Math.max(1, ...days.map(d => d.val));
-
+console.log("PAQUETES AUDITOR:", paquetes.map(p => p.auditor));
     ctx.strokeStyle = "#2bd48d";
     ctx.beginPath();
 
@@ -111,39 +125,42 @@ console.log(
 console.log(paquetes);
   return (
     <section className="panel">
-      <h1>Dashboard</h1>
+  <h1>Dashboard</h1>
 
-<div className="grid four">
+  {!isAuditor && (
+    <div className="grid four">
 
-  <div className="kpi">
-    <div className="kpi-title">Toneladas registradas</div>
-    <div className="kpi-value">
-      {toneladasRegistradas.toFixed(3)}
+      <div className="kpi">
+        <div className="kpi-title">Toneladas registradas</div>
+        <div className="kpi-value">
+          {toneladasRegistradas.toFixed(3)}
+        </div>
+      </div>
+
+      <div className="kpi">
+        <div className="kpi-title">Toneladas verificadas</div>
+        <div className="kpi-value">
+          {toneladasVerificadas.toFixed(3)}
+        </div>
+      </div>
+
+      <div className="kpi">
+        <div className="kpi-title">Paquetes totales</div>
+        <div className="kpi-value">
+          {paquetesUsuario.length}
+        </div>
+      </div>
+
     </div>
-  </div>
+  )}
 
-  <div className="kpi">
-    <div className="kpi-title">Toneladas verificadas</div>
-    <div className="kpi-value">
-      {toneladasVerificadas.toFixed(3)}
+  {isAuditor && (
+    <div className="panel sub">
+      <h2>Paquetes auditados</h2>
+      <TablePaquetes items={paquetesUsuario} />
     </div>
-  </div>
+  )}
 
-  <div className="kpi">
-    <div className="kpi-title">Paquetes totales</div>
-    <div className="kpi-value">
-      {paquetesUsuario.length}
-    </div>
-  </div>
-
-  <div className="kpi">
-    <div className="kpi-title">Aceptados</div>
-    <div className="kpi-value">
-      {paquetesAceptados.length}
-    </div>
-  </div>
-
-</div>
-    </section>
+</section>
   );
 }

@@ -4,7 +4,11 @@ import { useApp } from "../context/AppContext";
 import PaqueteModal from "../components/PaqueteModal";
 
 export default function Pendientes() {
-  const { user } = useApp();
+
+  const { user, plantas } = useApp();
+  
+  const [plantaSeleccionada, setPlantaSeleccionada] = useState(null);
+
   const navigate = useNavigate();
 
   const [pendientes, setPendientes] = useState([]);
@@ -65,11 +69,30 @@ export default function Pendientes() {
     }
   };
 
+  const pendientesFiltrados = plantaSeleccionada
+  ? pendientes.filter(p => p.plantaId == plantaSeleccionada)
+  : pendientes;
+
   if (!user) return <p>Cargando...</p>;
 
   return (
     <section className="panel">
       <h1>Pendientes de auditoría</h1>
+      
+      
+<select
+  value={plantaSeleccionada || ""}
+  onChange={(e) => setPlantaSeleccionada(e.target.value)}
+>
+  <option value="">Todas las plantas</option>
+
+  {plantas?.map(p => (
+    <option key={p.id} value={p.id}>
+      {p.nombre}
+    </option>
+  ))}
+</select>
+
 
       {pendientes.length === 0 ? (
         <p className="muted">No hay paquetes pendientes.</p>
@@ -87,18 +110,12 @@ export default function Pendientes() {
           </thead>
 
           <tbody>
-            {pendientes.map(p => (
+            {pendientesFiltrados.map(p => (
               <tr key={p.id}>
                 <td>{p.id}</td>
                 <td>{p.planta?.nombre}</td>
                 <td>{p.captureDate}</td>
-                <td>{p.tonCO2eq?.toFixed(3)}</td>
-
-                <td>
-                  <span className={`badge ${p.estado}`}>
-                    {p.estado}
-                  </span>
-                </td>
+                <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
 
                 <td>
                   <button

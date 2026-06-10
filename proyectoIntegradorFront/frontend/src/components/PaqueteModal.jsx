@@ -1,29 +1,43 @@
-export default function PaqueteModal({ paquete, onClose, onAceptar, loading }) {
+
+const metadata = paquete?.metadata
+  ? JSON.parse(paquete.metadata)
+  : {};
+
+
+export default function PaqueteModal({ paquete, onClose, onAceptar, onRechazar, loading }) {
+
   if (!paquete) return null;
+
+  const metadata = paquete?.metadata
+    ? JSON.parse(paquete.metadata)
+    : {};
 
   return (
     <div className="modal">
-      <div className="modal-content">
-        <h2>Detalle del paquete</h2>
+      <h2>Detalle paquete {paquete.id}</h2>
 
-        <p><b>ID:</b> {paquete.id}</p>
-        <p><b>Planta:</b> {paquete.planta?.nombre}</p>
-        <p><b>Fecha:</b> {paquete.captureDate}</p>
-        <p><b>Volumen:</b> {paquete.tonCO2eq}</p>
-        <p><b>Estado:</b> {paquete.estado}</p>
+      <p>Planta: {paquete.plantaId}</p>
+      <p>CO₂: {paquete.tonCO2eq}</p>
 
-        <div className="modal-actions">
-          {onAceptar && (
-            <button onClick={onAceptar} disabled={loading}>
-              {loading ? "Procesando..." : "✅ Aceptar"}
-            </button>
-          )}
+      <h3>Datos adicionales</h3>
 
-          <button onClick={onClose}>
-            Cerrar
-          </button>
-        </div>
-      </div>
+      {Object.entries(metadata).map(([key, val]) => (
+        <p key={key}>
+          <strong>{key}:</strong> {val}
+        </p>
+      ))}
+
+      <button onClick={onAceptar} disabled={loading}>
+        ✅ Aprobar
+      </button>
+
+      <button onClick={onRechazar} disabled={loading}>
+        ❌ Rechazar
+      </button>
+
+      <button onClick={onClose}>
+        Cerrar
+      </button>
     </div>
   );
 }

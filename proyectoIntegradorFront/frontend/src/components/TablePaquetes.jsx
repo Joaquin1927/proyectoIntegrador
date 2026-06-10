@@ -1,5 +1,7 @@
+
 export default function TablePaquetes({ items }) {
-  if (!items.length) {
+
+  if (!items || items.length === 0) {
     return <p className="muted">Sin registros</p>;
   }
 
@@ -20,8 +22,8 @@ export default function TablePaquetes({ items }) {
             <td>{p.id}</td>
             <td>{p.planta?.nombre}</td>
             <td>{p.captureDate}</td>
-            <td>{p.tonCO2eq?.toFixed(3)}</td>
-            <td>{p.estado}</td> 
+            <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
+            <td>{p.estado}</td>
           </tr>
         ))}
       </tbody>

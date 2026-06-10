@@ -12,6 +12,13 @@ export default function Registrar() {
 
   const [rows, setRows] = useState([]);
 
+  const paquetesUsuario = paquetes.filter(
+    p =>
+      p.createdBy &&
+      user?.email &&
+      p.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()
+  );
+
   useEffect(() => {
     if (!user) navigate("/");
   }, [user]);
@@ -48,14 +55,12 @@ export default function Registrar() {
     setRows(updated);
   };
 
+
   const fixedFields = [
     "plantaId",
-    "certId",
-    "projectName",
     "captureDate",
-    "tonCO2eq",
-    "beneficiary",
   ];
+
 
   const getExtraFields = (row) => {
     return Object.keys(row).filter(
@@ -63,61 +68,58 @@ export default function Registrar() {
     );
   };
 
-  const saveAll = async () => {
-    try {
-      const results = [];
 
-      for (const [index, row] of rows.entries()) {
-        const payload = {
-          certId: row.certId || null,
-          projectName: row.projectName || null,
-          captureDate: row.captureDate,
+const saveAll = async () => {
+  try {
+    const results = [];
 
-          issuanceDate: row.issuanceDate || null,
-          retirementDate: row.retirementDate || null,
+    for (const [index, row] of rows.entries()) {
 
-          tonCO2eq: row.tonCO2eq ? parseFloat(row.tonCO2eq) : null,
+      const extraFields = {};
 
-          retirementStatus:
-            row.retirementStatus === "true" ||
-            row.retirementStatus === true,
-
-          estado: "pendiente",
-
-          beneficiary: row.beneficiary || null,
-          coBenefits: row.coBenefits || null,
-          projectType: row.projectType || null,
-          externalUrl: row.externalUrl || null,
-
-          reporteId: row.reporteId ? parseInt(row.reporteId) : null,
-
-          planta: {
-            id: parseInt(row.plantaId || plantas[0]?.id),
-          },
-        };
-
-        try {
-          const res = await axios.post(`${API}/paquetes`, payload, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-
-          results.push(res.data);
-        } catch (err) {
-          console.error("Error fila", index, err);
-          alert(`Error en fila ${index + 1}`);
+      Object.keys(row).forEach((key) => {
+        if (!fixedFields.includes(key)) {
+          extraFields[key] = row[key];
         }
+      });
+
+      if (!extraFields.tonCO2eq) {
+        alert(`Falta tonCO2eq en fila ${index + 1}`);
+        continue;
       }
 
-      setPaquetes([...results, ...paquetes]);
-      alert("Carga completada 🚀");
+      extraFields.tonCO2eq = parseFloat(extraFields.tonCO2eq);
 
-    } catch (error) {
-      console.error(error);
-      alert("Error general");
+      const payload = {
+        captureDate: row.captureDate || null,
+        plantaId: parseInt(row.plantaId || plantas[0]?.id),
+        metadata: JSON.stringify(extraFields),
+        createdBy: user.email
+      };
+      console.log("Payload enviado:", payload);
+      try {
+        const res = await axios.post(`${API}/paquetes`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        results.push(res.data);
+
+      } catch (err) {
+        console.error("Error fila", index, err);
+        alert(`Error en fila ${index + 1}`);
+      }
     }
-  };
+
+    setPaquetes(prev => [...results, ...(prev || [])])
+    alert("Carga completada 🚀");
+
+  } catch (error) {
+    alert("Error general");
+  }
+};
+
 
   return (
     <section className="panel">
@@ -199,7 +201,7 @@ export default function Registrar() {
 
       <div className="panel sub">
         <h2>Últimos paquetes cargados</h2>
-        <TablePaquetes items={paquetes} />
+        <TablePaquetes items={paquetesUsuario} />
       </div>
     </section>
   );

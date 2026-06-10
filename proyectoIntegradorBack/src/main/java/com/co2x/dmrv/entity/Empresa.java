@@ -8,15 +8,15 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "\"Empresa\"")
+@Table(name = "Empresa")
 public class Empresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"Id\"")
+    @Column(name = "Id")
     private Integer id;
 
-    @Column(name = "\"empresa_Nombre\"", nullable = false)
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
 

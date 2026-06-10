@@ -19,29 +19,28 @@ public class Factory {
     // PAQUETE CO2
     // =========================
 
+
     public PaqueteCO2 toPaqueteEntity(PaqueteCO2DTO dto, Planta planta) {
 
         PaqueteCO2 p = new PaqueteCO2();
 
-        // ⚠️ nunca seteamos ID
-
         p.setCertId(dto.certId);
-        p.setProjectName(dto.projectName);
         p.setCaptureDate(dto.captureDate);
         p.setTonCO2eq(dto.tonCO2eq);
-        p.setIssuanceDate(dto.issuanceDate);
-        p.setRetirementStatus(dto.retirementStatus);
-        p.setRetirementDate(dto.retirementDate);
-        p.setBeneficiary(dto.beneficiary);
-        p.setCoBenefits(dto.coBenefits);
-        p.setProjectType(dto.projectType);
-        p.setExternalUrl(dto.externalUrl);
+
+        //p.setRetirementStatus(dto.retirementStatus);
+
         p.setEstado(dto.estado);
         p.setPlanta(planta);
         p.setCreatedBy(dto.createdBy);
 
+        // 🔥 NEW campo dinámico
+        p.setMetadata(dto.metadata);
+
         return p;
     }
+
+
 
     public PaqueteCO2DTO toPaqueteDTO(PaqueteCO2 entity) {
 
@@ -49,24 +48,25 @@ public class Factory {
 
         dto.id = entity.getId();
         dto.certId = entity.getCertId();
-        dto.projectName = entity.getProjectName();
         dto.captureDate = entity.getCaptureDate();
         dto.tonCO2eq = entity.getTonCO2eq();
-        dto.issuanceDate = entity.getIssuanceDate();
-        dto.retirementStatus = entity.getRetirementStatus();
-        dto.retirementDate = entity.getRetirementDate();
-        dto.beneficiary = entity.getBeneficiary();
-        dto.coBenefits = entity.getCoBenefits();
-        dto.projectType = entity.getProjectType();
-        dto.externalUrl = entity.getExternalUrl();
+
+       // dto.retirementStatus = entity.getRetirementStatus();
+
         dto.estado = entity.getEstado();
         dto.createdBy = entity.getCreatedBy();
+
         dto.plantaId = entity.getPlanta() != null
                 ? entity.getPlanta().getId()
                 : null;
 
+
+        // 🔥 NEW
+        dto.metadata = entity.getMetadata();
+
         return dto;
     }
+
 
 
     public Planta toPlantaEntity(PlantaDTO dto) {
@@ -90,7 +90,7 @@ public class Factory {
         dto.direccion = entity.getDireccion();
         dto.latitud = entity.getLatitud();
         dto.longitud = entity.getLongitud();
-
+        
         return dto;
     }
 
