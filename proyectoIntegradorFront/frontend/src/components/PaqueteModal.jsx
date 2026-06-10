@@ -1,19 +1,15 @@
 
-const metadata = paquete?.metadata
-  ? JSON.parse(paquete.metadata)
-  : {};
-
-
 export default function PaqueteModal({ paquete, onClose, onAceptar, onRechazar, loading }) {
 
   if (!paquete) return null;
 
+  // ✅ DENTRO del componente
   const metadata = paquete?.metadata
     ? JSON.parse(paquete.metadata)
     : {};
 
   return (
-    <div className="modal">
+    <div>
       <h2>Detalle paquete {paquete.id}</h2>
 
       <p>Planta: {paquete.plantaId}</p>
@@ -41,3 +37,4 @@ export default function PaqueteModal({ paquete, onClose, onAceptar, onRechazar, 
     </div>
   );
 }
+

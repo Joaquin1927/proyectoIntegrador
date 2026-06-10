@@ -23,7 +23,7 @@ public class PaqueteCO2 {
     private String certId;
     private LocalDate captureDate;
 
-    @Column(name = "tonCO2eq")
+    @Column(name = "ton_co2eq")
     private Double tonCO2eq;
 
     //private String metodologia;

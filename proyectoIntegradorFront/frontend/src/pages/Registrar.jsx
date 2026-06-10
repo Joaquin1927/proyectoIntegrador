@@ -25,6 +25,7 @@ export default function Registrar() {
 
   if (!user) return <p>Cargando...</p>;
 
+  // ✅ PARSEAR ARCHIVO
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -49,6 +50,7 @@ export default function Registrar() {
     }
   };
 
+  // ✅ EDITAR CAMPOS
   const handleChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
@@ -125,6 +127,7 @@ const saveAll = async () => {
     <section className="panel">
       <h1>Registrar paquete de captura de CO₂</h1>
 
+      {/* DROP ZONE */}
       <label
         className="panel sub"
         style={{
@@ -157,10 +160,12 @@ const saveAll = async () => {
         />
       </label>
 
+      {/* FORM DINÁMICO */}
       {rows.map((row, index) => (
         <form key={index} className="grid three panel sub">
           <h3>Registro {index + 1}</h3>
 
+          {/* ✅ Planta (único campo controlado) */}
           <div className="field">
             <label>Planta</label>
             <select
@@ -177,11 +182,14 @@ const saveAll = async () => {
             </select>
           </div>
 
-          {Object.keys(row).map((field) => (
+          {/* ✅ CAMPOS DINÁMICOS */}
+          {Object.entries(row).map(([field, value]) => (
             <div className="field" key={field}>
               <label>{field}</label>
+
               <input
-                value={row[field] || ""}
+                type={getInputType(value)}
+                value={value || ""}
                 onChange={(e) =>
                   handleChange(index, field, e.target.value)
                 }
@@ -191,6 +199,7 @@ const saveAll = async () => {
         </form>
       ))}
 
+      {/* BOTÓN */}
       {rows.length > 0 && (
         <div className="actions">
           <button type="button" className="primary" onClick={saveAll}>

@@ -1,0 +1,21 @@
+
+[
+  {
+    "certId": "C-4001",
+    "captureDate": "2024-06-01",
+    "tonCO2eq": 500,
+
+    "field1": "valor1",
+    "field2": "valor2",
+    "field3": "valor3",
+    "field4": "valor4",
+    "field5": "valor5",
+    "field6": "valor6",
+    "field7": "valor7",
+    "field8": "valor8",
+    "field9": "valor9",
+    "field10": "valor10",
+
+    "plantaId": 1
+  }
+]
