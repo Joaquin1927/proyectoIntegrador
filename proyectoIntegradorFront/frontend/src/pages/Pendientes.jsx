@@ -17,15 +17,25 @@ export default function Pendientes() {
 
   const API = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    if (user === null) return;
 
-    if (!user) {
-      navigate("/");
-    } else {
-      cargarPendientes();
-    }
-  }, [user]);
+useEffect(() => {
+  if (!user) return;
+
+  if (user.role.toLowerCase() !== "auditor") {
+    alert("acceso exclusivo para auditores");
+    navigate("/dashboard");
+  } else {
+    cargarPendientes();
+  }
+}, [user]);
+
+// ✅ bloquear render
+if (!user) return <p>Cargando...</p>;
+
+if (user.role.toLowerCase() !== "auditor") {
+  return null;
+}
+
 
   const cargarPendientes = async () => {
     try {
@@ -118,12 +128,11 @@ export default function Pendientes() {
                 <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
 
                 <td>
-                  <button
-                    className="small"
-                    onClick={() => setSeleccionado(p)}
-                  >
-                    Ver detalle
-                  </button>
+                  
+<button onClick={() => navigate(`/auditar/${p.id}`)}>
+  Ver detalle
+</button>
+
                 </td>
               </tr>
             ))}

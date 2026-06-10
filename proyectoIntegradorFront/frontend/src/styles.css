@@ -81,3 +81,13 @@ button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%)
 .bar .value{position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-weight:700; font-size:12px}
 
 .toast{position:fixed; right:16px; bottom:16px; padding:10px 12px; background:var(--panel); border:1px solid var(--border); border-radius:10px}
+
+select {
+  color: black;
+  background-color: white;
+}
+
+option {
+  color: black;
+  background-color: white;
+}

@@ -4,10 +4,14 @@ import com.co2x.dmrv.entity.EstadoPaquete;
 import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.Reporte;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
 public class PaqueteCO2DTO {
+
+    @NotNull(message = "Seleccione una planta")
+    public Integer plantaId;
 
     public Integer id;
 
@@ -32,7 +36,6 @@ public class PaqueteCO2DTO {
 
     public Long reporteId;
 
-    public Integer plantaId;
 
     public String createdBy;
 

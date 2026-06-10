@@ -26,6 +26,10 @@ public class PaqueteController {
             System.out.println("ENTRO AL CONTROLLER");
             System.out.println(dto.plantaId);
 
+            if (dto.plantaId == null) {
+                return ResponseEntity.badRequest().body("Seleccione una planta");
+            }
+
             PaqueteCO2DTO creado = service.crear(dto);
 
             return ResponseEntity.ok(creado);
@@ -45,10 +49,10 @@ public class PaqueteController {
         return ResponseEntity.ok(service.listar());
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Long id) {
-//        return ResponseEntity.ok(service.obtenerPorId(id));
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.obtenerPorId(id));
+    }
 //
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<Void> eliminar(@PathVariable Long id) {

@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import { useNavigate } from "react-router-dom";
 
+
 export default function Registrar() {
   const { plantas, paquetes, setPaquetes, user } = useApp();
   const navigate = useNavigate();
@@ -12,12 +13,7 @@ export default function Registrar() {
 
   const [rows, setRows] = useState([]);
 
-  const paquetesUsuario = paquetes.filter(
-    p =>
-      p.createdBy &&
-      user?.email &&
-      p.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()
-  );
+  const paquetesUsuario = paquetes;
 
   useEffect(() => {
     if (!user) navigate("/");
@@ -71,6 +67,18 @@ export default function Registrar() {
   };
 
 
+const getInputType = (value) => {
+  if (value === null || value === undefined) return "text";
+  if (!isNaN(value) && value !== "") return "number";
+
+  // detectar fecha simple
+  if (typeof value === "string" && !isNaN(Date.parse(value))) {
+    return "date";
+  }
+
+  return "text";
+};
+
 const saveAll = async () => {
   try {
     const results = [];
@@ -92,12 +100,20 @@ const saveAll = async () => {
 
       extraFields.tonCO2eq = parseFloat(extraFields.tonCO2eq);
 
-      const payload = {
-        captureDate: row.captureDate || null,
-        plantaId: parseInt(row.plantaId || plantas[0]?.id),
-        metadata: JSON.stringify(extraFields),
-        createdBy: user.email
-      };
+
+if (!row.plantaId) {
+  alert(`Falta planta en fila ${index + 1}`);
+  continue;
+}
+
+const payload = {
+  captureDate: row.captureDate || null,
+  plantaId: parseInt(row.plantaId),
+  metadata: JSON.stringify(extraFields),
+  createdBy: user.email
+};
+
+
       console.log("Payload enviado:", payload);
       try {
         const res = await axios.post(`${API}/paquetes`, payload, {
@@ -122,7 +138,7 @@ const saveAll = async () => {
   }
 };
 
-
+console.log("PLANTAS:", plantas);
   return (
     <section className="panel">
       <h1>Registrar paquete de captura de CO₂</h1>
@@ -168,18 +184,26 @@ const saveAll = async () => {
           {/* ✅ Planta (único campo controlado) */}
           <div className="field">
             <label>Planta</label>
-            <select
-              value={row.plantaId || plantas[0]?.id}
-              onChange={(e) =>
-                handleChange(index, "plantaId", e.target.value)
-              }
-            >
-              {plantas.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+            
+          <select
+            value={row.plantaId || ""}
+            onChange={(e) =>
+              handleChange(index, "plantaId", e.target.value)
+            }
+          >
+            
+          <option value="" disabled hidden>
+            Seleccionar planta
+          </option>
+
+
+            {plantas.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
+
           </div>
 
           {/* ✅ CAMPOS DINÁMICOS */}
@@ -210,7 +234,8 @@ const saveAll = async () => {
 
       <div className="panel sub">
         <h2>Últimos paquetes cargados</h2>
-        <TablePaquetes items={paquetesUsuario} />
+        <TablePaquetes items={paquetesUsuario}plantas={plantas}
+ />
       </div>
     </section>
   );

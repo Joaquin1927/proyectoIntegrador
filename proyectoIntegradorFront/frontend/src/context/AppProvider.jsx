@@ -18,40 +18,51 @@ function savePaquetes(paquetes) {
   localStorage.setItem(DB_KEY, JSON.stringify(paquetes));
 }
 
+
+
 export function AppProvider({ children }) {
-const plantas = [
-  { id: 1, nombre: "Planta Norte" }
-];
 
+  const API = "http://localhost:8080";
+
+  // ✅ ESTADOS
+  const [plantas, setPlantas] = useState([]);
   const [paquetes, setPaquetes] = useState([]);
-
-useEffect(() => {
-
-  console.log("USE EFFECT ARRANCO");
-
-  axios
-    .get("http://localhost:8080/paquetes")
-    .then((res) => {
-
-      console.log("ENTRO AL THEN");
-      console.log("RES.DATA =", res.data);
-
-      setPaquetes(res.data);
-
-    })
-    .catch((err) => {
-
-      console.log("ENTRO AL CATCH");
-      console.error(err);
-
-    });
-
-}, []);
   const [user, setUser] = useState(null);
 
+  // ✅ plantas
+  useEffect(() => {
+    axios.get(`${API}/plantas`)
+      .then(res => setPlantas(res.data));
+  }, []);
+
+  // ✅ restaurar user
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      console.log("RESTAURANDO:", parsed);
+      setUser({ ...parsed });
+    }
+  }, []);
+
+  // ✅ paquetes
+  useEffect(() => {
+    if (!user?.email) return;
+
+    console.log("🚀 FETCH:", user.email);
+
+    axios.get(`${API}/paquetes/usuario/${user.email}`)
+      .then(res => {
+        console.log("✅ PAQUETES:", res.data);
+        setPaquetes(res.data);
+      });
+  }, [user?.email]);
+
+  // ✅ guardar paquetes
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
+
 
   // ✅ helpers
   const login = (userData) => setUser(userData);

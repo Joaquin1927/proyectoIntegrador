@@ -198,4 +198,23 @@ public class PaqueteCO2Service {
     }
 
 
+    public PaqueteCO2DTO obtenerPorId(Integer id) {
+
+
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paquete no encontrado con id " + id));
+
+        PaqueteCO2DTO dto = new PaqueteCO2DTO();
+
+        dto.id = paquete.getId();
+        dto.captureDate = paquete.getCaptureDate();
+        dto.plantaId = paquete.getPlanta().getId(); // ⚠️ si usás relación
+        dto.metadata = paquete.getMetadata();
+        dto.createdBy = paquete.getCreatedBy();
+        dto.estado = paquete.getEstado();
+
+        return dto;
+
+
+    }
 }
