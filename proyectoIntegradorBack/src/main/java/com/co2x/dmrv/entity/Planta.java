@@ -1,5 +1,6 @@
 package com.co2x.dmrv.entity;
 
+import com.co2x.dmrv.dto.PlantaDTO;
 import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.entity.Reporte;
 import jakarta.persistence.*;
@@ -11,7 +12,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "Planta")
-public class Planta {
+public class Planta extends PlantaDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

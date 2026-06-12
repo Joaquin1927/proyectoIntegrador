@@ -6,6 +6,7 @@
     import java.time.LocalDate;
     import java.util.List;
 
+
     @Data
     @Entity
     @Table(name = "Reporte")
@@ -37,17 +38,11 @@
         @Column(name = "observaciones")
         private String observaciones;
 
-        @Column(name = "usuarioResponsable")
+        // ✅ USAR SOLO STRING
+        @Column(name = "usuario_responsable")
         private String usuarioResponsable;
-
-        @ManyToOne
-        @JoinColumn(name = "empleado_Id")
-        private Usuario empleado;
 
         @ManyToOne
         @JoinColumn(name = "planta_Id")
         private Planta planta;
-
-        //@OneToMany(mappedBy = "reporte")
-        //private List<PaqueteCO2> paquetes;
     }

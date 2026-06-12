@@ -5,15 +5,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/PaqueteCO2DTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/PaqueteCO2DTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/PlantaDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/PlantaDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Planta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Planta.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Reporte.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Reporte.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Usuario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Usuario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/ReporteRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/ReporteRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/UsuarioRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/UsuarioRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/security/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/utils/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/utils/Factory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/PaqueteController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/PaqueteController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/components/TablePaquetes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/components/TablePaquetes.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Registrar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Registrar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/dto/PaqueteCO2DTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/dto/PaqueteCO2DTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/dto/PlantaDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/dto/PlantaDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/PaqueteCO2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/PaqueteCO2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Planta.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Planta.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/security/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/security/SecurityConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/utils/Factory.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/utils/Factory.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Pendientes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Pendientes.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +106,7 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;Spring Boot.Co2xApplication.executor&quot;: &quot;Run&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/Usuario/Documents/proyectoIntegrador/proyectoIntegradorBack&quot;,

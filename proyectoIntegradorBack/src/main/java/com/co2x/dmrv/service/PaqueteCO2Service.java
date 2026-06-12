@@ -1,21 +1,24 @@
 package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
-import com.co2x.dmrv.entity.EstadoPaquete;
-import com.co2x.dmrv.entity.PaqueteCO2;
-import com.co2x.dmrv.entity.Planta;
+import com.co2x.dmrv.entity.*;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.PlantaRepository;
+import com.co2x.dmrv.repository.ReporteRepository;
+import com.co2x.dmrv.repository.UsuarioRepository;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 
@@ -34,6 +37,9 @@ public class PaqueteCO2Service {
 
     @Autowired
     private Factory factory;
+
+    @Autowired
+    private ReporteRepository reporteRepo;
 
     @Autowired
     private PlantaService plantaService;
@@ -117,27 +123,26 @@ public class PaqueteCO2Service {
 
 
 
+
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) throws JsonProcessingException {
 
-        Planta planta = plantaService.getEntity(dto.plantaId);
+        if (dto.planta == null || dto.planta.id == null) {
+            throw new RuntimeException("Planta es obligatoria");
+        }
 
+        Planta planta = plantaService.getEntity(dto.planta.id);
+
+        // ✅ usar factory
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
         ObjectMapper mapper = new ObjectMapper();
 
-        // ✅ USAR SOLO procesarMetadata
         Map<String, Object> metadataMap = procesarMetadata(dto.metadata);
 
-        System.out.println("METADATA MAP: " + metadataMap);
-        System.out.println("TIPO TON: " + metadataMap.get("_tonCO2eq").getClass());
-
-
-        // ✅ extraer ton ya validado
-
+        // ✅ extraer ton
         Object tonObj = metadataMap.get("_tonCO2eq");
 
         Double ton;
-
         if (tonObj instanceof Number) {
             ton = ((Number) tonObj).doubleValue();
         } else {
@@ -146,10 +151,9 @@ public class PaqueteCO2Service {
 
         entity.setTonCO2eq(ton);
 
-        // ✅ guardar metadata limpio
         entity.setMetadata(mapper.writeValueAsString(metadataMap));
 
-        // 🔥 AUTO VALUES
+        // ✅ valores automáticos
         entity.setEstado(EstadoPaquete.PENDIENTE);
         entity.setIssuanceDate(LocalDate.now());
 
@@ -159,38 +163,23 @@ public class PaqueteCO2Service {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
-
-
-
-
-
+        // ✅ usuario
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
         String email = "desconocido";
 
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-
             email = jwt.getClaimAsString("preferred_username");
 
-            if (email == null) {
-                email = jwt.getClaimAsString("email");
-            }
-
-            if (email == null) {
-                email = jwt.getSubject();
-            }
+            if (email == null) email = jwt.getClaimAsString("email");
+            if (email == null) email = jwt.getSubject();
         }
 
-// 🔥 fallback al frontend
         if ((email == null || email.equals("desconocido")) && dto.createdBy != null) {
             email = dto.createdBy;
         }
 
         entity.setCreatedBy(email);
-
-
-
-
 
         PaqueteCO2 guardado = paqueteRepo.save(entity);
 
@@ -198,23 +187,101 @@ public class PaqueteCO2Service {
     }
 
 
+
     public PaqueteCO2DTO obtenerPorId(Integer id) {
 
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Paquete no encontrado con id " + id
+                        )
+                );
+
+        return factory.toPaqueteDTO(paquete);
+    }
+
+
+
+
+    private void validarAuditor() {
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null) {
+            System.out.println("❌ AUTH ES NULL");
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
+        System.out.println("AUTH CLASS: " + auth.getClass());
+
+        if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
+        Jwt jwt = jwtAuth.getToken();
+
+        System.out.println("JWT CLAIMS: " + jwt.getClaims());
+
+        List<String> roles = jwt.getClaimAsStringList("roles");
+
+        if (roles == null || roles.stream().noneMatch(r -> r.equalsIgnoreCase("auditor"))) {
+            throw new RuntimeException("Acceso solo para auditores");
+        }
+    }
+
+
+
+
+
+
+
+
+    public PaqueteCO2DTO aprobar(Integer id) {
+
+        validarAuditor();
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paquete no encontrado con id " + id));
+                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        PaqueteCO2DTO dto = new PaqueteCO2DTO();
+        // ✅ cambiar estado
+        paquete.setEstado(EstadoPaquete.APROBADO);
 
-        dto.id = paquete.getId();
-        dto.captureDate = paquete.getCaptureDate();
-        dto.plantaId = paquete.getPlanta().getId(); // ⚠️ si usás relación
-        dto.metadata = paquete.getMetadata();
-        dto.createdBy = paquete.getCreatedBy();
-        dto.estado = paquete.getEstado();
+        // ✅ crear reporte
+        Reporte reporte = new Reporte();
 
-        return dto;
+        reporte.setFechaReporte(LocalDate.now());
+        reporte.setToneladasCO2(paquete.getTonCO2eq());
+        reporte.setPlanta(paquete.getPlanta());
+        reporte.setEstado("GENERADO");
+        reporte.setMetodologia("Automática");
 
+        //Usuario usuario = UsuarioRepository.findByEmail(paquete.getCreatedBy())
+                //.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        //reporte.setEmpleado(usuario);
+        reporte.setUsuarioResponsable(paquete.getCreatedBy());
+
+        reporteRepo.save(reporte);
+
+        paquete.setReporte(reporte);
+
+        paqueteRepo.save(paquete);
+
+        return factory.toPaqueteDTO(paquete);
+    }
+
+
+    public PaqueteCO2DTO rechazar(Integer id) {
+        validarAuditor();
+
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
+
+        // ✅ cambiar estado
+        paquete.setEstado(EstadoPaquete.RECHAZADO);
+
+        return factory.toPaqueteDTO(paquete);
 
     }
 }

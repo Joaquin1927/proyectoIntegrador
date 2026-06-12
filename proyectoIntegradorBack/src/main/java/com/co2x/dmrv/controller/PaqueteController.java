@@ -24,9 +24,9 @@ public class PaqueteController {
     public ResponseEntity<?> crear(@RequestBody PaqueteCO2DTO dto) {
         try {
             System.out.println("ENTRO AL CONTROLLER");
-            System.out.println(dto.plantaId);
+            //System.out.println(dto.plantaId);
 
-            if (dto.plantaId == null) {
+            if (dto.planta == null) {
                 return ResponseEntity.badRequest().body("Seleccione una planta");
             }
 
@@ -53,6 +53,24 @@ public class PaqueteController {
     public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Integer id) {
         return ResponseEntity.ok(service.obtenerPorId(id));
     }
+
+
+    @PostMapping("/{id}/aprobar")
+    public ResponseEntity<?> aprobar(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(service.aprobar(id));
+        } catch (Exception e) {
+            e.printStackTrace(); // 🔥 CLAVE
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/{id}/rechazar")
+    public ResponseEntity<PaqueteCO2DTO> rechazar(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.rechazar(id));
+    }
+
 //
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<Void> eliminar(@PathVariable Long id) {

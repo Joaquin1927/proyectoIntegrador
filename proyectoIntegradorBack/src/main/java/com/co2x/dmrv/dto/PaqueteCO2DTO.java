@@ -1,17 +1,16 @@
 package com.co2x.dmrv.dto;
 import com.co2x.dmrv.entity.EstadoPaquete;
 
-import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.Reporte;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
-
+import lombok.Data;
 import java.time.LocalDate;
-
+@Data
 public class PaqueteCO2DTO {
 
     @NotNull(message = "Seleccione una planta")
-    public Integer plantaId;
+    public PlantaDTO planta;
 
     public Integer id;
 

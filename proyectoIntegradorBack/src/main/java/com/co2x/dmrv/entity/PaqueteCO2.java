@@ -1,9 +1,11 @@
 package com.co2x.dmrv.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Type;
+import org.hibernate.mapping.ToOne;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -24,6 +26,7 @@ public class PaqueteCO2 {
     private LocalDate captureDate;
 
     @Column(name = "ton_co2eq")
+    @JsonProperty("tonCO2eq")
     private Double tonCO2eq;
 
     //private String metodologia;
@@ -40,10 +43,15 @@ public class PaqueteCO2 {
 
     private String createdBy;
 
+    @OneToOne
+    @JoinColumn(name = "reporte_id")
+    private Reporte reporte;
+
 
     @Column(columnDefinition = "TEXT")
     private String metadata;
 
     public void setIssuanceDate(LocalDate now) {
     }
+
 }

@@ -41,6 +41,7 @@ if (user.role.toLowerCase() !== "auditor") {
     try {
       const res = await fetch(`${API}/paquetes/pendientes`);
       const data = await res.json();
+      console.log("PAQUETES PENDIENTES:", data);
       setPendientes(data);
     } catch (err) {
       console.error("Error cargando pendientes:", err);

@@ -34,8 +34,6 @@ public class Usuario {
     @JoinColumn(name = "Empresa")
     private Empresa empresa;
 
-    @OneToMany(mappedBy = "empleado")
-    private List<Reporte> reportes;
 
     @OneToMany(mappedBy = "auditor")
     private List<PaqueteCO2> paquetesVerificados;

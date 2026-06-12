@@ -56,8 +56,8 @@ public class Factory {
         dto.estado = entity.getEstado();
         dto.createdBy = entity.getCreatedBy();
 
-        dto.plantaId = entity.getPlanta() != null
-                ? entity.getPlanta().getId()
+        dto.planta = entity.getPlanta() != null
+                ? entity.getPlanta()
                 : null;
 
 
