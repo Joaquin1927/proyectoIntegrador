@@ -22,7 +22,7 @@ function savePaquetes(paquetes) {
 
 export function AppProvider({ children }) {
 
-  const API = "http://localhost:8080";
+  const API = import.meta.env.VITE_API_URL;
 
   // ✅ ESTADOS
   const [plantas, setPlantas] = useState([]);

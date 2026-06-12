@@ -12,7 +12,7 @@ export function useApp() {
 // ✅ provider
 export function AppProvider({ children }) {
 
-  const API = "http://localhost:8080";
+  const API = import.meta.env.VITE_API_URL;
 
   const [plantas, setPlantas] = useState([]);
   const [paquetes, setPaquetes] = useState([]);

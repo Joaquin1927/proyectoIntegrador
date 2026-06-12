@@ -6,7 +6,7 @@ import { useMsal } from "@azure/msal-react";
 
 
 export default function Auditar() {
-  const API = "http://localhost:8080";
+  const API = import.meta.env.VITE_API_URL;
   const { user } = useApp(); // ✅ SOLO USER del contexto
   const navigate = useNavigate();
   const { id } = useParams();
