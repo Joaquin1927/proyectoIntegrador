@@ -26,6 +26,11 @@ public class PaqueteController {
             System.out.println("ENTRO AL CONTROLLER");
             //System.out.println(dto.plantaId);
 
+
+            System.out.println("DTO recibido: " + dto);
+            System.out.println("Planta: " + dto.planta);
+            System.out.println("Metadata: " + dto.metadata);
+
             if (dto.planta == null) {
                 return ResponseEntity.badRequest().body("Seleccione una planta");
             }

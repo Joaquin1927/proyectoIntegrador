@@ -57,8 +57,9 @@ public class Factory {
         dto.createdBy = entity.getCreatedBy();
 
         dto.planta = entity.getPlanta() != null
-                ? entity.getPlanta()
+                ? toPlantaDTO(entity.getPlanta())
                 : null;
+
 
 
         // 🔥 NEW

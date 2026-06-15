@@ -106,12 +106,18 @@ if (!row.plantaId) {
   continue;
 }
 
+
 const payload = {
   captureDate: row.captureDate || null,
-  plantaId: parseInt(row.plantaId),
+
+  planta: {
+    id: parseInt(row.plantaId)
+  },
+
   metadata: JSON.stringify(extraFields),
   createdBy: user.email
 };
+
 
 
       console.log("Payload enviado:", payload);

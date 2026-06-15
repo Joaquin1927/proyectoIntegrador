@@ -24,7 +24,7 @@ const getNombrePlanta = (plantaId) => {
         {items.map(p => (
           <tr key={p.id}>
             <td>{p.id}</td>
-            <td>{getNombrePlanta(p.plantaId)}</td>
+            <td>{p.planta.nombre}</td>
             <td>{p.captureDate}</td>
             <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
             <td>{p.estado}</td>
