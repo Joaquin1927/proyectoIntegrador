@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { AppContext } from "./AppContext";
 import axios from "axios";
+import { createContext } from "react";
+
+
 const DB_KEY = "co2x_db_v1";
 
 function loadPaquetes() {
@@ -19,7 +22,6 @@ function savePaquetes(paquetes) {
 }
 
 
-
 export function AppProvider({ children }) {
 
   const API = import.meta.env.VITE_API_URL;
@@ -28,6 +30,7 @@ export function AppProvider({ children }) {
   const [plantas, setPlantas] = useState([]);
   const [paquetes, setPaquetes] = useState([]);
   const [user, setUser] = useState(null);
+  const [backendOk, setBackendOk] = useState(true);
 
   // ✅ plantas
   useEffect(() => {
@@ -63,6 +66,23 @@ export function AppProvider({ children }) {
     savePaquetes(paquetes);
   }, [paquetes]);
 
+  
+
+useEffect(() => {
+  const checkBackend = async () => {
+    try {
+      const res = await fetch(`${API}/test`);
+      if (!res.ok) throw new Error();
+      setBackendOk(true);
+    } catch {
+      setBackendOk(false);
+    }
+  };
+
+  checkBackend();
+}, []);
+
+
 
   // ✅ helpers
   const login = (userData) => setUser(userData);
@@ -88,6 +108,7 @@ console.log("APP PROVIDER PAQUETES =", paquetes);
         // ✅ helpers opcionales
         login,
         logout,
+        backendOk,
       }}
     >
       {children}

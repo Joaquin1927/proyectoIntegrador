@@ -67,7 +67,7 @@ public class PaqueteCO2Service {
 
 
 
-    private Map<String, Object> procesarMetadata(String metadataJson) {
+    public Map<String, Object> procesarMetadata(String metadataJson) {
 
         if (metadataJson == null || metadataJson.isBlank()) {
             throw new IllegalArgumentException("metadata no puede ser vacío");
