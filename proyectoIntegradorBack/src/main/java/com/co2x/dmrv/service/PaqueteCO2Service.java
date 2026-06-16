@@ -2,6 +2,7 @@ package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.*;
+import com.co2x.dmrv.entity.Record;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.repository.ReporteRepository;
@@ -43,6 +44,9 @@ public class PaqueteCO2Service {
 
     @Autowired
     private PlantaService plantaService;
+
+    @Autowired
+    private RecordService recordService;
 
     public List<PaqueteCO2DTO> listar() {
         return paqueteRepo.findAll()
@@ -244,10 +248,10 @@ public class PaqueteCO2Service {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        // ✅ cambiar estado
+        //  cambiar estado
         paquete.setEstado(EstadoPaquete.APROBADO);
 
-        // ✅ crear reporte
+        //  crear reporte
         Reporte reporte = new Reporte();
 
         reporte.setFechaReporte(LocalDate.now());
@@ -267,6 +271,9 @@ public class PaqueteCO2Service {
         paquete.setReporte(reporte);
 
         paqueteRepo.save(paquete);
+
+        Record record = recordService.generateFromPaquete(paquete);
+        System.out.println("Record creado con CID: " + record.getIpfsCid());
 
         return factory.toPaqueteDTO(paquete);
     }

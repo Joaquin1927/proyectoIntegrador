@@ -20,11 +20,20 @@ public class MetadataService {
     public String processApprovedRecord(Record record) {
 
         try {
+
             Map<String, Object> metadata = new HashMap<>();
+
             metadata.put("recordId", record.getId());
-            metadata.put("status", "APPROVED");
+            metadata.put("status", record.getStatus());
             metadata.put("timestamp", System.currentTimeMillis());
-            metadata.put("data", record.getData());
+            metadata.put("createdBy", record.getCreatedBy());
+
+            if (record.getPaquete() != null) {
+                metadata.put("paqueteId", record.getPaquete().getId());
+                metadata.put("certId", record.getPaquete().getCertId());
+                metadata.put("tonCO2eq", record.getPaquete().getTonCO2eq());
+                metadata.put("data", record.getPaquete().getMetadata());
+            }
 
             String json = objectMapper.writeValueAsString(metadata);
 
@@ -34,19 +43,4 @@ public class MetadataService {
             throw new RuntimeException("Error generando metadata para IPFS", e);
         }
     }
-
-
-    private String uploadToIPFS(String json) {
-            // llamada real a IPFS (Pinata, Infura, etc)
-            return "Qm123abc..."; // ejemplo
-    }
-
-    private String generarMetadata(Record record) {
-        return "{"
-                + "\"id\": \"" + record.getId() + "\","
-                + "\"data\": \"" + record.getData() + "\","
-                + "\"status\": \"" + record.getStatus() + "\""
-                + "}";
-    }
-
 }

@@ -5,16 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/IpfsService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/RecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/RecordController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/TestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/TestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Record.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Record.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/MetadataService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/MetadataService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/TestController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/TestController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/RecordService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/RecordService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/RecordController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/RecordController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Record.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Record.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/MetadataService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/MetadataService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/RecordService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/RecordService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
