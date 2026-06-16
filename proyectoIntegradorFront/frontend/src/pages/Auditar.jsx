@@ -4,80 +4,115 @@ import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useMsal } from "@azure/msal-react";
 
-
 export default function Auditar() {
   const API = import.meta.env.VITE_API_URL;
-  const { user } = useApp(); // ✅ SOLO USER del contexto
+  const { user } = useApp(); 
   const navigate = useNavigate();
   const { id } = useParams();
   const { instance, accounts } = useMsal();
 
+  const [modoCorreccion, setModoCorreccion] = useState(false);
+  const [comentarioGeneral, setComentarioGeneral] = useState("");
+  const [comentariosCampos, setComentariosCampos] = useState({});
 
-  
   const [paquete, setPaquete] = useState(null);
 
+  const aprobar = async () => {
+    try {
+      const response = await instance.acquireTokenSilent({
+        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+        account: accounts[0],
+      });
 
+      const token = response.accessToken;
+      console.log(atob(token.split(".")[1]));
+      await axios.post(
+        `${API}/paquetes/${id}/aprobar`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-const aprobar = async () => {
-  try {
-    const response = await instance.acquireTokenSilent({
-      scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-      account: accounts[0]
-    });
+      alert("✅ Paquete aprobado");
+      navigate("/pendientes");
+    } catch (err) {
+      console.error(err.response?.data || err);
+      alert("Error al aprobar");
+    }
+  };
 
-    const token = response.accessToken;
-console.log(atob(token.split('.')[1]))
-    await axios.post(
-      `${API}/paquetes/${id}/aprobar`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
+  const rechazar = async () => {
+    try {
+      const response = await instance.acquireTokenSilent({
+        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+        account: accounts[0],
+      });
 
-    alert("✅ Paquete aprobado");
-    navigate("/pendientes");
+      const token = response.accessToken;
 
-  } catch (err) {
-    console.error(err.response?.data || err);
-    alert("Error al aprobar");
-  }
-};
+      await axios.post(
+        `${API}/paquetes/${id}/rechazar`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
+      alert("❌ Paquete rechazado");
+      navigate("/pendientes");
+    } catch (err) {
+      console.error(err.response?.data || err);
+      alert("Error al rechazar paquete");
+    }
+  };
 
-
-
-const rechazar = async () => {
-  try {
-    const response = await instance.acquireTokenSilent({
-      scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-      account: accounts[0]
-    });
-
-    const token = response.accessToken;
-
-    await axios.post(
-      `${API}/paquetes/${id}/rechazar`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    alert("❌ Paquete rechazado");
-    navigate("/pendientes");
-
-  } catch (err) {
-    console.error(err.response?.data || err);
-    alert("Error al rechazar paquete");
-  }
+const deshacerCorreccion = () => {
+  setModoCorreccion(false);
+  setComentariosCampos({});
+  setComentarioGeneral("");
 };
 
   const [loading, setLoading] = useState(false);
+
+  const mandarCorreccion = async () => {
+    if (!comentarioGeneral.trim()) {
+      alert("El comentario general es obligatorio");
+      return;
+    }
+
+    try {
+      const response = await instance.acquireTokenSilent({
+        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+        account: accounts[0],
+      });
+
+      const token = response.accessToken;
+
+      await axios.post(
+        `${API}/paquetes/${id}/correccion`,
+        {
+          comentarioGeneral,
+          comentariosCampos,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      alert("🛠 Corrección solicitada");
+      navigate("/pendientes");
+    } catch (err) {
+      console.error(err);
+      alert("Error al solicitar corrección");
+    }
+  };
 
   // ✅ 1. VALIDAR ROL
 
@@ -94,10 +129,9 @@ const rechazar = async () => {
   if (!user) return <p>Cargando...</p>;
 
   if (user.role.toLowerCase() !== "auditor") {
-    return null; // 👈 evita que se vea la pantalla
+    return null; 
   }
 
-  // ✅ 2. TRAER EL PAQUETE POR ID (ACÁ VA EL useEffect que te dije)
   useEffect(() => {
     console.log("Buscando paquete ID:", id);
 
@@ -130,19 +164,69 @@ const rechazar = async () => {
 
       <h3>Datos adicionales</h3>
 
-      {Object.entries(metadata).map(([key, val]) => (
-        <p key={key}>
-          <strong>{key}:</strong> {val}
-        </p>
-      ))}
+      {Object.entries(metadata)
+        .filter(([key]) => key !== "_tonCO2eq" && key !== "facilityName")
+        .map(([key, val]) => (
+          <div key={key} style={{ marginBottom: "10px" }}>
+            <p>
+              <strong>{key}:</strong> {val}
+            </p>
 
-      <button onClick={aprobar} disabled={loading}>
-        ✅ Aprobar
-      </button>
+            {modoCorreccion && (
+              <>
+                <button
+                  onClick={() =>
+                    setComentariosCampos((prev) => ({
+                      ...prev,
+                      [key]: prev[key] ?? "",
+                    }))
+                  }
+                >
+                  Marcar problema
+                </button>
 
-      <button onClick={rechazar} disabled={loading}>
-        ❌ Rechazar
-      </button>
+                {comentariosCampos[key] !== undefined && (
+                  <input
+                    type="text"
+                    placeholder="Explicar problema en este campo"
+                    value={comentariosCampos[key]}
+                    onChange={(e) =>
+                      setComentariosCampos((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                  />
+                )}
+              </>
+            )}
+          </div>
+        ))}
+
+      {!modoCorreccion && (
+        <>
+          <button onClick={aprobar} disabled={loading}>
+            ✅ Aprobar
+          </button>
+          <button onClick={() => setModoCorreccion(true)}>
+            🛠 Solicitar correcciones
+          </button>
+          <button onClick={rechazar} disabled={loading}>
+            ❌ Rechazar
+          </button>
+        </>
+      )}
+
+      {modoCorreccion && (
+         <>
+        <button onClick={mandarCorreccion}>📩 Mandar a revisión</button>
+        
+        <button onClick={deshacerCorreccion}>
+              ↩ Deshacer
+            </button>
+</>
+      )}
+      
 
       <button onClick={() => navigate("/dashboard")}>Volver</button>
     </div>

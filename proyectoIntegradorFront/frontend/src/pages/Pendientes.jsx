@@ -4,9 +4,8 @@ import { useApp } from "../context/AppContext";
 import PaqueteModal from "../components/PaqueteModal";
 
 export default function Pendientes() {
-
   const { user, plantas } = useApp();
-  
+
   const [plantaSeleccionada, setPlantaSeleccionada] = useState(null);
 
   const navigate = useNavigate();
@@ -17,25 +16,23 @@ export default function Pendientes() {
 
   const API = import.meta.env.VITE_API_URL;
 
+  useEffect(() => {
+    if (!user) return;
 
-useEffect(() => {
-  if (!user) return;
+    if (user.role.toLowerCase() !== "auditor") {
+      alert("acceso exclusivo para auditores");
+      navigate("/dashboard");
+    } else {
+      cargarPendientes();
+    }
+  }, [user]);
+
+  // ✅ bloquear render
+  if (!user) return <p>Cargando...</p>;
 
   if (user.role.toLowerCase() !== "auditor") {
-    alert("acceso exclusivo para auditores");
-    navigate("/dashboard");
-  } else {
-    cargarPendientes();
+    return null;
   }
-}, [user]);
-
-// ✅ bloquear render
-if (!user) return <p>Cargando...</p>;
-
-if (user.role.toLowerCase() !== "auditor") {
-  return null;
-}
-
 
   const cargarPendientes = async () => {
     try {
@@ -56,23 +53,22 @@ if (user.role.toLowerCase() !== "auditor") {
 
       // ✅ PUT → cambiar estado
       await fetch(`${API}/paquetes/${seleccionado.id}/aceptar`, {
-        method: "PUT"
+        method: "PUT",
       });
 
       // ✅ POST → crear reporte
       await fetch(`${API}/reportes`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          paqueteId: seleccionado.id
-        })
+          paqueteId: seleccionado.id,
+        }),
       });
 
       setSeleccionado(null);
       cargarPendientes();
-
     } catch (err) {
       console.error("Error al aceptar paquete:", err);
     } finally {
@@ -81,29 +77,30 @@ if (user.role.toLowerCase() !== "auditor") {
   };
 
   const pendientesFiltrados = plantaSeleccionada
-  ? pendientes.filter(p => p.plantaId == plantaSeleccionada)
-  : pendientes;
+    ? pendientes.filter((p) => p.planta.id === plantaSeleccionada)
+    : pendientes;
 
   if (!user) return <p>Cargando...</p>;
 
   return (
     <section className="panel">
       <h1>Pendientes de auditoría</h1>
-      
-      
-<select
-  value={plantaSeleccionada || ""}
-  onChange={(e) => setPlantaSeleccionada(e.target.value)}
->
-  <option value="">Todas las plantas</option>
 
-  {plantas?.map(p => (
-    <option key={p.id} value={p.id}>
-      {p.nombre}
-    </option>
-  ))}
-</select>
+      <select
+        value={plantaSeleccionada ?? ""}
+        onChange={(e) => {
+          const value = e.target.value;
+          setPlantaSeleccionada(value === "" ? null : Number(value));
+        }}
+      >
+        <option value="">Todas las plantas</option>
 
+        {plantas?.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.nombre}
+          </option>
+        ))}
+      </select>
 
       {pendientes.length === 0 ? (
         <p className="muted">No hay paquetes pendientes.</p>
@@ -121,7 +118,7 @@ if (user.role.toLowerCase() !== "auditor") {
           </thead>
 
           <tbody>
-            {pendientesFiltrados.map(p => (
+            {pendientesFiltrados.map((p) => (
               <tr key={p.id}>
                 <td>{p.id}</td>
                 <td>{p.planta?.nombre}</td>
@@ -129,11 +126,9 @@ if (user.role.toLowerCase() !== "auditor") {
                 <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
 
                 <td>
-                  
-<button onClick={() => navigate(`/auditar/${p.id}`)}>
-  Ver detalle
-</button>
-
+                  <button onClick={() => navigate(`/auditar/${p.id}`)}>
+                    Ver detalle
+                  </button>
                 </td>
               </tr>
             ))}
