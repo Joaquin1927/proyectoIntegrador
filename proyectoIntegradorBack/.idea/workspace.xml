@@ -6,6 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/PaqueteController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/controller/PaqueteController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/dto/PaqueteCO2DTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/dto/PaqueteCO2DTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Empresa.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Empresa.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/PaqueteCO2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/PaqueteCO2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Planta.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Planta.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Reporte.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Reporte.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Usuario.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/entity/Usuario.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/co2x/dmrv/service/PaqueteCO2Service.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +39,6 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -99,15 +106,6 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <option name="filePath" />
-      <method v="2" />
-    </configuration>
     <configuration name="Co2xApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
       <module name="proyectoIntegradorBack" />
