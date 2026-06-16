@@ -1,7 +1,13 @@
-export default function TablePaquetes({ items }) {
-  if (!items.length) {
+
+export default function TablePaquetes({ items, plantas }) {
+  
+  if (!items || items.length === 0) {
     return <p className="muted">Sin registros</p>;
   }
+
+const getNombrePlanta = (plantaId) => {
+    return plantas.find(p => p.id === Number(plantaId))?.nombre || "—";
+  };
 
   return (
     <table className="table">
@@ -18,10 +24,10 @@ export default function TablePaquetes({ items }) {
         {items.map(p => (
           <tr key={p.id}>
             <td>{p.id}</td>
-            <td>{p.planta?.nombre}</td>
+            <td>{p.planta.nombre}</td>
             <td>{p.captureDate}</td>
-            <td>{p.tonCO2eq?.toFixed(3)}</td>
-            <td>{p.estado}</td> 
+            <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
+            <td>{p.estado}</td>
           </tr>
         ))}
       </tbody>

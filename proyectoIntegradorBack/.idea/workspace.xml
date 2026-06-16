@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak." />
+    <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

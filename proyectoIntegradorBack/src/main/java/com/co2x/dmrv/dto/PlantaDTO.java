@@ -1,5 +1,6 @@
 package com.co2x.dmrv.dto;
-
+import lombok.Data;
+@Data
 public class PlantaDTO {
 
     public Integer id;

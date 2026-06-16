@@ -1,71 +1,57 @@
 package com.co2x.dmrv.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Type;
+import org.hibernate.mapping.ToOne;
 
 import java.time.LocalDate;
+import java.util.Map;
 
-@Data
 @Entity
-@Table(name = "\"PaqueteCO2\"")
+@Table(name = "PaqueteCO2")
+@Data
 public class PaqueteCO2 {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"Id\"")
     private Integer id;
 
-    @Column(name = "\"cert_Id\"", nullable = false)
+    // =====================
+    // CAMPOS FIJOS (core)
+    // =====================
     private String certId;
-
-    @Column(name = "\"project_Name\"")
-    private String projectName;
-
-    @Column(name = "\"capture_Date\"")
     private LocalDate captureDate;
 
-    @Column(name = "\"metodologia\"")
-    private String metodologia;
-
-    @Column(name = "\"ton_co2eq\"")
+    @Column(name = "ton_co2eq")
+    @JsonProperty("tonCO2eq")
     private Double tonCO2eq;
 
-    @Column(name = "\"issuance_date\"")
-    private LocalDate issuanceDate;
-
-    @Column(name = "\"retirement_status\"")
-    private Boolean retirementStatus;
-
-    @Column(name = "\"retirement_date\"")
-    private LocalDate retirementDate;
-
-    @Column(name = "\"beneficiary\"")
-    private String beneficiary;
-
-    @Column(name = "\"co_benefits\"")
-    private String coBenefits;
-
-    @Column(name = "\"project_type\"")
-    private String projectType;
-
-    @Column(name = "\"external_url\"")
-    private String externalUrl;
-
-    @ManyToOne
-    @JoinColumn(name = "\"verifiedBy\"")
-    private Usuario auditor;
-
-    @ManyToOne
-    @JoinColumn(name = "\"ubicacion\"")
-    private Planta planta;
-
-    @ManyToOne
-    @JoinColumn(name = "\"reporte_Id\"")
-    private Reporte reporte;
+    //private String metodologia;
+    //private Boolean retirementStatus;
 
     @Enumerated(EnumType.STRING)
     private EstadoPaquete estado;
 
-    @Column(name = "\"createdBy\"")
+    @ManyToOne
+    private Planta planta;
+
+    @ManyToOne
+    private Usuario auditor;
+
     private String createdBy;
+
+    @OneToOne
+    @JoinColumn(name = "reporte_id")
+    private Reporte reporte;
+
+
+    @Column(columnDefinition = "TEXT")
+    private String metadata;
+
+    public void setIssuanceDate(LocalDate now) {
+    }
+
 }

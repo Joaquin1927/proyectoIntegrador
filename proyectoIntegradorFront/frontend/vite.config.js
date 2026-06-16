@@ -6,5 +6,9 @@ export default defineConfig({
 
   optimizeDeps: {
     exclude: ["@azure/msal-browser", "@azure/msal-react"]
+  },
+
+  build: {
+    chunkSizeWarningLimit: 1000
   }
 })

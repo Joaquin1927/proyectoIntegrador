@@ -5,12 +5,15 @@ import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import { useNavigate } from "react-router-dom";
 
+
 export default function Registrar() {
   const { plantas, paquetes, setPaquetes, user } = useApp();
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
 
   const [rows, setRows] = useState([]);
+
+  const paquetesUsuario = paquetes;
 
   useEffect(() => {
     if (!user) navigate("/");
@@ -50,68 +53,98 @@ export default function Registrar() {
     setRows(updated);
   };
 
-  // ✅ DETECTAR TIPO INPUT
-  const getInputType = (value) => {
-    if (typeof value === "number") return "number";
-    if (value === "true" || value === "false") return "text";
-    return "text";
+
+  const fixedFields = [
+    "plantaId",
+    "captureDate",
+  ];
+
+
+  const getExtraFields = (row) => {
+    return Object.keys(row).filter(
+      (key) => !fixedFields.includes(key)
+    );
   };
 
-  // ✅ CONVERTIR VALORES
-  const parseValue = (value) => {
-    if (value === "") return null;
-    if (!isNaN(value)) return parseFloat(value);
-    if (value === "true") return true;
-    if (value === "false") return false;
-    return value;
-  };
 
-  // ✅ GUARDAR TODO
-  const saveAll = async () => {
-    try {
-      const results = [];
+const getInputType = (value) => {
+  if (value === null || value === undefined) return "text";
+  if (!isNaN(value) && value !== "") return "number";
 
-      for (const [index, row] of rows.entries()) {
+  // detectar fecha simple
+  if (typeof value === "string" && !isNaN(Date.parse(value))) {
+    return "date";
+  }
 
-        // ✅ convertir todos los campos dinámicos
-        const parsedRow = {};
-        Object.entries(row).forEach(([key, value]) => {
-          parsedRow[key] = parseValue(value);
-        });
+  return "text";
+};
 
-        // 🔥 AQUÍ ES LA CLAVE PARA TU BACK
-        const payload = {
-          data: parsedRow,   // ✅ TODO dinámico
-          plantaId: parseInt(row.plantaId || plantas[0]?.id),
-          estado: "pendiente"
-        };
+const saveAll = async () => {
+  try {
+    const results = [];
 
-        console.log("PAYLOAD:", payload);
+    for (const [index, row] of rows.entries()) {
 
-        try {
-          const res = await axios.post(`${API}/paquetes`, payload, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+      const extraFields = {};
 
-          results.push(res.data);
-
-        } catch (err) {
-          console.error("ERROR FILA", index, err.response?.data || err);
-          alert(`Error en fila ${index + 1}`);
+      Object.keys(row).forEach((key) => {
+        if (!fixedFields.includes(key)) {
+          extraFields[key] = row[key];
         }
+      });
+
+      if (!extraFields.tonCO2eq) {
+        alert(`Falta tonCO2eq en fila ${index + 1}`);
+        continue;
       }
 
-      setPaquetes([...results, ...paquetes]);
-      alert("Carga completada 🚀");
+      extraFields.tonCO2eq = parseFloat(extraFields.tonCO2eq);
 
-    } catch (error) {
-      console.error(error);
-      alert("Error general");
+
+if (!row.plantaId) {
+  alert(`Falta planta en fila ${index + 1}`);
+  continue;
+}
+
+
+const payload = {
+  captureDate: row.captureDate || null,
+
+  planta: {
+    id: parseInt(row.plantaId)
+  },
+
+  metadata: JSON.stringify(extraFields),
+  createdBy: user.email
+};
+
+
+
+      console.log("Payload enviado:", payload);
+      try {
+        const res = await axios.post(`${API}/paquetes`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        results.push(res.data);
+
+      } catch (err) {
+        console.error("Error fila", index, err);
+        alert(`Error en fila ${index + 1}`);
+      }
     }
-  };
 
+    setPaquetes(prev => [...results, ...(prev || [])])
+    alert("Carga completada 🚀");
+
+  } catch (error) {
+    alert("Error general");
+  }
+};
+
+console.log("PLANTAS:", plantas);
   return (
     <section className="panel">
       <h1>Registrar paquete de captura de CO₂</h1>
@@ -157,18 +190,26 @@ export default function Registrar() {
           {/* ✅ Planta (único campo controlado) */}
           <div className="field">
             <label>Planta</label>
-            <select
-              value={row.plantaId || plantas[0]?.id}
-              onChange={(e) =>
-                handleChange(index, "plantaId", e.target.value)
-              }
-            >
-              {plantas.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+            
+          <select
+            value={row.plantaId || ""}
+            onChange={(e) =>
+              handleChange(index, "plantaId", e.target.value)
+            }
+          >
+            
+          <option value="" disabled hidden>
+            Seleccionar planta
+          </option>
+
+
+            {plantas.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
+
           </div>
 
           {/* ✅ CAMPOS DINÁMICOS */}
@@ -199,7 +240,8 @@ export default function Registrar() {
 
       <div className="panel sub">
         <h2>Últimos paquetes cargados</h2>
-        <TablePaquetes items={paquetes} />
+        <TablePaquetes items={paquetesUsuario}plantas={plantas}
+ />
       </div>
     </section>
   );

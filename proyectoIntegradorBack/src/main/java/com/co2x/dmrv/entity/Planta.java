@@ -1,5 +1,6 @@
 package com.co2x.dmrv.entity;
 
+import com.co2x.dmrv.dto.PlantaDTO;
 import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.entity.Reporte;
 import jakarta.persistence.*;
@@ -10,29 +11,29 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "\"Planta\"")
-public class Planta {
+@Table(name = "Planta")
+public class Planta extends PlantaDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"Id\"")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "\"Nombre\"")
+    @Column(name = "nombre")
     private String nombre;
 
-    @Column(name = "\"Direccion\"")
+    @Column(name = "direccion")
     private String direccion;
 
-    @Column(name = "\"Latitud\"")
+    @Column(name = "latitud")
     private Double latitud;
 
-    @Column(name = "\"Longitud\"")
+    @Column(name = "longitud")
     private Double longitud;
 
     // ✅ RELACIÓN CON EMPRESA (ESTA FALTABA)
     @ManyToOne
-    @JoinColumn(name = "empresa_id")
+    @JoinColumn(name = "empresa")
     private Empresa empresa;
 
     // =========================

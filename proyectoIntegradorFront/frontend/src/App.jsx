@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Pendientes from "./pages/Pendientes";
 import Registrar from "./pages/Registrar";
 import Historial from "./pages/Historial";
+import Auditar from "./pages/Auditar";
 
 import "./styles.css";
 
@@ -123,6 +124,7 @@ console.log("ACCOUNTS", accounts);
           path="historial"
           element={isAuthenticated ? <Historial /> : <Navigate to="/" />}
         />
+        <Route path="/auditar/:id" element={<Auditar />} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" />} />

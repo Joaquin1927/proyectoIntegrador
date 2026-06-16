@@ -1,53 +1,48 @@
-package com.co2x.dmrv.entity;
+    package com.co2x.dmrv.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
+    import jakarta.persistence.*;
+    import lombok.Data;
 
-import java.time.LocalDate;
-import java.util.List;
+    import java.time.LocalDate;
+    import java.util.List;
 
-@Data
-@Entity
-@Table(name = "\"Reporte\"")
-public class Reporte {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"Id\"")
-    private Integer id;
+    @Data
+    @Entity
+    @Table(name = "Reporte")
+    public class Reporte {
 
-    @Column(name = "\"fechaReporte\"")
-    private LocalDate fechaReporte;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "Id")
+        private Integer id;
 
-    @Column(name = "\"toneladasCO2\"")
-    private Double toneladasCO2;
+        @Column(name = "fechaReporte")
+        private LocalDate fechaReporte;
 
-    @Column(name = "\"ubicacion\"")
-    private String ubicacion;
+        @Column(name = "toneladasCO2")
+        private Double toneladasCO2;
 
-    @Column(name = "\"tipoCaptura\"")
-    private String tipoCaptura;
+        @Column(name = "ubicacion")
+        private String ubicacion;
 
-    @Column(name = "\"metodologia\"")
-    private String metodologia;
+        @Column(name = "tipoCaptura")
+        private String tipoCaptura;
 
-    @Column(name = "\"estado\"")
-    private String estado;
+        @Column(name = "metodologia")
+        private String metodologia;
 
-    @Column(name = "\"observaciones\"")
-    private String observaciones;
+        @Column(name = "estado")
+        private String estado;
 
-    @Column(name = "\"usuarioResponsable\"")
-    private String usuarioResponsable;
+        @Column(name = "observaciones")
+        private String observaciones;
 
-    @ManyToOne
-    @JoinColumn(name = "\"empleado_Id\"")
-    private Usuario empleado;
+        // ✅ USAR SOLO STRING
+        @Column(name = "usuario_responsable")
+        private String usuarioResponsable;
 
-    @ManyToOne
-    @JoinColumn(name = "\"planta_Id\"")
-    private Planta planta;
-
-    @OneToMany(mappedBy = "reporte")
-    private List<PaqueteCO2> paquetes;
-}
+        @ManyToOne
+        @JoinColumn(name = "planta_Id")
+        private Planta planta;
+    }

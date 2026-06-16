@@ -1,18 +1,25 @@
 package com.co2x.dmrv.dto;
 import com.co2x.dmrv.entity.EstadoPaquete;
 
-import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.entity.Reporte;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import java.time.LocalDate;
-
+@Data
 public class PaqueteCO2DTO {
+
+    @NotNull(message = "Seleccione una planta")
+    public PlantaDTO planta;
 
     public Integer id;
 
     public String certId;
     public String projectName;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     public LocalDate captureDate;
+
     public Double tonCO2eq;
 
     public LocalDate issuanceDate;
@@ -28,7 +35,8 @@ public class PaqueteCO2DTO {
 
     public Long reporteId;
 
-    public Integer plantaId;
 
     public String createdBy;
+
+    public String metadata;
 }

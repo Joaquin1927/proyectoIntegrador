@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { AppContext } from "./AppContext";
 import axios from "axios";
+import { createContext } from "react";
+
+
 const DB_KEY = "co2x_db_v1";
 
 function loadPaquetes() {
@@ -18,40 +21,68 @@ function savePaquetes(paquetes) {
   localStorage.setItem(DB_KEY, JSON.stringify(paquetes));
 }
 
+
 export function AppProvider({ children }) {
-const plantas = [
-  { id: 1, nombre: "Planta Norte" }
-];
 
+  const API = import.meta.env.VITE_API_URL;
+
+  // ✅ ESTADOS
+  const [plantas, setPlantas] = useState([]);
   const [paquetes, setPaquetes] = useState([]);
-
-useEffect(() => {
-
-  console.log("USE EFFECT ARRANCO");
-
-  axios
-    .get("http://localhost:8080/paquetes")
-    .then((res) => {
-
-      console.log("ENTRO AL THEN");
-      console.log("RES.DATA =", res.data);
-
-      setPaquetes(res.data);
-
-    })
-    .catch((err) => {
-
-      console.log("ENTRO AL CATCH");
-      console.error(err);
-
-    });
-
-}, []);
   const [user, setUser] = useState(null);
+  const [backendOk, setBackendOk] = useState(true);
 
+  // ✅ plantas
+  useEffect(() => {
+    axios.get(`${API}/plantas`)
+      .then(res => setPlantas(res.data));
+  }, []);
+
+  // ✅ restaurar user
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      console.log("RESTAURANDO:", parsed);
+      setUser({ ...parsed });
+    }
+  }, []);
+
+  // ✅ paquetes
+  useEffect(() => {
+    if (!user?.email) return;
+
+    console.log("🚀 FETCH:", user.email);
+
+    axios.get(`${API}/paquetes/usuario/${user.email}`)
+      .then(res => {
+        console.log("✅ PAQUETES:", res.data);
+        setPaquetes(res.data);
+      });
+  }, [user?.email]);
+
+  // ✅ guardar paquetes
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
+
+  
+
+useEffect(() => {
+  const checkBackend = async () => {
+    try {
+      const res = await fetch(`${API}/test`);
+      if (!res.ok) throw new Error();
+      setBackendOk(true);
+    } catch {
+      setBackendOk(false);
+    }
+  };
+
+  checkBackend();
+}, []);
+
+
 
   // ✅ helpers
   const login = (userData) => setUser(userData);
@@ -77,6 +108,7 @@ console.log("APP PROVIDER PAQUETES =", paquetes);
         // ✅ helpers opcionales
         login,
         logout,
+        backendOk,
       }}
     >
       {children}
