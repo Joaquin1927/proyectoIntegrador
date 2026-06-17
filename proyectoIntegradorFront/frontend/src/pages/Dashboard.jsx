@@ -143,7 +143,6 @@ console.log(paquetes);
           {toneladasVerificadas.toFixed(3)}
         </div>
       </div>
-//dsfdsfewrew
       <div className="kpi">
         <div className="kpi-title">Paquetes totales</div>
         <div className="kpi-value">

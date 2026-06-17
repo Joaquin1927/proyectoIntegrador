@@ -273,7 +273,6 @@ public class PaqueteCO2Service {
             if (auditor == null) auditor = jwt.getClaimAsString("email");
             if (auditor == null) auditor = jwt.getSubject();
         }
-//dsfdsfdsfewresdfdsfdsdfsewew
         return factory.toPaqueteDTO(paquete);
     }
 
