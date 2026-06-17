@@ -260,10 +260,7 @@ public class PaqueteCO2Service {
         reporte.setEstado("GENERADO");
         reporte.setMetodologia("Automática");
 
-        //Usuario usuario = UsuarioRepository.findByEmail(paquete.getCreatedBy())
-                //.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        //reporte.setEmpleado(usuario);
         reporte.setUsuarioResponsable(paquete.getCreatedBy());
 
         reporteRepo.save(reporte);
@@ -271,6 +268,17 @@ public class PaqueteCO2Service {
         paquete.setReporte(reporte);
 
         paqueteRepo.save(paquete);
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String auditor = "desconocido";
+
+        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
+            auditor = jwt.getClaimAsString("preferred_username");
+
+            if (auditor == null) auditor = jwt.getClaimAsString("email");
+            if (auditor == null) auditor = jwt.getSubject();
+        }
 
         Record record = recordService.generateFromPaquete(paquete);
         System.out.println("Record creado con CID: " + record.getIpfsCid());
@@ -291,4 +299,18 @@ public class PaqueteCO2Service {
         return factory.toPaqueteDTO(paquete);
 
     }
+
+
+    public void solicitarCorreccion(Integer id, Map<String, Object> data) {
+
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
+
+        paquete.setEstado(EstadoPaquete.EN_REVISION);
+
+        paqueteRepo.save(paquete);
+
+        // después podés guardar comentarios
+    }
+
 }
