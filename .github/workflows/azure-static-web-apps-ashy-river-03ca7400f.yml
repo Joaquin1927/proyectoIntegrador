@@ -1,4 +1,4 @@
-name: Frontend - Azure Static Web Apps
+name: Azure Static Web Apps CI/CD
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ASHY_RIVER_03CA7400F }}
           action: "upload"
           app_location: "./proyectoIntegradorFront/frontend"
           api_location: ""
