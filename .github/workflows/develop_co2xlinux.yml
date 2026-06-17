@@ -8,15 +8,9 @@ on:
   push:
     branches:
       - main
-      
     paths:
       - 'proyectoIntegradorBack/**'
-      - '.github/workflows/backend.yml'
-    
-    paths-ignore:
-      - 'frontend/**'
-
-
+      - '.github/workflows/develop_co2xlinux.yml'
   workflow_dispatch:
 
 jobs:
