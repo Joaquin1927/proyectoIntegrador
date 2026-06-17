@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/paquetes")
@@ -75,6 +76,18 @@ public class PaqueteController {
     public ResponseEntity<PaqueteCO2DTO> rechazar(@PathVariable Integer id) {
         return ResponseEntity.ok(service.rechazar(id));
     }
+
+
+    @PostMapping("/{id}/correccion")
+    public ResponseEntity<?> solicitarCorreccion(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> body) {
+
+        service.solicitarCorreccion(id, body);
+
+        return ResponseEntity.ok().build();
+    }
+
 
 //
 //    @DeleteMapping("/{id}")
