@@ -37,6 +37,6 @@ public class PaqueteCO2DTO {
 
 
     public String createdBy;
-
+    public String auditor;
     public String metadata;
 }
