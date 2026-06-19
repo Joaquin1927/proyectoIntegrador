@@ -22,7 +22,6 @@ export function AppProvider({ children }) {
   useEffect(() => {
     axios.get(`${API}/plantas`)
       .then((res) => {
-        console.log("PLANTAS BACKEND =", res.data);
         setPlantas(res.data);
       })
       .catch((err) => {
@@ -30,22 +29,33 @@ export function AppProvider({ children }) {
       });
   }, []);
 
-  // ✅ cargar paquetes del usuario
-useEffect(() => {
-  if (!user?.email) return;
+  // ✅ 🔥 NUEVA FUNCIÓN CENTRAL
+  const cargarPaquetes = async () => {
+    if (!user?.email) return;
 
-  console.log("Buscando paquetes para:", user.email);
+    try {
+      let res;
 
-  axios.get(`${API}/paquetes/usuario/${user.email}`)
-    .then((res) => {
-      console.log("PAQUETES DEL USUARIO =", res.data);
+      if (user.role === "auditor") {
+        // ✅ el auditor necesita TODO
+        res = await axios.get(`${API}/paquetes`);
+      } else {
+        // ✅ el empleado solo lo suyo
+        res = await axios.get(`${API}/paquetes/usuario/${user.email}`);
+      }
+
+      console.log("PAQUETES CARGADOS:", res.data);
       setPaquetes(res.data);
-    })
-    .catch((err) => {
-      console.error("Error cargando paquetes", err);
-    });
 
-}, [user?.email]);
+    } catch (err) {
+      console.error("Error cargando paquetes", err);
+    }
+  };
+
+  // ✅ ejecutar cuando cambia usuario
+  useEffect(() => {
+    cargarPaquetes();
+  }, [user?.email]);
 
   // ✅ login
   const login = (userData) => {
@@ -80,6 +90,7 @@ useEffect(() => {
         setUser,
         login,
         logout,
+        cargarPaquetes, // ✅ 👈 ESTO ES CLAVE
       }}
     >
       {children}

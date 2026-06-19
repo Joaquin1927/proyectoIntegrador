@@ -42,6 +42,9 @@ public class PaqueteCO2Service {
     private ReporteRepository reporteRepo;
 
     @Autowired
+    private UsuarioRepository usuarioRepo;
+
+    @Autowired
     private PlantaService plantaService;
 
     public List<PaqueteCO2DTO> listar() {
@@ -254,28 +257,45 @@ public class PaqueteCO2Service {
         reporte.setEstado("GENERADO");
         reporte.setMetodologia("Automática");
 
-
         reporte.setUsuarioResponsable(paquete.getCreatedBy());
 
         reporteRepo.save(reporte);
 
         paquete.setReporte(reporte);
 
-        paqueteRepo.save(paquete);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String auditor = "desconocido";
+
+        String auditorEmail = null;
 
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-            auditor = jwt.getClaimAsString("preferred_username");
 
-            if (auditor == null) auditor = jwt.getClaimAsString("email");
-            if (auditor == null) auditor = jwt.getSubject();
+            auditorEmail = jwt.getClaimAsString("preferred_username");
+
+            if (auditorEmail == null)
+                auditorEmail = jwt.getClaimAsString("upn");
+
+            if (auditorEmail == null)
+                auditorEmail = jwt.getClaimAsString("email");
+
+            if (auditorEmail == null)
+                auditorEmail = jwt.getSubject();
+
+            System.out.println("JWT CLAIMS: " + jwt.getClaims());
+            System.out.println("AUDITOR FINAL: " + auditorEmail);
+
         }
+
+
+        paquete.setAuditor(auditorEmail);
+
+
+        paqueteRepo.save(paquete);
 
         return factory.toPaqueteDTO(paquete);
     }
+
 
 
     public PaqueteCO2DTO rechazar(Integer id) {

@@ -38,8 +38,9 @@ public class PaqueteCO2 {
     @ManyToOne
     private Planta planta;
 
-    @ManyToOne
-    private Usuario auditor;
+    @Column(name = "auditor")
+    private String auditor;
+
 
     private String createdBy;
 

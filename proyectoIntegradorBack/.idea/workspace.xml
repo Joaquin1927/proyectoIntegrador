@@ -6,10 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/PaqueteCO2DTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/dto/PaqueteCO2DTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/UsuarioRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/UsuarioRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Pendientes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Pendientes.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/utils/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/utils/Factory.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +88,7 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;Spring Boot.Co2xApplication.executor&quot;: &quot;Run&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/Usuario/Documents/proyectoIntegrador/proyectoIntegradorBack&quot;,

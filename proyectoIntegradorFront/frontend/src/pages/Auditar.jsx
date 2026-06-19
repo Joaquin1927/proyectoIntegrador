@@ -17,32 +17,37 @@ export default function Auditar() {
 
   const [paquete, setPaquete] = useState(null);
 
-  const aprobar = async () => {
-    try {
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
-      });
+  
+const aprobar = async () => {
+  try {
+    const response = await instance.acquireTokenSilent({
+      scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+      account: accounts[0],
+    });
 
-      const token = response.accessToken;
-      console.log(atob(token.split(".")[1]));
-      await axios.post(
-        `${API}/paquetes/${id}/aprobar`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const token = response.accessToken;
+
+    await axios.post(
+      `${API}/paquetes/${id}/aprobar`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      }
+    );
 
-      alert("✅ Paquete aprobado");
-      navigate("/pendientes");
-    } catch (err) {
-      console.error(err.response?.data || err);
-      alert("Error al aprobar");
-    }
-  };
+    alert("✅ Paquete aprobado");
+
+    // ✅ simplemente navegar
+    navigate("/pendientes");
+
+  } catch (err) {
+    console.error(err.response?.data || err);
+    alert("Error al aprobar");
+  }
+};
+
 
   const rechazar = async () => {
     try {
