@@ -20,6 +20,7 @@ public class NotificacionObserver implements PaqueteObserver {
         Notificacion n = new Notificacion();
 
         n.setUsuario(paquete.getCreatedBy());
+        n.setPaqueteId(paquete.getId());
 
         n.setMensaje(
                 "El paquete " + paquete.getId() +

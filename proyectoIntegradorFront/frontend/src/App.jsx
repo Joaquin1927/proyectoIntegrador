@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useApp } from "./context/AppContext";
-
+import Notificaciones from "./pages/Notificaciones";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -120,6 +120,8 @@ useEffect(() => {
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" />} />
+
+        <Route path="/notificaciones" element={<Notificaciones />} />
 
       </Route>
     </Routes>

@@ -18,8 +18,18 @@ public class Notificacion {
 
     private LocalDateTime fecha;
 
+    private Integer paqueteId;
+
     public Notificacion() {}
 
+
+    public Integer getPaqueteId() {
+        return paqueteId;
+    }
+
+    public void setPaqueteId(Integer paqueteId) {
+        this.paqueteId = paqueteId;
+    }
 
     public Integer getId() {
         return id;
@@ -60,4 +70,6 @@ public class Notificacion {
     public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
     }
+
+
 }
