@@ -5,10 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/NotificacionController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Notificacion.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/NotificacionRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/observer/NotificacionObserver.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/observer/PaqueteObserver.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/observer/PaqueteSubject.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Usuario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Usuario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/UsuarioRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/UsuarioRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/components/Header.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/components/Header.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,10 +27,10 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Enum" />
-        <option value="Class" />
         <option value="AnnotationType" />
+        <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -74,35 +80,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "JUnit.PaqueteCO2ServiceTest.deberiaCrearPaqueteCorrectamente.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Spring Boot.Co2xApplication.executor": "Run",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "develop",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Usuario/Documents/proyectoIntegrador/proyectoIntegradorBack",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "to.speed.mode.migration.done": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;JUnit.PaqueteCO2ServiceTest.deberiaCrearPaqueteCorrectamente.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Spring Boot.Co2xApplication.executor&quot;: &quot;Run&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Usuario/Documents/proyectoIntegrador/proyectoIntegradorBack&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.co2x.dmrv.service" />
       <recent name="com.co2x.dmrv.Test" />
       <recent name="com.co2x.dmrv.controller" />
-      <recent name="com.co2x.dmrv.service" />
     </key>
   </component>
   <component name="RunManager" selected="Spring Boot.Co2xApplication">

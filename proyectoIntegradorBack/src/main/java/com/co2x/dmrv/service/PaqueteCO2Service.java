@@ -3,18 +3,17 @@ package com.co2x.dmrv.service;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.*;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
-import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.repository.UsuarioRepository;
+import com.co2x.dmrv.service.observer.PaqueteObserver;
+import com.co2x.dmrv.service.observer.PaqueteSubject;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +30,34 @@ import java.util.Set;
 import static java.util.Arrays.stream;
 
 @Service
-public class PaqueteCO2Service {
+public class PaqueteCO2Service implements PaqueteSubject {
+
+
+
+    @Autowired
+    private List<PaqueteObserver> observers;
+
+
+
+
+    @Override
+    public void addObserver(PaqueteObserver observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(PaqueteObserver observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers(PaqueteCO2 paquete) {
+        for (PaqueteObserver o : observers) {
+            o.update(paquete);
+        }
+    }
+
+
 
     @Autowired
     private PaqueteCO2Repository paqueteRepo;
@@ -82,7 +109,6 @@ public class PaqueteCO2Service {
             Map<String, Object> metadataMap =
                     mapper.readValue(metadataJson, Map.class);
 
-            // 🔥 CAMPOS PROTEGIDOS
             Set<String> forbiddenFields = Set.of(
                     "certId",
                     "createdBy",
@@ -93,7 +119,6 @@ public class PaqueteCO2Service {
 
             forbiddenFields.forEach(metadataMap::remove);
 
-            // 🔥 VALIDAR tonCO2eq
             Object tonObj = metadataMap.get("tonCO2eq");
 
             if (tonObj == null) {
@@ -135,14 +160,12 @@ public class PaqueteCO2Service {
 
         Planta planta = plantaService.getEntity(dto.planta.id);
 
-        // ✅ usar factory
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
         ObjectMapper mapper = new ObjectMapper();
 
         Map<String, Object> metadataMap = procesarMetadata(dto.metadata);
 
-        // ✅ extraer ton
         Object tonObj = metadataMap.get("_tonCO2eq");
 
         Double ton;
@@ -156,7 +179,6 @@ public class PaqueteCO2Service {
 
         entity.setMetadata(mapper.writeValueAsString(metadataMap));
 
-        // ✅ valores automáticos
         entity.setEstado(EstadoPaquete.PENDIENTE);
         entity.setIssuanceDate(LocalDate.now());
 
@@ -166,7 +188,6 @@ public class PaqueteCO2Service {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
-        // ✅ usuario
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
         String email = "desconocido";
@@ -284,7 +305,7 @@ public class PaqueteCO2Service {
 
             System.out.println("JWT CLAIMS: " + jwt.getClaims());
             System.out.println("AUDITOR FINAL: " + auditorEmail);
-
+            System.out.println("Observers: " + observers.size());
         }
 
 
@@ -292,6 +313,7 @@ public class PaqueteCO2Service {
 
 
         paqueteRepo.save(paquete);
+        notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
     }
@@ -304,9 +326,10 @@ public class PaqueteCO2Service {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        // ✅ cambiar estado
         paquete.setEstado(EstadoPaquete.RECHAZADO);
-
+        paqueteRepo.save(paquete);
+        notifyObservers(paquete);
+        System.out.println("Observers: " + observers.size());
         return factory.toPaqueteDTO(paquete);
 
     }
@@ -320,8 +343,8 @@ public class PaqueteCO2Service {
         paquete.setEstado(EstadoPaquete.EN_REVISION);
 
         paqueteRepo.save(paquete);
-
-        // después podés guardar comentarios
+        notifyObservers(paquete);
+        System.out.println("Observers: " + observers.size());
     }
 
 }
