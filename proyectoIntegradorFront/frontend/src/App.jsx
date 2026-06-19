@@ -20,70 +20,62 @@ export default function App() {
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-const init = async () => {
+useEffect(() => {
+  const init = async () => {
+    try {
+      await instance.initialize();
 
-  await instance.initialize();
+      const redirectResponse = await instance.handleRedirectPromise();
 
-  const redirectResponse =
-    await instance.handleRedirectPromise();
-
-  if (redirectResponse?.account) {
-    instance.setActiveAccount(
-      redirectResponse.account
-    );
-  }
-
-  console.log("ACCOUNTS", instance.getAllAccounts());
-
-  const account =
-    instance.getActiveAccount() ||
-    instance.getAllAccounts()[0];
-
-  if (!account) {
-    setLoading(false);
-    return;
-  }
-
-  instance.setActiveAccount(account);
-
-  try {
-    const response = await instance.acquireTokenSilent({
-      scopes: [import.meta.env.VITE_SCOPE],
-      account,
-    });
-
-        const token = response.accessToken;
-        localStorage.setItem("token", token);
-
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const roles = payload.roles || [];
-
-        let role = "empleado";
-        if (roles.includes("ADMIN")) role = "admin";
-        else if (roles.includes("AUDITOR")) role = "auditor";
-
-        setUser({
-          email: payload.upn || payload.unique_name,
-          role,
-        });
-
-        setLoading(false);
-
-        // ✅ SOLO redirigir si estás en login
-        if (window.location.pathname === "/") {
-          navigate("/dashboard");
-        }
-
-      } catch (error) {
-        console.error("Error obteniendo token:", error);
-        localStorage.removeItem("token");
-        setLoading(false);
+      if (redirectResponse?.account) {
+        instance.setActiveAccount(redirectResponse.account);
       }
-    };
-console.log("ACCOUNTS", accounts);
-    init();
-  }, [accounts, instance, navigate]);
+
+      const account =
+        instance.getActiveAccount() ||
+        instance.getAllAccounts()[0];
+
+      if (!account) {
+        setUser(null);
+        return;
+      }
+
+      instance.setActiveAccount(account);
+
+      const response = await instance.acquireTokenSilent({
+        scopes: [import.meta.env.VITE_SCOPE],
+        account,
+      });
+
+      const token = response.accessToken;
+      localStorage.setItem("token", token);
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const roles = payload.roles || [];
+
+      let role = "empleado";
+      if (roles.includes("ADMIN")) role = "admin";
+      else if (roles.includes("AUDITOR")) role = "auditor";
+
+      setUser({
+        email: payload.upn || payload.unique_name,
+        role,
+      });
+
+      if (window.location.pathname === "/") {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error inicializando autenticacion:", error);
+      localStorage.removeItem("token");
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  init();
+}, [accounts, instance, navigate, setUser]);
 
   // ✅ evitar render mientras MSAL carga
   if (loading) {

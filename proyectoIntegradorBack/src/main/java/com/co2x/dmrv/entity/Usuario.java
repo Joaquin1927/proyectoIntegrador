@@ -35,6 +35,5 @@ public class Usuario {
     private Empresa empresa;
 
 
-    @OneToMany(mappedBy = "auditor")
-    private List<PaqueteCO2> paquetesVerificados;
+
 }
