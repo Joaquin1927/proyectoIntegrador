@@ -1,8 +1,10 @@
 package com.co2x.dmrv.service.observer;
-
+import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.Notificacion;
 import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.repository.NotificacionRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +22,7 @@ public class NotificacionObserver implements PaqueteObserver {
         Notificacion n = new Notificacion();
 
         n.setUsuario(paquete.getCreatedBy());
+
         n.setPaqueteId(paquete.getId());
 
         n.setMensaje(
@@ -28,9 +31,9 @@ public class NotificacionObserver implements PaqueteObserver {
         );
 
         n.setLeido(false);
+
         System.out.println("NOTIFICACION DISPARADA");
+
         repo.save(n);
     }
 }
-
-
