@@ -176,7 +176,6 @@ public class PaqueteCO2Service implements PaqueteSubject {
         }
 
         entity.setTonCO2eq(ton);
-
         entity.setMetadata(mapper.writeValueAsString(metadataMap));
 
         entity.setEstado(EstadoPaquete.PENDIENTE);
@@ -188,20 +187,34 @@ public class PaqueteCO2Service implements PaqueteSubject {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
+        // ✅ MÉTODO ROBUSTO
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String email = "desconocido";
+        String email = null;
 
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-            email = jwt.getClaimAsString("preferred_username");
 
-            if (email == null) email = jwt.getClaimAsString("email");
-            if (email == null) email = jwt.getSubject();
+            System.out.println("CLAIMS: " + jwt.getClaims());
+
+            // ✅ USAR DIRECTAMENTE EL MAP
+            email = (String) jwt.getClaims().get("unique_name");
+
+            if (email == null || email.isBlank())
+                email = (String) jwt.getClaims().get("upn");
+
+            if (email == null || email.isBlank())
+                email = (String) jwt.getClaims().get("preferred_username");
+
+            if (email == null || email.isBlank())
+                email = (String) jwt.getClaims().get("email");
+
+            // 🚨 SEGURIDAD: NO PERMITIR FALLBACK A TOKEN
+            if (email == null || email.isBlank()) {
+                throw new RuntimeException("Token inválido: no contiene email");
+            }
         }
 
-        if ((email == null || email.equals("desconocido")) && dto.createdBy != null) {
-            email = dto.createdBy;
-        }
+        System.out.println("FINAL EMAIL: " + email);
 
         entity.setCreatedBy(email);
 
@@ -225,7 +238,33 @@ public class PaqueteCO2Service implements PaqueteSubject {
         return factory.toPaqueteDTO(paquete);
     }
 
+    private String getCurrentUserEmailStrict() {
 
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (!(auth != null && auth.getPrincipal() instanceof Jwt jwt)) {
+            throw new RuntimeException("No autenticado correctamente");
+        }
+
+        System.out.println("CLAIMS: " + jwt.getClaims());
+
+        String email = (String) jwt.getClaims().get("unique_name");
+
+        if (email == null || email.isBlank())
+            email = (String) jwt.getClaims().get("upn");
+
+        if (email == null || email.isBlank())
+            email = (String) jwt.getClaims().get("preferred_username");
+
+        if (email == null || email.isBlank())
+            email = (String) jwt.getClaims().get("email");
+
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Token inválido: no contiene email");
+        }
+
+        return email;
+    }
 
 
     private void validarAuditor() {
@@ -284,35 +323,14 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
         paquete.setReporte(reporte);
 
+        String auditorEmail = getCurrentUserEmailStrict();
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-
-
-        String auditorEmail = null;
-
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-
-            auditorEmail = jwt.getClaimAsString("preferred_username");
-
-            if (auditorEmail == null)
-                auditorEmail = jwt.getClaimAsString("upn");
-
-            if (auditorEmail == null)
-                auditorEmail = jwt.getClaimAsString("email");
-
-            if (auditorEmail == null)
-                auditorEmail = jwt.getSubject();
-
-            System.out.println("JWT CLAIMS: " + jwt.getClaims());
-            System.out.println("AUDITOR FINAL: " + auditorEmail);
-            System.out.println("Observers: " + observers.size());
-        }
-
+        System.out.println("AUDITOR FINAL: " + auditorEmail);
 
         paquete.setAuditor(auditorEmail);
 
-
         paqueteRepo.save(paquete);
+
         notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
@@ -320,31 +338,58 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
 
 
+
     public PaqueteCO2DTO rechazar(Integer id) {
+
         validarAuditor();
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
+        // ✅ cambiar estado
         paquete.setEstado(EstadoPaquete.RECHAZADO);
-        paqueteRepo.save(paquete);
-        notifyObservers(paquete);
-        System.out.println("Observers: " + observers.size());
-        return factory.toPaqueteDTO(paquete);
 
+        // ✅ guardar quién rechazó
+        String auditorEmail = getCurrentUserEmailStrict();
+        paquete.setAuditor(auditorEmail);
+
+        // ✅ guardar en DB
+        paqueteRepo.save(paquete);
+
+        // ✅ disparar notificación al creador
+        notifyObservers(paquete);
+
+        System.out.println("RECHAZADO por: " + auditorEmail);
+
+        return factory.toPaqueteDTO(paquete);
     }
+
 
 
     public void solicitarCorreccion(Integer id, Map<String, Object> data) {
 
+        validarAuditor();
+
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
+        // ✅ cambiar estado
         paquete.setEstado(EstadoPaquete.EN_REVISION);
 
+        // ✅ guardar quién solicita la corrección
+        String auditorEmail = getCurrentUserEmailStrict();
+        paquete.setAuditor(auditorEmail);
+
+        // ✅ (opcional futuro)
+        // paquete.setComentarios(data);
+
         paqueteRepo.save(paquete);
+
+        // ✅ disparar notificación
         notifyObservers(paquete);
-        System.out.println("Observers: " + observers.size());
+
+        System.out.println("EN REVISION por: " + auditorEmail);
     }
+
 
 }
