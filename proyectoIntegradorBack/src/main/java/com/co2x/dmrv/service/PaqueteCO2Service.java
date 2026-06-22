@@ -2,6 +2,7 @@ package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.*;
+import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.repository.UsuarioRepository;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 import static java.util.Arrays.stream;
 
+
 @Service
 public class PaqueteCO2Service implements PaqueteSubject {
 
@@ -36,8 +38,8 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
     @Autowired
     private List<PaqueteObserver> observers;
-
-
+    @Autowired
+    private HistorialPaqueteRepository historialRepo;
 
 
     @Override
@@ -307,34 +309,42 @@ public class PaqueteCO2Service implements PaqueteSubject {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
+        EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.APROBADO);
 
+        // Crear reporte
         Reporte reporte = new Reporte();
-
         reporte.setFechaReporte(LocalDate.now());
         reporte.setToneladasCO2(paquete.getTonCO2eq());
         reporte.setPlanta(paquete.getPlanta());
         reporte.setEstado("GENERADO");
         reporte.setMetodologia("Automática");
-
         reporte.setUsuarioResponsable(paquete.getCreatedBy());
-
         reporteRepo.save(reporte);
 
         paquete.setReporte(reporte);
 
         String auditorEmail = getCurrentUserEmailStrict();
-
-        System.out.println("AUDITOR FINAL: " + auditorEmail);
-
         paquete.setAuditor(auditorEmail);
 
         paqueteRepo.save(paquete);
+
+        // 🔥 Registrar historial
+        registrarHistorial(
+                paquete,
+                auditorEmail,
+                EstadoPaquete.APROBADO,
+                Map.of(
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.APROBADO.toString()
+                )
+        );
 
         notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
     }
+
 
 
 
@@ -346,23 +356,30 @@ public class PaqueteCO2Service implements PaqueteSubject {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        // ✅ cambiar estado
+        EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.RECHAZADO);
 
-        // ✅ guardar quién rechazó
         String auditorEmail = getCurrentUserEmailStrict();
         paquete.setAuditor(auditorEmail);
 
-        // ✅ guardar en DB
         paqueteRepo.save(paquete);
 
-        // ✅ disparar notificación al creador
-        notifyObservers(paquete);
+        // 🔥 Registrar historial
+        registrarHistorial(
+                paquete,
+                auditorEmail,
+                EstadoPaquete.RECHAZADO,
+                Map.of(
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.RECHAZADO.toString()
+                )
+        );
 
-        System.out.println("RECHAZADO por: " + auditorEmail);
+        notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
     }
+
 
 
 
@@ -373,23 +390,96 @@ public class PaqueteCO2Service implements PaqueteSubject {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        // ✅ cambiar estado
+        EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.EN_REVISION);
 
-        // ✅ guardar quién solicita la corrección
         String auditorEmail = getCurrentUserEmailStrict();
         paquete.setAuditor(auditorEmail);
 
-        // ✅ (opcional futuro)
-        // paquete.setComentarios(data);
+        paqueteRepo.save(paquete);
+
+        // 🔥 Registrar historial
+        registrarHistorial(
+                paquete,
+                auditorEmail,
+                EstadoPaquete.EN_REVISION,
+                Map.of(
+                        "motivo", data,
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.EN_REVISION.toString()
+                )
+        );
+
+        notifyObservers(paquete);
+    }
+
+
+    private void registrarHistorial(
+            PaqueteCO2 paquete,
+            String usuario,
+            EstadoPaquete accion,
+            Map<String, Object> cambios
+    ) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            HistorialPaquete h = new HistorialPaquete();
+            h.setPaquete(paquete);
+            h.setEditor(usuario);
+            h.setAccion(accion);
+            h.setCambios(mapper.writeValueAsString(cambios));
+
+            historialRepo.save(h);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error guardando historial: " + e.getMessage());
+        }
+
+    }
+
+    public PaqueteCO2DTO corregir(Integer id, Map<String, Object> cambios) {
+
+        String empleadoEmail = getCurrentUserEmailStrict();
+
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
+
+        EstadoPaquete estadoAnterior = paquete.getEstado();
+
+        // Aplicar cambios dinámicamente
+        if (cambios.containsKey("tonCO2eq")) {
+            paquete.setTonCO2eq(Double.parseDouble(cambios.get("tonCO2eq").toString()));
+        }
+
+        if (cambios.containsKey("captureDate")) {
+            paquete.setCaptureDate(LocalDate.parse(cambios.get("captureDate").toString()));
+        }
+
+        if (cambios.containsKey("metadata")) {
+            paquete.setMetadata(cambios.get("metadata").toString());
+        }
+
+        // Volver a estado pendiente
+        paquete.setEstado(EstadoPaquete.PENDIENTE);
 
         paqueteRepo.save(paquete);
 
-        // ✅ disparar notificación
-        notifyObservers(paquete);
+        // 🔥 Registrar historial
+        registrarHistorial(
+                paquete,
+                empleadoEmail,
+                EstadoPaquete.EN_REVISION_CORREGIDO,
+                Map.of(
+                        "cambiosRealizados", cambios,
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.PENDIENTE.toString()
+                )
+        );
 
-        System.out.println("EN REVISION por: " + auditorEmail);
+        return factory.toPaqueteDTO(paquete);
     }
+
+
 
 
 }
