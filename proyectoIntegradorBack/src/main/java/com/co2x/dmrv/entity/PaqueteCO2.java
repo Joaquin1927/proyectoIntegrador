@@ -1,5 +1,4 @@
 package com.co2x.dmrv.entity;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import jakarta.persistence.*;
@@ -8,6 +7,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.mapping.ToOne;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -31,6 +32,9 @@ public class PaqueteCO2 {
 
     //private String metodologia;
     //private Boolean retirementStatus;
+    @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistorialPaquete> historial = new ArrayList<>();
+
 
     @Enumerated(EnumType.STRING)
     private EstadoPaquete estado;

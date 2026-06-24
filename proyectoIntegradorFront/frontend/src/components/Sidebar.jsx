@@ -4,17 +4,16 @@ import { useApp } from "../context/AppContext";
 export default function Sidebar() {
   const { user } = useApp();
 
-console.log("USER COMPLETO:", user);
+  console.log("USER COMPLETO:", user);
 
-if (user) {
-  console.log("USER EMAIL:", user.email);
-  console.log("USER ROLE:", user.role);
-}
+  if (user) {
+    console.log("USER EMAIL:", user.email);
+    console.log("USER ROLE:", user.role);
+  }
 
   return (
     <aside className="sidebar">
       <nav>
-
         {!user && (
           <Link to="/" className="nav-item">
             Iniciar sesión
@@ -36,17 +35,17 @@ if (user) {
 
             {/* ✅ SOLO EMPLEADO */}
             {user.role === "empleado" && (
-              <Link to="/registrar" className="nav-item">
-                ➕ Registrar
-              </Link>
+              <>
+                <Link to="/registrar" className="nav-item">
+                  ➕ Registrar
+                </Link>
+                <Link to="/historial" className="nav-item">
+                  📋 Historial
+                </Link>
+              </>
             )}
-
-            <Link to="/historial" className="nav-item">
-              📋 Historial
-            </Link>
           </>
         )}
-
       </nav>
     </aside>
   );
