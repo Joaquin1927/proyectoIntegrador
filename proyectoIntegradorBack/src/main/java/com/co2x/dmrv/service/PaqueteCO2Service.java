@@ -7,7 +7,8 @@ import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.repository.UsuarioRepository;
-import com.co2x.dmrv.service.Observer.PaqueteObserver;
+import com.co2x.dmrv.service.observer.PaqueteObserver;
+import com.co2x.dmrv.service.observer.PaqueteSubject;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ import java.util.Set;
 import static java.util.Arrays.stream;
 
 @Service
-public class PaqueteCO2Service  implements com.co2x.dmrv.service.observer.PaqueteSubject {
+public class PaqueteCO2Service  implements PaqueteSubject {
     @Autowired
     private List<PaqueteObserver> observers;
 

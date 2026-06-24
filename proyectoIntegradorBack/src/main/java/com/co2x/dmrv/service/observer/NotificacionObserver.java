@@ -3,6 +3,7 @@ import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.Notificacion;
 import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.repository.NotificacionRepository;
+import com.co2x.dmrv.service.observer.PaqueteObserver;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
