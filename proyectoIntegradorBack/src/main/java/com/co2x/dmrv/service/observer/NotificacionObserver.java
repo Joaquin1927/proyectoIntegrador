@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class NotificacionObserver implements PaqueteObserver {
 
@@ -31,6 +33,7 @@ public class NotificacionObserver implements PaqueteObserver {
         );
 
         n.setLeido(false);
+        n.setFecha(LocalDateTime.now());
 
         System.out.println("NOTIFICACION DISPARADA");
 

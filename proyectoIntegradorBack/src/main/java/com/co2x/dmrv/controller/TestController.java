@@ -31,4 +31,11 @@ public class TestController {
     public String auditor() {
         return "Hola Auditor";
     }
+
+    @PreAuthorize("permitAll()")
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
+
 }

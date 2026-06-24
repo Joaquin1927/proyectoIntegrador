@@ -1,63 +1,68 @@
 import { useApp } from "../context/AppContext";
+import { useState, useEffect, useRef } from "react";
 import { useMsal } from "@azure/msal-react";
-import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import axios from "axios";
 
 export default function Header() {
   const API = import.meta.env.VITE_API_URL;
 
-  const { user, logout: logoutContext } = useApp();
+  // ✅ UN SOLO useApp
+  const { user, logout: logoutContext, notificaciones } = useApp();
+
   const { instance } = useMsal();
   const navigate = useNavigate();
 
+  // ✅ estados LOCALES (solo UI)
+  const [open, setOpen] = useState(false);
+  const [dropdownNotifs, setDropdownNotifs] = useState([]);
+  const [noLeidas, setNoLeidas] = useState(0);
+
   const dropdownRef = useRef(null);
 
-  const [notificaciones, setNotificaciones] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [noLeidas, setNoLeidas] = useState(0);
-  
-useEffect(() => {
-
-  function handleClickOutside(event) {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target)
-    ) {
-      setOpen(false); 
-    }
-  }
-
-  document.addEventListener("mousedown", handleClickOutside);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-
-}, []);
-
+  // ✅ calcular no leídas
   useEffect(() => {
-    if (!user?.email) return;
+    const nuevas = notificaciones.filter((n) => !n.leido);
+    setDropdownNotifs(nuevas);
+    setNoLeidas(nuevas.length);
+  }, [notificaciones]);
 
-    axios
-      .get(`${API}/notificaciones/${user.email}`)
-      .then((res) => {
-        console.log("NOTIFICACIONES:", res.data);
-        setNotificaciones(res.data);
-        setNoLeidas(res.data.filter((n) => !n.leido).length);
-      })
-      .catch((err) => console.error("Error notific.", err));
-  }, [user]);
+  // ✅ cerrar al hacer click afuera
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+        setDropdownNotifs([]);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = () => {
     logoutContext();
-
     localStorage.removeItem("token");
-
     instance.setActiveAccount(null);
-
     window.location.href = "/";
+  };
+
+  const toggleDropdown = () => {
+    if (!open) {
+      setNoLeidas(0);
+
+      // ✅ marcar leídas en backend
+      if (user?.email) {
+        axios.post(`${API}/notificaciones/leer/${user.email}`);
+      }
+    } else {
+      setDropdownNotifs([]);
+    }
+
+    setOpen(!open);
   };
 
   return (
@@ -68,76 +73,67 @@ useEffect(() => {
       </div>
 
       <div className="top-actions">
-        {/* ✅ SOLO SI ESTÁ LOGUEADO */}
-
         {user && (
-          <div ref={dropdownRef} style={{ position: "relative" }}>
-            {/* 🔔 botón */}
-            <button
-              className="ghost"
-              onClick={() => {
-                setOpen(!open);
-                setNoLeidas(0); // ✅ limpiar contador al abrir
-              }}
-              style={{ position: "relative" }}
-            >
+          <div
+            ref={dropdownRef}
+            style={{
+              position: "relative",
+              display: "inline-block",
+            }}
+          >
+            <button className="ghost" onClick={toggleDropdown}>
               🔔
-              {/* 🔴 badge */}
-              {noLeidas > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "-5px",
-                    right: "-5px",
-                    background: "red",
-                    color: "white",
-                    borderRadius: "50%",
-                    padding: "2px 6px",
-                    fontSize: "12px",
-                  }}
-                >
-                  {noLeidas}
-                </span>
-              )}
+              {noLeidas > 0 && <span className="badge">{noLeidas}</span>}
             </button>
 
-            {/* ✅ dropdown */}
             {open && (
               <div
+                className="dropdown"
                 style={{
                   position: "absolute",
-                  right: 0,
                   top: "40px",
+                  right: 0,
                   width: "300px",
                   background: "#1e1e1e",
                   border: "1px solid #444",
                   borderRadius: "8px",
                   padding: "10px",
                   zIndex: 1000,
+                  boxShadow: "0px 4px 10px rgba(0,0,0,0.3)",
                 }}
               >
-                {notificaciones.length === 0 && <p>No hay notificaciones</p>}
+                {dropdownNotifs.length === 0 ? (
+                  <p>No hay notificaciones nuevas</p>
+                ) : (
+                  dropdownNotifs.map((n) => (
+                    <div key={n.id}>
+                      <p>{n.mensaje}</p>
 
-                {notificaciones.map((n) => (
-                  <div
-                    key={n.id}
-                    style={{
-                      padding: "8px",
-                      borderBottom: "1px solid #333",
-                      fontSize: "14px",
-                    }}
-                  >
-                    <p>{n.mensaje}</p>
+                      <small>{new Date(n.fecha).toLocaleString()}</small>
 
-                    <button onClick={() => navigate(`/auditar/${n.paqueteId}`)}>
-                      Ver
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        onClick={() => {
+                          navigate(`/auditar/${n.paqueteId}`);
+                          setOpen(false);
+                        }}
+                      >
+                        Ver
+                      </button>
+                    </div>
+                  ))
+                )}
+
+                <div style={{ marginTop: "10px" }}>
+                  <button onClick={() => navigate("/notificaciones")}>
+                    Ver todas
+                  </button>
+                </div>
               </div>
             )}
           </div>
         )}
+
+        <button className="ghost">🌓</button>
 
         <div className="user-pill">{user ? user.email : "Invitado"}</div>
 
@@ -150,3 +146,4 @@ useEffect(() => {
     </header>
   );
 }
+``;

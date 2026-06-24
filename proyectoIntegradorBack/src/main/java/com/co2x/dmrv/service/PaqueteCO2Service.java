@@ -187,7 +187,6 @@ public class PaqueteCO2Service implements PaqueteSubject {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
-        // ✅ MÉTODO ROBUSTO
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
         String email = null;
@@ -196,7 +195,6 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
             System.out.println("CLAIMS: " + jwt.getClaims());
 
-            // ✅ USAR DIRECTAMENTE EL MAP
             email = (String) jwt.getClaims().get("unique_name");
 
             if (email == null || email.isBlank())
@@ -208,7 +206,6 @@ public class PaqueteCO2Service implements PaqueteSubject {
             if (email == null || email.isBlank())
                 email = (String) jwt.getClaims().get("email");
 
-            // 🚨 SEGURIDAD: NO PERMITIR FALLBACK A TOKEN
             if (email == null || email.isBlank()) {
                 throw new RuntimeException("Token inválido: no contiene email");
             }

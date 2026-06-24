@@ -20,6 +20,7 @@ public class Notificacion {
 
     private Integer paqueteId;
 
+
     public Notificacion() {}
 
 

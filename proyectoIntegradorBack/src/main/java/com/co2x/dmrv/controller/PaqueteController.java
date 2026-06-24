@@ -66,7 +66,7 @@ public class PaqueteController {
         try {
             return ResponseEntity.ok(service.aprobar(id));
         } catch (Exception e) {
-            e.printStackTrace(); // 🔥 CLAVE
+            e.printStackTrace();
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }

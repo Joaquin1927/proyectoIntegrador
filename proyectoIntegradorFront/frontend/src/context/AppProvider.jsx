@@ -14,7 +14,8 @@ export function AppProvider({ children }) {
   const [plantas, setPlantas] = useState([]);
   const [paquetes, setPaquetes] = useState([]);
   const [user, setUser] = useState(null);
-  const [backendOk, setBackendOk] = useState(true);
+  const [backendActivo, setBackendActivo] = useState(true);
+  const [notificaciones, setNotificaciones] = useState([]);
 
   useEffect(() => {
     axios
@@ -49,27 +50,55 @@ export function AppProvider({ children }) {
     }
   }, [API, user?.email, user?.role]);
 
-  useEffect(() => {
-    cargarPaquetes();
-  }, [cargarPaquetes]);
+
+useEffect(() => {
+  if (!user) return; 
+
+  cargarPaquetes();
+}, [user]);
+
 
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
 
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        const res = await fetch(`${API}/test`);
-        if (!res.ok) throw new Error();
-        setBackendOk(true);
-      } catch {
-        setBackendOk(false);
-      }
-    };
 
-    checkBackend();
-  }, [API]);
+useEffect(() => {
+  if (!user?.email) return;
+
+  axios
+    .get(`${API}/notificaciones/${user.email}`)
+    .then(res => {
+      setNotificaciones(res.data);
+    })
+    .catch(err => console.error(err));
+
+}, [user]);
+
+
+useEffect(() => {
+  console.log("CHECK BACKEND RUNNING");
+
+  const checkBackend = async () => {
+    try {
+      await axios.get(`${API}/test/health`);
+      console.log("✅ BACKEND OK");
+      setBackendActivo(true);
+    } catch (err) {
+      console.log("❌ BACKEND DOWN", err.message);
+      setBackendActivo(false);
+    }
+  };
+
+  checkBackend();
+
+  const interval = setInterval(checkBackend, 5000); 
+
+  return () => clearInterval(interval); 
+
+}, []);
+
+
 
   const login = (userData) => {
     setUser(userData);
@@ -95,7 +124,9 @@ export function AppProvider({ children }) {
         login,
         logout,
         cargarPaquetes,
-        backendOk,
+        backendActivo,
+        notificaciones,
+        setNotificaciones,
       }}
     >
       {children}

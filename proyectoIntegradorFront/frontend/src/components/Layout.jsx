@@ -6,11 +6,11 @@ import { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 
 export default function Layout() {
-  const { backendOk } = useContext(AppContext);
+  const { backendActivo } = useContext(AppContext);
 
   return (
     <>
-      {!backendOk && (
+      {!backendActivo && (
         <div style={{
           background: "red",
           color: "white",

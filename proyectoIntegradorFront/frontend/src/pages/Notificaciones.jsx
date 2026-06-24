@@ -4,25 +4,24 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Notificaciones() {
-
   const API = import.meta.env.VITE_API_URL;
   const { user } = useApp();
   const navigate = useNavigate();
 
   const [notificaciones, setNotificaciones] = useState([]);
-
   useEffect(() => {
     if (!user?.email) return;
 
     axios
       .get(`${API}/notificaciones/${user.email}`)
-      .then(res => {
+      .then((res) => {
         console.log("NOTIFICACIONES:", res.data);
         setNotificaciones(res.data);
       })
-      .catch(err => console.error(err));
-
+      .catch((err) => console.error(err));
   }, [user]);
+
+
 
   if (!user) return <p>Cargando...</p>;
 
@@ -30,17 +29,13 @@ export default function Notificaciones() {
     <div className="panel">
       <h2>Notificaciones</h2>
 
-      {notificaciones.length === 0 && (
-        <p>No tenés notificaciones.</p>
-      )}
-
       {notificaciones.map((n) => (
-        <div key={n.id} className="panel sub" style={{ marginBottom: "10px" }}>
+        <div key={n.id}>
           <p>{n.mensaje}</p>
 
-          <button
-            onClick={() => navigate(`/auditar/${n.paqueteId}`)}
-          >
+          <small>{new Date(n.fecha).toLocaleString()}</small>
+
+          <button onClick={() => navigate(`/auditar/${n.paqueteId}`)}>
             Ver
           </button>
         </div>
