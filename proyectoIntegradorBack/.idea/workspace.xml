@@ -5,12 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b82f5ad-e9f4-4974-9776-7f426caccc07" name="Changes" comment="Corrección de errores y ahora compila correctamente. Eliminación de clases redundantes con keycloak.">
-      <change beforePath="$PROJECT_DIR$/../.github/workflows/azure-static-web-apps.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../.github/workflows/azure-static-web-apps.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/Notificacion.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/repository/NotificacionRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/Observer/NotificacionObserver.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/Observer/PaqueteObserver.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/Observer/PaqueteSubject.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/controller/PaqueteController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/entity/PaqueteCO2.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/co2x/dmrv/service/PaqueteCO2Service.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Auditar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Pendientes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../proyectoIntegradorFront/frontend/src/pages/Pendientes.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,10 +25,10 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Enum" />
-        <option value="Class" />
         <option value="AnnotationType" />
+        <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -88,7 +90,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Spring Boot.Co2xApplication.executor": "Run",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "Merging feature/ipfs-integration",
+    "git-widget-placeholder": "feature/ipfs-integration",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/Usuario/Documents/proyectoIntegrador/proyectoIntegradorBack",

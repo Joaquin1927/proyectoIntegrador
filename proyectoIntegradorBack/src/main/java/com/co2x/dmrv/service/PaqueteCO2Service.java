@@ -7,6 +7,7 @@ import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.repository.UsuarioRepository;
+import com.co2x.dmrv.service.Observer.PaqueteObserver;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,29 @@ import java.util.Set;
 import static java.util.Arrays.stream;
 
 @Service
-public class PaqueteCO2Service {
+public class PaqueteCO2Service  implements com.co2x.dmrv.service.observer.PaqueteSubject {
+    @Autowired
+    private List<PaqueteObserver> observers;
 
+
+
+
+    @Override
+    public void addObserver(PaqueteObserver observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(PaqueteObserver observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers(PaqueteCO2 paquete) {
+        for (PaqueteObserver o : observers) {
+            o.update(paquete);
+        }
+    }
     @Autowired
     private PaqueteCO2Repository paqueteRepo;
 
@@ -136,14 +158,12 @@ public class PaqueteCO2Service {
 
         Planta planta = plantaService.getEntity(dto.planta.id);
 
-        // ✅ usar factory
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
         ObjectMapper mapper = new ObjectMapper();
 
         Map<String, Object> metadataMap = procesarMetadata(dto.metadata);
 
-        // ✅ extraer ton
         Object tonObj = metadataMap.get("_tonCO2eq");
 
         Double ton;
@@ -157,7 +177,6 @@ public class PaqueteCO2Service {
 
         entity.setMetadata(mapper.writeValueAsString(metadataMap));
 
-        // ✅ valores automáticos
         entity.setEstado(EstadoPaquete.PENDIENTE);
         entity.setIssuanceDate(LocalDate.now());
 
@@ -167,20 +186,30 @@ public class PaqueteCO2Service {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
-        // ✅ usuario
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
         String email = "desconocido";
 
+
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-            email = jwt.getClaimAsString("preferred_username");
 
-            if (email == null) email = jwt.getClaimAsString("email");
-            if (email == null) email = jwt.getSubject();
-        }
+            System.out.println("CLAIMS: " + jwt.getClaims());
 
-        if ((email == null || email.equals("desconocido")) && dto.createdBy != null) {
-            email = dto.createdBy;
+            email = (String) jwt.getClaims().get("unique_name");
+
+            if (email == null || email.isBlank())
+                email = (String) jwt.getClaims().get("upn");
+
+            if (email == null || email.isBlank())
+                email = (String) jwt.getClaims().get("preferred_username");
+
+            if (email == null || email.isBlank())
+                email = (String) jwt.getClaims().get("email");
+
+            if (email == null || email.isBlank()) {
+                throw new RuntimeException("Token inválido: no contiene email");
+            }
+
         }
 
         entity.setCreatedBy(email);
@@ -206,11 +235,38 @@ public class PaqueteCO2Service {
     }
 
 
+    private String getCurrentUserEmailStrict() {
 
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (!(auth != null && auth.getPrincipal() instanceof Jwt jwt)) {
+            throw new RuntimeException("No autenticado correctamente");
+        }
+
+        System.out.println("CLAIMS: " + jwt.getClaims());
+
+        String email = (String) jwt.getClaims().get("unique_name");
+
+        if (email == null || email.isBlank())
+            email = (String) jwt.getClaims().get("upn");
+
+        if (email == null || email.isBlank())
+            email = (String) jwt.getClaims().get("preferred_username");
+
+        if (email == null || email.isBlank())
+            email = (String) jwt.getClaims().get("email");
+
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Token inválido: no contiene email");
+        }
+
+        return email;
+    }
 
     private void validarAuditor() {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
+
 
         if (auth == null) {
             System.out.println("❌ AUTH ES NULL");
@@ -248,10 +304,8 @@ public class PaqueteCO2Service {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        //  cambiar estado
         paquete.setEstado(EstadoPaquete.APROBADO);
 
-        //  crear reporte
         Reporte reporte = new Reporte();
 
         reporte.setFechaReporte(LocalDate.now());
@@ -259,29 +313,24 @@ public class PaqueteCO2Service {
         reporte.setPlanta(paquete.getPlanta());
         reporte.setEstado("GENERADO");
         reporte.setMetodologia("Automática");
-
-
         reporte.setUsuarioResponsable(paquete.getCreatedBy());
 
         reporteRepo.save(reporte);
 
         paquete.setReporte(reporte);
 
+        String auditorEmail = getCurrentUserEmailStrict();
+        paquete.setAuditor(auditorEmail);
+
+        // ✅ guardar cambios
         paqueteRepo.save(paquete);
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-
-        String auditor = "desconocido";
-
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-            auditor = jwt.getClaimAsString("preferred_username");
-
-            if (auditor == null) auditor = jwt.getClaimAsString("email");
-            if (auditor == null) auditor = jwt.getSubject();
-        }
-
+        // ✅ IPFS (de tu compañera)
         Record record = recordService.generateFromPaquete(paquete);
         System.out.println("Record creado con CID: " + record.getIpfsCid());
+
+        // ✅ NOTIFICACIONES (tu lógica)
+        notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
     }
