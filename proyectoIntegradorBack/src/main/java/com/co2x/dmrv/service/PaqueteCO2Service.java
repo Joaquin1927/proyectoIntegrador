@@ -2,18 +2,21 @@ package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.*;
+import com.co2x.dmrv.entity.Record;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
+import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.repository.UsuarioRepository;
-import com.co2x.dmrv.service.observer.PaqueteObserver;
-import com.co2x.dmrv.service.observer.PaqueteSubject;
+import com.co2x.dmrv.service.Observer.PaqueteObserver;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +25,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +32,7 @@ import java.util.Set;
 import static java.util.Arrays.stream;
 
 @Service
-public class PaqueteCO2Service implements PaqueteSubject {
-
-
-
+public class PaqueteCO2Service  implements com.co2x.dmrv.service.observer.PaqueteSubject {
     @Autowired
     private List<PaqueteObserver> observers;
 
@@ -56,9 +55,6 @@ public class PaqueteCO2Service implements PaqueteSubject {
             o.update(paquete);
         }
     }
-
-
-
     @Autowired
     private PaqueteCO2Repository paqueteRepo;
 
@@ -69,10 +65,10 @@ public class PaqueteCO2Service implements PaqueteSubject {
     private ReporteRepository reporteRepo;
 
     @Autowired
-    private UsuarioRepository usuarioRepo;
+    private PlantaService plantaService;
 
     @Autowired
-    private PlantaService plantaService;
+    private RecordService recordService;
 
     public List<PaqueteCO2DTO> listar() {
         return paqueteRepo.findAll()
@@ -109,6 +105,7 @@ public class PaqueteCO2Service implements PaqueteSubject {
             Map<String, Object> metadataMap =
                     mapper.readValue(metadataJson, Map.class);
 
+            // 🔥 CAMPOS PROTEGIDOS
             Set<String> forbiddenFields = Set.of(
                     "certId",
                     "createdBy",
@@ -119,6 +116,7 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
             forbiddenFields.forEach(metadataMap::remove);
 
+            // 🔥 VALIDAR tonCO2eq
             Object tonObj = metadataMap.get("tonCO2eq");
 
             if (tonObj == null) {
@@ -176,6 +174,7 @@ public class PaqueteCO2Service implements PaqueteSubject {
         }
 
         entity.setTonCO2eq(ton);
+
         entity.setMetadata(mapper.writeValueAsString(metadataMap));
 
         entity.setEstado(EstadoPaquete.PENDIENTE);
@@ -189,7 +188,8 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String email = null;
+        String email = "desconocido";
+
 
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
 
@@ -209,9 +209,8 @@ public class PaqueteCO2Service implements PaqueteSubject {
             if (email == null || email.isBlank()) {
                 throw new RuntimeException("Token inválido: no contiene email");
             }
-        }
 
-        System.out.println("FINAL EMAIL: " + email);
+        }
 
         entity.setCreatedBy(email);
 
@@ -234,6 +233,7 @@ public class PaqueteCO2Service implements PaqueteSubject {
 
         return factory.toPaqueteDTO(paquete);
     }
+
 
     private String getCurrentUserEmailStrict() {
 
@@ -263,10 +263,10 @@ public class PaqueteCO2Service implements PaqueteSubject {
         return email;
     }
 
-
     private void validarAuditor() {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
+
 
         if (auth == null) {
             System.out.println("❌ AUTH ES NULL");
@@ -313,7 +313,6 @@ public class PaqueteCO2Service implements PaqueteSubject {
         reporte.setPlanta(paquete.getPlanta());
         reporte.setEstado("GENERADO");
         reporte.setMetodologia("Automática");
-
         reporte.setUsuarioResponsable(paquete.getCreatedBy());
 
         reporteRepo.save(reporte);
@@ -321,23 +320,23 @@ public class PaqueteCO2Service implements PaqueteSubject {
         paquete.setReporte(reporte);
 
         String auditorEmail = getCurrentUserEmailStrict();
-
-        System.out.println("AUDITOR FINAL: " + auditorEmail);
-
         paquete.setAuditor(auditorEmail);
 
+        // ✅ guardar cambios
         paqueteRepo.save(paquete);
 
+        // ✅ IPFS (de tu compañera)
+        Record record = recordService.generateFromPaquete(paquete);
+        System.out.println("Record creado con CID: " + record.getIpfsCid());
+
+        // ✅ NOTIFICACIONES (tu lógica)
         notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
     }
 
 
-
-
     public PaqueteCO2DTO rechazar(Integer id) {
-
         validarAuditor();
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
@@ -346,47 +345,21 @@ public class PaqueteCO2Service implements PaqueteSubject {
         // ✅ cambiar estado
         paquete.setEstado(EstadoPaquete.RECHAZADO);
 
-        // ✅ guardar quién rechazó
-        String auditorEmail = getCurrentUserEmailStrict();
-        paquete.setAuditor(auditorEmail);
-
-        // ✅ guardar en DB
-        paqueteRepo.save(paquete);
-
-        // ✅ disparar notificación al creador
-        notifyObservers(paquete);
-
-        System.out.println("RECHAZADO por: " + auditorEmail);
-
         return factory.toPaqueteDTO(paquete);
-    }
 
+    }
 
 
     public void solicitarCorreccion(Integer id, Map<String, Object> data) {
 
-        validarAuditor();
-
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        // ✅ cambiar estado
         paquete.setEstado(EstadoPaquete.EN_REVISION);
-
-        // ✅ guardar quién solicita la corrección
-        String auditorEmail = getCurrentUserEmailStrict();
-        paquete.setAuditor(auditorEmail);
-
-        // ✅ (opcional futuro)
-        // paquete.setComentarios(data);
 
         paqueteRepo.save(paquete);
 
-        // ✅ disparar notificación
-        notifyObservers(paquete);
-
-        System.out.println("EN REVISION por: " + auditorEmail);
+        // después podés guardar comentarios
     }
-
 
 }

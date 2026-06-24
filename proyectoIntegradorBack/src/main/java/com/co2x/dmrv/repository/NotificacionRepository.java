@@ -14,4 +14,3 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
     List<Notificacion> findByUsuario(String usuario);
 
 }
-

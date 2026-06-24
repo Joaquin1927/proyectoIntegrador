@@ -41,7 +41,6 @@ public class PaqueteCO2 {
     @Column(name = "auditor")
     private String auditor;
 
-
     private String createdBy;
 
     @OneToOne
