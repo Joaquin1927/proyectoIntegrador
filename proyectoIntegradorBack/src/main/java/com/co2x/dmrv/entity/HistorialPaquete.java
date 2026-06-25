@@ -2,6 +2,8 @@ package com.co2x.dmrv.entity;
 
 import com.co2x.dmrv.entity.EstadoPaquete;
 import com.co2x.dmrv.entity.PaqueteCO2;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,9 +28,13 @@ public class HistorialPaquete {
     private EstadoPaquete accion;
 
     @Column(columnDefinition = "jsonb")
-    private String cambios;   // <--- SIEMPRE STRING EN LA ENTIDAD
+    private String cambios;
 
     private LocalDateTime fecha = LocalDateTime.now();
+
+    private String snapshot;
+
+
 
 
 }

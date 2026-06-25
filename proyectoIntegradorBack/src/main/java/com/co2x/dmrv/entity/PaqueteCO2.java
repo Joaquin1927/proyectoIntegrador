@@ -30,8 +30,6 @@ public class PaqueteCO2 {
     @JsonProperty("tonCO2eq")
     private Double tonCO2eq;
 
-    //private String metodologia;
-    //private Boolean retirementStatus;
     @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HistorialPaquete> historial = new ArrayList<>();
 

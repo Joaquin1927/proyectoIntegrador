@@ -12,6 +12,6 @@ public class HistorialPaqueteDTO {
     private Integer paqueteId;
     private String editor;
     private EstadoPaquete accion;
-    private Object cambios;   // <--- AQUÍ SÍ PUEDE SER OBJECT
+    private Object cambios;
     private LocalDateTime fecha;
 }

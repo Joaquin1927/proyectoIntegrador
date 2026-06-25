@@ -3,10 +3,7 @@ package com.co2x.dmrv.service;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.entity.*;
 import com.co2x.dmrv.entity.Record;
-import com.co2x.dmrv.repository.PaqueteCO2Repository;
-import com.co2x.dmrv.repository.PlantaRepository;
-import com.co2x.dmrv.repository.ReporteRepository;
-import com.co2x.dmrv.repository.UsuarioRepository;
+import com.co2x.dmrv.repository.*;
 import com.co2x.dmrv.service.observer.PaqueteObserver;
 import com.co2x.dmrv.service.observer.PaqueteSubject;
 import com.co2x.dmrv.utils.Factory;
@@ -26,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +34,8 @@ import static java.util.Arrays.stream;
 public class PaqueteCO2Service  implements PaqueteSubject {
     @Autowired
     private List<PaqueteObserver> observers;
+    @Autowired
+    private HistorialPaqueteRepository historialRepo;
 
 
 
@@ -70,6 +70,38 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
     @Autowired
     private RecordService recordService;
+
+
+    private void registrarHistorial(
+            PaqueteCO2 paquete,
+            String usuario,
+            EstadoPaquete accion,
+            Map<String, Object> cambios
+    ) {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            HistorialPaquete h = new HistorialPaquete();
+
+            h.setPaquete(paquete);
+            h.setEditor(usuario);
+            h.setAccion(accion);
+            h.setFecha(LocalDateTime.now());
+
+            // ✅ snapshot completo
+            h.setSnapshot(mapper.writeValueAsString(paquete));
+
+            // ✅ cambios
+            h.setCambios(mapper.writeValueAsString(cambios));
+
+            historialRepo.save(h);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public List<PaqueteCO2DTO> listar() {
         return paqueteRepo.findAll()
@@ -106,7 +138,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             Map<String, Object> metadataMap =
                     mapper.readValue(metadataJson, Map.class);
 
-            // 🔥 CAMPOS PROTEGIDOS
             Set<String> forbiddenFields = Set.of(
                     "certId",
                     "createdBy",
@@ -217,6 +248,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         PaqueteCO2 guardado = paqueteRepo.save(entity);
 
+        registrarHistorial(
+                entity,
+                email,
+                EstadoPaquete.PENDIENTE,
+                Map.of(
+                        "accion", "CREACION"
+                )
+        );
+
         return factory.toPaqueteDTO(guardado);
     }
 
@@ -294,6 +334,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
 
 
+    private String generarSnapshot(PaqueteCO2 paquete) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(paquete);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
 
@@ -305,7 +354,9 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
+        EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.APROBADO);
+
 
         Reporte reporte = new Reporte();
 
@@ -323,14 +374,22 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         String auditorEmail = getCurrentUserEmailStrict();
         paquete.setAuditor(auditorEmail);
 
-        // ✅ guardar cambios
         paqueteRepo.save(paquete);
 
-        // ✅ IPFS (de tu compañera)
         Record record = recordService.generateFromPaquete(paquete);
         System.out.println("Record creado con CID: " + record.getIpfsCid());
 
-        // ✅ NOTIFICACIONES (tu lógica)
+
+        registrarHistorial(
+                paquete,
+                auditorEmail,
+                EstadoPaquete.APROBADO,
+                Map.of(
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.APROBADO.toString()
+                )
+        );
+
         notifyObservers(paquete);
 
         return factory.toPaqueteDTO(paquete);
@@ -342,9 +401,21 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
-
-        // ✅ cambiar estado
+        String auditorEmail = getCurrentUserEmailStrict();
+        paquete.setAuditor(auditorEmail);
+        EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.RECHAZADO);
+
+
+        registrarHistorial(
+                paquete,
+                auditorEmail,
+                EstadoPaquete.RECHAZADO,
+                Map.of(
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.RECHAZADO.toString()
+                )
+        );
 
         return factory.toPaqueteDTO(paquete);
 
@@ -356,11 +427,25 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
+
+        EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.EN_REVISION);
+
+        String auditorEmail = getCurrentUserEmailStrict();
+        paquete.setAuditor(auditorEmail);
+
+        registrarHistorial(
+                paquete,
+                auditorEmail,
+                EstadoPaquete.EN_REVISION,
+                Map.of(
+                        "estadoAnterior", estadoAnterior.toString(),
+                        "estadoNuevo", EstadoPaquete.EN_REVISION.toString()
+                )
+        );
 
         paqueteRepo.save(paquete);
 
-        // después podés guardar comentarios
     }
 
 }
