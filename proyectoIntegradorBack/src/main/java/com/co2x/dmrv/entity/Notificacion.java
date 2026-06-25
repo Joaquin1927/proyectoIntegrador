@@ -1,8 +1,10 @@
 package com.co2x.dmrv.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Data;
 
+import java.time.LocalDateTime;
+@Data
 @Entity
 public class Notificacion {
 

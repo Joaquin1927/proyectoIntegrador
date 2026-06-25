@@ -89,10 +89,8 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             h.setAccion(accion);
             h.setFecha(LocalDateTime.now());
 
-            // ✅ snapshot completo
-            h.setSnapshot(mapper.writeValueAsString(paquete));
+            h.setSnapshot(generarSnapshot(paquete));
 
-            // ✅ cambios
             h.setCambios(mapper.writeValueAsString(cambios));
 
             historialRepo.save(h);
