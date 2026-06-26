@@ -32,23 +32,32 @@ export function AppProvider({ children }) {
   }, []);
 
   const cargarPaquetes = useCallback(async () => {
-    if (!user?.email) {
-      setPaquetes([]);
-      return;
-    }
+  if (!user?.email) {
+    setPaquetes([]);
+    return;
+  }
 
-    try {
-      const endpoint =
-        user.role === "auditor"
-          ? `${API}/paquetes`
-          : `${API}/paquetes/usuario/${user.email}`;
+  try {
+    const endpoint =
+      user.role === "auditor"
+        ? `${API}/paquetes`
+        : `${API}/paquetes/usuario/${user.email}`;
 
-      const res = await axios.get(endpoint);
-      setPaquetes(res.data);
-    } catch (err) {
-      console.error("Error cargando paquetes", err);
-    }
-  }, [API, user?.email, user?.role]);
+    console.log("📦 ENDPOINT:", endpoint);
+    console.log("📦 USER:", user);
+    console.log("📦 ROLE:", user?.role);
+    console.log("📦 EMAIL:", user?.email);
+
+    const res = await axios.get(endpoint);
+
+    console.log("📦 PAQUETES DEL BACKEND:", res.data);
+
+    setPaquetes(res.data);
+  } catch (err) {
+    console.error("Error cargando paquetes", err);
+  }
+}, [API, user?.email, user?.role]);
+
 
 
 useEffect(() => {
