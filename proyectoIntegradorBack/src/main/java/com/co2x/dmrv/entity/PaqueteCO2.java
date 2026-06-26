@@ -1,8 +1,10 @@
 package com.co2x.dmrv.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.hibernate.mapping.ToOne;
 
@@ -11,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@ToString(exclude = {"planta", "historial"})
 @Entity
 @Table(name = "PaqueteCO2")
 @Data
@@ -30,8 +33,11 @@ public class PaqueteCO2 {
     @JsonProperty("tonCO2eq")
     private Double tonCO2eq;
 
+
     @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<HistorialPaquete> historial = new ArrayList<>();
+
 
 
     @Enumerated(EnumType.STRING)

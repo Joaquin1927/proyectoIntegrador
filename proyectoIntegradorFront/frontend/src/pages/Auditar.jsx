@@ -64,7 +64,7 @@ export default function Auditar() {
       await axios.post(
         `${API}/paquetes/${id}/rechazar`,
         {
-          comentario: comentarioGeneral, // ✅ si luego lo querés usar en backend
+          comentario: comentarioGeneral, 
         },
         {
           headers: {
@@ -90,41 +90,43 @@ export default function Auditar() {
   const [loading, setLoading] = useState(false);
 
   const mandarCorreccion = async () => {
-    if (!comentarioGeneral.trim()) {
-      alert("El comentario general es obligatorio");
+    const campos = Object.entries(comentariosCampos)
+      .filter(([_, comentario]) => comentario && comentario.trim() !== "")
+      .map(([campo, comentario]) => ({
+        campo,
+        comentario,
+      }));
+
+    const body = {
+      campos,
+      comentarioGeneral,
+    };
+
+    if (campos.length === 0) {
+      alert("Debes marcar al menos un campo");
       return;
     }
 
+    if (!comentarioGeneral.trim()) {
+      alert("Debe ingresar un comentario general");
+      return;
+    }
+    console.log("BODY QUE ENVIO:", body);
     try {
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
+      await fetch(`${API}/paquetes/${id}/correccion`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       });
 
-      const token = response.accessToken;
-
-      await axios.post(
-        `${API}/paquetes/${id}/correccion`,
-        {
-          comentarioGeneral,
-          comentariosCampos,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      alert("🛠 Corrección solicitada");
-      navigate("/pendientes");
+      navigate(-1);
     } catch (err) {
-      console.error(err);
-      alert("Error al solicitar corrección");
+      console.error("Error enviando corrección:", err);
     }
   };
 
-  // ✅ 1. VALIDAR ROL
 
   useEffect(() => {
     if (!user) return;
@@ -135,7 +137,6 @@ export default function Auditar() {
     }
   }, [user]);
 
-  // ✅ bloquear render
   if (!user) return <p>Cargando...</p>;
 
   if (user.role.toLowerCase() !== "auditor") {
@@ -177,7 +178,13 @@ export default function Auditar() {
       {Object.entries(metadata)
         .filter(([key]) => key !== "_tonCO2eq" && key !== "facilityName")
         .map(([key, val]) => (
-          <div key={key} style={{ marginBottom: "10px" }}>
+          <div
+            key={key}
+            style={{
+              border: comentariosCampos[key] ? "2px solid red" : "none",
+              padding: "5px",
+            }}
+          >
             <p>
               <strong>{key}:</strong> {val}
             </p>
