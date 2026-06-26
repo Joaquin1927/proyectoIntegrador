@@ -295,13 +295,14 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     }
 
 
-    private void crearNotificacion(String usuario, String mensaje) {
+    private void crearNotificacion(String usuario, String mensaje,Integer paqueteId) {
 
         Notificacion n = new Notificacion();
 
         n.setUsuario(usuario);
         n.setMensaje(mensaje);
         n.setLeido(false);
+        n.setPaqueteId(paqueteId);
         n.setFecha(LocalDateTime.now());
 
         notificacionRepo.save(n);
@@ -445,6 +446,14 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         notifyObservers(paquete);
 
+        // ✅ NOTIFICACIÓN
+        crearNotificacion(
+                paquete.getCreatedBy(),
+                "El paquete " + paquete.getId() + " fue aprobado",
+                paquete.getId()
+        );
+
+
         return factory.toPaqueteDTO(paquete);
     }
 
@@ -472,6 +481,13 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                                 "valorNuevo", "RECHAZADO"
                         )
                 )
+        );
+
+        // ✅ NOTIFICACIÓN
+        crearNotificacion(
+                paquete.getCreatedBy(),
+                "El paquete " + paquete.getId() + " fue rechazado",
+                paquete.getId()
         );
 
 
@@ -536,10 +552,12 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 cambiosFinal
         );
 
+
         // ✅ NOTIFICACIÓN
         crearNotificacion(
                 paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " fue enviado a revisión"
+                "El paquete " + paquete.getId() + " fue enviado a revisión",
+                paquete.getId()
         );
 
         System.out.println("✅ SOLICITAR CORRECCION COMPLETO");
