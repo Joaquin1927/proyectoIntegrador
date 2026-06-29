@@ -52,8 +52,15 @@ export default function PaqueteDetalle() {
           <pre>{JSON.stringify(paquete.metadata, null, 2)}</pre>
         </>
       )}
-
+      
       <button onClick={() => navigate(-1)}>Volver</button>
+      
+{paquete.estado === "EN_REVISION" && (
+  <button onClick={() => navigate(`/editar/${paquete.id}`)}>
+    Editar paquete
+  </button>
+)}
+
     </section>
   );
 }

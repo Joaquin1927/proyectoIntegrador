@@ -1,6 +1,7 @@
 package com.co2x.dmrv.controller;
 
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
+import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.service.PaqueteCO2Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +86,22 @@ public class PaqueteController {
 
         service.solicitarCorreccion(id, body);
 
+        return ResponseEntity.ok().build();
+    }
+
+
+    @GetMapping("/{id}/edicion")
+    public ResponseEntity<PaqueteEdicionDTO> getEdicion(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.getPaqueteParaEdicion(id));
+    }
+
+
+    @PutMapping("/{id}/corregir")
+    public ResponseEntity<?> corregir(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> data
+    ) {
+        service.corregirPaquete(id, data);
         return ResponseEntity.ok().build();
     }
 
