@@ -2,6 +2,7 @@ package com.co2x.dmrv.controller;
 
 import com.co2x.dmrv.dto.HistorialPaqueteDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
+import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.service.PaqueteCO2Service;
 import com.co2x.dmrv.utils.Factory;
@@ -103,6 +104,16 @@ public class PaqueteController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+
+    @GetMapping("/{id}/edicion")
+    public ResponseEntity<PaqueteEdicionDTO> getEdicion(
+            @PathVariable Integer id
+    ) {
+
+        return ResponseEntity.ok(
+                service.getPaqueteParaEdicion(id)
+        );
+    }
 
 
 

@@ -110,7 +110,7 @@ export default function PaqueteDetalle() {
       <button onClick={() => navigate(-1)}>Volver</button>
       
 {paquete.estado === "EN_REVISION" && (
-  <button onClick={() => navigate(`/EditarPaquete/${paquete.id}`)}>
+  <button onClick={() => navigate(`/editar/${paquete.id}`)}>
     Editar paquete
   </button>
 )}
