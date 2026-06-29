@@ -449,7 +449,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         // ✅ NOTIFICACIÓN
         crearNotificacion(
                 paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " fue aprobado",
+                "El paquete " + paquete.getId() + " ha sido aprobado",
                 paquete.getId()
         );
 
@@ -486,7 +486,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         // ✅ NOTIFICACIÓN
         crearNotificacion(
                 paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " fue rechazado",
+                "El paquete " + paquete.getId() + " ha sido rechazado",
                 paquete.getId()
         );
 

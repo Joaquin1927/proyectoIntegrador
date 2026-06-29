@@ -113,7 +113,7 @@ export default function Header() {
 
                       <button
                         onClick={() => {
-                          navigate(`/auditar/${n.paqueteId}`);
+                          navigate(`/paquete/${n.paqueteId}`);
                           setOpen(false);
                         }}
                       >
