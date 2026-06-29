@@ -429,7 +429,11 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         System.out.println("Record creado con CID: " + record.getIpfsCid());
 
 
-
+        crearNotificacion(
+                paquete.getCreatedBy(),
+                "El paquete " + paquete.getId() + " ha sido aprobado",
+                paquete.getId()
+        );
         registrarHistorial(
                 paquete,
                 auditorEmail,
@@ -446,14 +450,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         notifyObservers(paquete);
 
-        // ✅ NOTIFICACIÓN
-        crearNotificacion(
-                paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " ha sido aprobado",
-                paquete.getId()
-        );
-
-
         return factory.toPaqueteDTO(paquete);
     }
 
@@ -469,7 +465,11 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         paquete.setEstado(EstadoPaquete.RECHAZADO);
 
 
-
+        crearNotificacion(
+                paquete.getCreatedBy(),
+                "El paquete " + paquete.getId() + " ha sido rechazado",
+                paquete.getId()
+        );
         registrarHistorial(
                 paquete,
                 auditorEmail,
@@ -481,13 +481,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                                 "valorNuevo", "RECHAZADO"
                         )
                 )
-        );
-
-        // ✅ NOTIFICACIÓN
-        crearNotificacion(
-                paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " ha sido rechazado",
-                paquete.getId()
         );
 
 
@@ -510,7 +503,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         String auditorEmail = getCurrentUserEmailSafe();
         paquete.setAuditor(auditorEmail);
 
-        // ✅ CAMPOS
         Object camposObj = data.get("campos");
         List<Map<String, Object>> campos;
 
@@ -552,8 +544,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 cambiosFinal
         );
 
-
-        // ✅ NOTIFICACIÓN
         crearNotificacion(
                 paquete.getCreatedBy(),
                 "El paquete " + paquete.getId() + " fue enviado a revisión",

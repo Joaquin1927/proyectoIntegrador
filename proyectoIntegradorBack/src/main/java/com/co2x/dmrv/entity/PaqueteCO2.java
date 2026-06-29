@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.skyscreamer.jsonassert.JSONParser.parseJSON;
+
 @ToString(exclude = {"planta", "historial"})
 @Entity
 @Table(name = "PaqueteCO2")
@@ -23,9 +25,6 @@ public class PaqueteCO2 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // =====================
-    // CAMPOS FIJOS (core)
-    // =====================
     private String certId;
     private LocalDate captureDate;
 
@@ -37,6 +36,7 @@ public class PaqueteCO2 {
     @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<HistorialPaquete> historial = new ArrayList<>();
+
 
 
 
