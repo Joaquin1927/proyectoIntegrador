@@ -1,8 +1,10 @@
 package com.co2x.dmrv.controller;
 
+import com.co2x.dmrv.dto.HistorialPaqueteDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
-import com.co2x.dmrv.dto.PaqueteEdicionDTO;
+import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.service.PaqueteCO2Service;
+import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/paquetes")
 public class PaqueteController {
+    @Autowired
+    private HistorialPaqueteRepository historialRepo;
 
+    @Autowired
+    private Factory factory;
     @Autowired
     private PaqueteCO2Service service;
     @GetMapping("/pendientes")
@@ -89,21 +95,15 @@ public class PaqueteController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{id}/historial/ultimo")
+    public ResponseEntity<?> getUltimoHistorial(@PathVariable Integer id) {
 
-    @GetMapping("/{id}/edicion")
-    public ResponseEntity<PaqueteEdicionDTO> getEdicion(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.getPaqueteParaEdicion(id));
+        return historialRepo.findTopByPaqueteIdOrderByFechaDesc(id)
+                .map(h -> ResponseEntity.ok(factory.toHistorialDTO(h)))
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
 
-    @PutMapping("/{id}/corregir")
-    public ResponseEntity<?> corregir(
-            @PathVariable Integer id,
-            @RequestBody Map<String, Object> data
-    ) {
-        service.corregirPaquete(id, data);
-        return ResponseEntity.ok().build();
-    }
 
 
 //
