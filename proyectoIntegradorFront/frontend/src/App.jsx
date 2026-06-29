@@ -11,6 +11,7 @@ import Registrar from "./pages/Registrar";
 import Historial from "./pages/Historial";
 import Auditar from "./pages/Auditar";
 import PaqueteDetalle from "./pages/PaqueteDetalle";
+import EditarPaquete from "./pages/EditarPaquete";
 
 import "./styles.css";
 
@@ -125,6 +126,7 @@ useEffect(() => {
         <Route path="/notificaciones" element={<Notificaciones />} />
 
         <Route path="/paquete/:id" element={<PaqueteDetalle />} />
+        <Route path="/editar/:id" element={<EditarPaquete />} />
 
       </Route>
     </Routes>

@@ -1,6 +1,8 @@
 package com.co2x.dmrv.service;
 
+import com.co2x.dmrv.dto.CampoConErrorDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
+import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.entity.*;
 import com.co2x.dmrv.entity.Record;
 import com.co2x.dmrv.repository.*;
@@ -8,6 +10,7 @@ import com.co2x.dmrv.service.observer.PaqueteObserver;
 import com.co2x.dmrv.service.observer.PaqueteSubject;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.http.HttpStatus;
@@ -421,6 +424,12 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         paquete.setReporte(reporte);
 
         String auditorEmail = getCurrentUserEmailSafe();
+
+
+        System.out.println("USER: " + auditorEmail);
+        System.out.println("CREATED BY: " + paquete.getCreatedBy());
+
+
         paquete.setAuditor(auditorEmail);
 
         paqueteRepo.save(paquete);
@@ -551,6 +560,114 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         );
 
         System.out.println("✅ SOLICITAR CORRECCION COMPLETO");
+    }
+
+
+
+    public PaqueteEdicionDTO getPaqueteParaEdicion(Integer id) {
+
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
+
+        String usuario = getCurrentUserEmailSafe();
+
+        System.out.println("USER: " + usuario);
+        System.out.println("CREATED BY: " + paquete.getCreatedBy());
+
+       // if (!usuario.equals(paquete.getCreatedBy())) {
+        //    throw new RuntimeException("No autorizado");
+        //}
+
+        if (paquete.getEstado() != EstadoPaquete.EN_REVISION) {
+            throw new RuntimeException("El paquete no está en revisión");
+        }
+
+        HistorialPaquete ultimo = historialRepo
+                .findTopByPaqueteIdOrderByFechaDesc(paquete.getId())
+                .orElseThrow(() -> new RuntimeException("No hay historial"));
+
+        return construirDTOEdicion(paquete, ultimo);
+    }
+
+
+    private PaqueteEdicionDTO construirDTOEdicion(
+            PaqueteCO2 paquete,
+            HistorialPaquete historial
+    ) {
+
+        try {
+
+
+            System.out.println("ENTRANDO A construirDTOEdicion");
+
+            System.out.println("METADATA RAW:");
+            System.out.println(paquete.getMetadata());
+
+            System.out.println("CAMBIOS RAW:");
+            System.out.println(historial.getCambios());
+
+
+            ObjectMapper mapper = new ObjectMapper();
+
+            PaqueteEdicionDTO dto = new PaqueteEdicionDTO();
+
+            dto.setId(paquete.getId());
+            dto.setEstado(paquete.getEstado().name());
+            dto.setCreatedBy(paquete.getCreatedBy());
+
+            dto.setMetadata(
+                    mapper.readValue(
+                            paquete.getMetadata(),
+                            new TypeReference<Map<String, Object>>() {}
+                    )
+            );
+
+            List<Map<String, Object>> cambios =
+                    mapper.readValue(
+                            historial.getCambios(),
+                            new TypeReference<List<Map<String, Object>>>() {}
+                    );
+
+            List<CampoConErrorDTO> campos = new ArrayList<>();
+
+            String comentarioGeneral = "";
+
+            for (Map<String, Object> cambio : cambios) {
+
+                if (cambio.containsKey("campo")) {
+
+                    CampoConErrorDTO campo = new CampoConErrorDTO();
+
+                    campo.setCampo(
+                            (String) cambio.get("campo")
+                    );
+
+                    campo.setComentario(
+                            (String) cambio.get("comentario")
+                    );
+
+                    campos.add(campo);
+                }
+
+                if ("COMENTARIO_GENERAL".equals(cambio.get("tipo"))) {
+
+                    comentarioGeneral =
+                            (String) cambio.get("texto");
+                }
+            }
+
+            dto.setCamposConError(campos);
+            dto.setComentarioGeneral(comentarioGeneral);
+
+            return dto;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(
+                    "Error armando DTO de edición",
+                    e
+            );
+        }
     }
 
 
