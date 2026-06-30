@@ -6,63 +6,65 @@ import axios from "axios";
 
 export default function Header() {
   const API = import.meta.env.VITE_API_URL;
-
-  // ✅ UN SOLO useApp
-  const { user, logout: logoutContext, notificaciones } = useApp();
+  const { user, logout: logoutContext, notificaciones, reloadNotificaciones } = useApp();
 
   const { instance } = useMsal();
   const navigate = useNavigate();
 
-  // ✅ estados LOCALES (solo UI)
   const [open, setOpen] = useState(false);
   const [dropdownNotifs, setDropdownNotifs] = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
 
   const dropdownRef = useRef(null);
 
-  // ✅ calcular no leídas
+  // 🔔 calcular no leídas
   useEffect(() => {
     const nuevas = notificaciones.filter((n) => !n.leido);
     setDropdownNotifs(nuevas);
     setNoLeidas(nuevas.length);
   }, [notificaciones]);
 
-  // ✅ cerrar al hacer click afuera
+  // cerrar al hacer click afuera
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpen(false);
-        setDropdownNotifs([]);
-      }
+  function handleClickOutside(event) {
+    if (!open) return; // 👈 si no está abierto, no cierres nada
+
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      cerrarDropdown();
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, [open]);
+
+
+  const cerrarDropdown = async () => {
+    setOpen(false);
+
+    if (user?.email) {
+      await axios.post(`${API}/notificaciones/leer/${user.email}`);
+      await reloadNotificaciones(); // 👈 recarga contexto
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    setDropdownNotifs([]);
+  };
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const toggleDropdown = async () => {
+    if (!open) {
+      setOpen(true);
+      setNoLeidas(0);
+      return;
+    }
+
+    cerrarDropdown();
+  };
 
   const handleLogout = () => {
     logoutContext();
     localStorage.removeItem("token");
     instance.setActiveAccount(null);
     window.location.href = "/";
-  };
-
-  const toggleDropdown = () => {
-    if (!open) {
-      setNoLeidas(0);
-
-      // ✅ marcar leídas en backend
-      if (user?.email) {
-        axios.post(`${API}/notificaciones/leer/${user.email}`);
-      }
-    } else {
-      setDropdownNotifs([]);
-    }
-
-    setOpen(!open);
   };
 
   return (
@@ -74,14 +76,12 @@ export default function Header() {
 
       <div className="top-actions">
         {user && (
-          <div
-            ref={dropdownRef}
-            style={{
-              position: "relative",
-              display: "inline-block",
-            }}
-          >
-            <button className="ghost" onClick={toggleDropdown}>
+          
+          <div ref={dropdownRef} style={{ position: "relative", display: "inline-block" }}>
+            <button className="ghost" onClick={(e) => {
+             e.stopPropagation(); // 👈 evita que el click se considere afuera
+             toggleDropdown();
+              }}>
               🔔
               {noLeidas > 0 && <span className="badge">{noLeidas}</span>}
             </button>
@@ -108,13 +108,11 @@ export default function Header() {
                   dropdownNotifs.map((n) => (
                     <div key={n.id}>
                       <p>{n.mensaje}</p>
-
                       <small>{new Date(n.fecha).toLocaleString()}</small>
-
                       <button
                         onClick={() => {
                           navigate(`/paquete/${n.paqueteId}`);
-                          setOpen(false);
+                          cerrarDropdown();
                         }}
                       >
                         Ver
@@ -146,4 +144,3 @@ export default function Header() {
     </header>
   );
 }
-``;

@@ -17,6 +17,7 @@ export function AppProvider({ children }) {
   const [backendActivo, setBackendActivo] = useState(true);
   const [notificaciones, setNotificaciones] = useState([]);
 
+  // Cargar plantas
   useEffect(() => {
     axios
       .get(`${API}/plantas`)
@@ -24,6 +25,7 @@ export function AppProvider({ children }) {
       .catch((err) => console.error("Error cargando plantas", err));
   }, [API]);
 
+  // Restaurar usuario
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
@@ -31,83 +33,67 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // Cargar paquetes
   const cargarPaquetes = useCallback(async () => {
-  if (!user?.email) {
-    setPaquetes([]);
-    return;
-  }
+    if (!user?.email) {
+      setPaquetes([]);
+      return;
+    }
 
-  try {
-    const endpoint =
-      user.role === "auditor"
-        ? `${API}/paquetes`
-        : `${API}/paquetes/usuario/${user.email}`;
+    try {
+      const endpoint =
+        user.role === "auditor"
+          ? `${API}/paquetes`
+          : `${API}/paquetes/usuario/${user.email}`;
 
-    console.log("📦 ENDPOINT:", endpoint);
-    console.log("📦 USER:", user);
-    console.log("📦 ROLE:", user?.role);
-    console.log("📦 EMAIL:", user?.email);
+      const res = await axios.get(endpoint);
+      setPaquetes(res.data);
+    } catch (err) {
+      console.error("Error cargando paquetes", err);
+    }
+  }, [API, user?.email, user?.role]);
 
-    const res = await axios.get(endpoint);
-
-    console.log("📦 PAQUETES DEL BACKEND:", res.data);
-
-    setPaquetes(res.data);
-  } catch (err) {
-    console.error("Error cargando paquetes", err);
-  }
-}, [API, user?.email, user?.role]);
-
-
-
-useEffect(() => {
-  if (!user) return; 
-
-  cargarPaquetes();
-}, [user]);
-
+  useEffect(() => {
+    if (!user) return;
+    cargarPaquetes();
+  }, [user]);
 
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
 
+  // 🔔 Cargar NOTIFICACIONES NO LEÍDAS
+  const reloadNotificaciones = async () => {
+    if (!user?.email) return;
 
-useEffect(() => {
-  if (!user?.email) return;
-
-  axios
-    .get(`${API}/notificaciones/${user.email}`)
-    .then(res => {
-      setNotificaciones(res.data);
-    })
-    .catch(err => console.error(err));
-
-}, [user]);
-
-
-useEffect(() => {
-  console.log("CHECK BACKEND RUNNING");
-
-  const checkBackend = async () => {
     try {
-      await axios.get(`${API}/test/health`);
-      console.log("✅ BACKEND OK");
-      setBackendActivo(true);
+      const res = await axios.get(`${API}/notificaciones/noleidas/${user.email}`);
+      setNotificaciones(res.data);
     } catch (err) {
-      console.log("❌ BACKEND DOWN", err.message);
-      setBackendActivo(false);
+      console.error("Error recargando notificaciones", err);
     }
   };
 
-  checkBackend();
+  // Cargar notificaciones al iniciar
+  useEffect(() => {
+    reloadNotificaciones();
+  }, [user]);
 
-  const interval = setInterval(checkBackend, 5000); 
+  // Backend health check
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        await axios.get(`${API}/test/health`);
+        setBackendActivo(true);
+      } catch (err) {
+        setBackendActivo(false);
+      }
+    };
 
-  return () => clearInterval(interval); 
-
-}, []);
-
-
+    checkBackend();
+    const interval = setInterval(checkBackend, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -135,7 +121,7 @@ useEffect(() => {
         cargarPaquetes,
         backendActivo,
         notificaciones,
-        setNotificaciones,
+        reloadNotificaciones,   // 👈 CLAVE
       }}
     >
       {children}
