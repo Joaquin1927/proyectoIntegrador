@@ -1,9 +1,11 @@
 package com.co2x.dmrv.service;
 
+import com.co2x.dmrv.entity.Record;
+import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.repository.RecordRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.co2x.dmrv.entity.Record;
 
 @Service
 public class RecordService {
@@ -14,21 +16,23 @@ public class RecordService {
     @Autowired
     private MetadataService metadataService;
 
-    public void approveRecord(Long id) {
+    public Record generateFromPaquete(PaqueteCO2 paquete) {
 
-        Record record = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Record no encontrado: " + id));
+        Record record = new Record();
 
-        // 1. cambiar estado
         record.setStatus("APPROVED");
+        record.setPaquete(paquete);
+        record.setCreatedBy(paquete.getCreatedBy());
 
-        // 2. generar metadata
-        String cid = metadataService.processApprovedRecord(record);
+        // ✅ guardar primero para obtener ID
+        Record saved = repository.save(record);
 
-        // 3. guardar CID en entidad
-        record.setIpfsCid(cid);
+        // ✅ generar metadata + subir a IPFS
+        String cid = metadataService.processApprovedRecord(saved);
 
-        // 4. persistir en DB
-        repository.save(record);
+        saved.setIpfsCid(cid);
+
+        // ✅ guardar CID
+        return repository.save(saved);
     }
 }

@@ -62,6 +62,21 @@ button.ghost{background:transparent}
 button.small{padding:6px 10px}
 button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%); color:#fff; border-color: color-mix(in srgb, var(--danger) 50%, transparent 50%)}
 
+.ghost {
+  position: relative;
+}
+ 
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+ 
+  min-width: 20px;
+  height: 20px;
+ 
+  background: #e53935;
+  color: white;
+}
 .table{width:100%; border-collapse: collapse;}
 .table th, .table td{border-bottom:1px solid var(--border); padding:10px; text-align:left}
 .badge{padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border)}

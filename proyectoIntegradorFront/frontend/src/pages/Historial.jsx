@@ -10,32 +10,37 @@ export default function Historial() {
 
   const [historial, setHistorial] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-
-  useEffect(() => {
-    if (user === null) return;
-
-    if (!user) navigate("/");
-    else cargarHistorial();
-  }, [user]);
-
   const cargarHistorial = async () => {
     try {
-      const res = await fetch(`${API}/paquetes/aceptados`);
+      const res = await fetch(`${API}/paquetes`);
       const data = await res.json();
-      setHistorial(data);
+
+      const propios = data.filter((p) => p.createdBy === user.email);
+
+      setHistorial(propios);
     } catch (err) {
       console.error("Error cargando historial:", err);
     }
   };
 
+  useEffect(() => {
+    if (user === null) return;
+
+    if (!user) navigate("/");
+    if (user.role.toLowerCase() !== "empleado") {
+      navigate("/");
+      return;
+    } else cargarHistorial();
+  }, [user]);
+
   if (!user) return <p>Cargando...</p>;
 
   return (
     <section className="panel">
-      <h1>Historial de paquetes aceptados</h1>
+      <h1>Historial de paquetes</h1>
 
       {historial.length === 0 ? (
-        <p className="muted">No hay paquetes aceptados.</p>
+        <p className="muted">No hay paquetes registrados.</p>
       ) : (
         <table className="table">
           <thead>
@@ -44,20 +49,21 @@ export default function Historial() {
               <th>Planta</th>
               <th>Fecha</th>
               <th>Volumen</th>
+              <th>Estado</th>
               <th></th>
             </tr>
           </thead>
 
           <tbody>
-            {historial.map(p => (
+            {historial.map((p) => (
               <tr key={p.id}>
                 <td>{p.id}</td>
                 <td>{p.planta?.nombre}</td>
                 <td>{p.captureDate}</td>
                 <td>{p.tonCO2eq?.toFixed(3)}</td>
-
+                <td>{p.estado}</td>
                 <td>
-                  <button onClick={() => setSeleccionado(p)}>
+                  <button onClick={() => navigate(`/paquete/${p.id}`)}>
                     Ver detalle
                   </button>
                 </td>
@@ -67,24 +73,6 @@ export default function Historial() {
         </table>
       )}
 
-      {/* ✅ MODAL SOLO LECTURA */}
-      {seleccionado && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Detalle del paquete</h2>
-
-            <p><b>ID:</b> {seleccionado.id}</p>
-            <p><b>Planta:</b> {seleccionado.planta?.nombre}</p>
-            <p><b>Fecha:</b> {seleccionado.captureDate}</p>
-            <p><b>Volumen:</b> {seleccionado.tonCO2eq}</p>
-            <p><b>Estado:</b> {seleccionado.estado}</p>
-
-            <button onClick={() => setSeleccionado(null)}>
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

@@ -3,13 +3,11 @@ package com.co2x.dmrv.utils;
 // aca transformamos los DTO a entidades para guardar en la base
 // y viceversa para cuando solicitamos un dato de la base
 
-import com.co2x.dmrv.dto.PaqueteCO2DTO;
-import com.co2x.dmrv.dto.ReporteDTO;
-import com.co2x.dmrv.dto.PlantaDTO;
+import com.co2x.dmrv.dto.*;
+import com.co2x.dmrv.entity.*;
 import com.co2x.dmrv.entity.Planta;
-import com.co2x.dmrv.entity.PaqueteCO2;
-import com.co2x.dmrv.entity.Planta;
-import com.co2x.dmrv.entity.Reporte;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -82,6 +80,21 @@ public class Factory {
         return p;
     }
 
+
+    private NotificacionDTO toDTO(Notificacion n) {
+
+        NotificacionDTO dto = new NotificacionDTO();
+
+        dto.setId(n.getId());
+        dto.setMensaje(n.getMensaje());
+        dto.setPaqueteId(n.getPaqueteId());
+        dto.setLeido(n.isLeido());
+        dto.setFecha(n.getFecha());
+
+        return dto;
+    }
+
+
     public PlantaDTO toPlantaDTO(Planta entity) {
 
         PlantaDTO dto = new PlantaDTO();
@@ -94,6 +107,27 @@ public class Factory {
         
         return dto;
     }
+
+    public HistorialPaqueteDTO toHistorialDTO(HistorialPaquete h) {
+        HistorialPaqueteDTO dto = new HistorialPaqueteDTO();
+
+        dto.setId(h.getId());
+        dto.setPaqueteId(h.getPaquete().getId());
+        dto.setEditor(h.getEditor());
+        dto.setAccion(h.getAccion());
+        dto.setFecha(h.getFecha());
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            dto.setCambios(mapper.readValue(h.getCambios(), Object.class));
+        } catch (Exception e) {
+            dto.setCambios(h.getCambios());
+        }
+
+        return dto;
+    }
+
+
 
 }
 

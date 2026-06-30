@@ -14,8 +14,10 @@ export function AppProvider({ children }) {
   const [plantas, setPlantas] = useState([]);
   const [paquetes, setPaquetes] = useState([]);
   const [user, setUser] = useState(null);
-  const [backendOk, setBackendOk] = useState(true);
+  const [backendActivo, setBackendActivo] = useState(true);
+  const [notificaciones, setNotificaciones] = useState([]);
 
+  // Cargar plantas
   useEffect(() => {
     axios
       .get(`${API}/plantas`)
@@ -23,6 +25,7 @@ export function AppProvider({ children }) {
       .catch((err) => console.error("Error cargando plantas", err));
   }, [API]);
 
+  // Restaurar usuario
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
@@ -30,6 +33,7 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // Cargar paquetes
   const cargarPaquetes = useCallback(async () => {
     if (!user?.email) {
       setPaquetes([]);
@@ -50,26 +54,46 @@ export function AppProvider({ children }) {
   }, [API, user?.email, user?.role]);
 
   useEffect(() => {
+    if (!user) return;
     cargarPaquetes();
-  }, [cargarPaquetes]);
+  }, [user]);
 
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
 
+  // 🔔 Cargar NOTIFICACIONES NO LEÍDAS
+  const reloadNotificaciones = async () => {
+    if (!user?.email) return;
+
+    try {
+      const res = await axios.get(`${API}/notificaciones/noleidas/${user.email}`);
+      setNotificaciones(res.data);
+    } catch (err) {
+      console.error("Error recargando notificaciones", err);
+    }
+  };
+
+  // Cargar notificaciones al iniciar
+  useEffect(() => {
+    reloadNotificaciones();
+  }, [user]);
+
+  // Backend health check
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const res = await fetch(`${API}/test`);
-        if (!res.ok) throw new Error();
-        setBackendOk(true);
-      } catch {
-        setBackendOk(false);
+        await axios.get(`${API}/test/health`);
+        setBackendActivo(true);
+      } catch (err) {
+        setBackendActivo(false);
       }
     };
 
     checkBackend();
-  }, [API]);
+    const interval = setInterval(checkBackend, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -95,7 +119,9 @@ export function AppProvider({ children }) {
         login,
         logout,
         cargarPaquetes,
-        backendOk,
+        backendActivo,
+        notificaciones,
+        reloadNotificaciones,   // 👈 CLAVE
       }}
     >
       {children}

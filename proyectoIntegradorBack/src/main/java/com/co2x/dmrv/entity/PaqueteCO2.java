@@ -1,15 +1,21 @@
 package com.co2x.dmrv.entity;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.hibernate.mapping.ToOne;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import static org.skyscreamer.jsonassert.JSONParser.parseJSON;
+
+@ToString(exclude = {"planta", "historial"})
 @Entity
 @Table(name = "PaqueteCO2")
 @Data
@@ -19,9 +25,6 @@ public class PaqueteCO2 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // =====================
-    // CAMPOS FIJOS (core)
-    // =====================
     private String certId;
     private LocalDate captureDate;
 
@@ -29,8 +32,13 @@ public class PaqueteCO2 {
     @JsonProperty("tonCO2eq")
     private Double tonCO2eq;
 
-    //private String metodologia;
-    //private Boolean retirementStatus;
+
+    @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<HistorialPaquete> historial = new ArrayList<>();
+
+
+
 
     @Enumerated(EnumType.STRING)
     private EstadoPaquete estado;
@@ -40,7 +48,6 @@ public class PaqueteCO2 {
 
     @Column(name = "auditor")
     private String auditor;
-
 
     private String createdBy;
 
