@@ -9,19 +9,14 @@ export default function Notificaciones() {
   const navigate = useNavigate();
 
   const [notificaciones, setNotificaciones] = useState([]);
+
   useEffect(() => {
     if (!user?.email) return;
 
-    axios
-      .get(`${API}/notificaciones/${user.email}`)
-      .then((res) => {
-        console.log("NOTIFICACIONES:", res.data);
-        setNotificaciones(res.data);
-      })
-      .catch((err) => console.error(err));
+    axios.get(`${API}/notificaciones/${user.email}`)
+      .then((res) => setNotificaciones(res.data))
+      .catch(console.error);
   }, [user]);
-
-
 
   if (!user) return <p>Cargando...</p>;
 
@@ -32,12 +27,10 @@ export default function Notificaciones() {
       {notificaciones.map((n) => (
         <div key={n.id}>
           <p>{n.mensaje}</p>
-
           <small>{new Date(n.fecha).toLocaleString()}</small>
-          {console.log(n)}
+
           <button onClick={() => navigate(`/paquete/${n.paqueteId}`)}>
             Ver
-            
           </button>
         </div>
       ))}

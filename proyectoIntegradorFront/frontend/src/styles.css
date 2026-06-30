@@ -65,11 +65,16 @@ button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%)
 .ghost {
   position: relative;
 }
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> 75bdf700ad7d1836616e5adc4fbaeed3cf696ba9
 .badge {
   position: absolute;
   top: -6px;
   right: -6px;
+<<<<<<< HEAD
 
   min-width: 20px;
   height: 20px;
@@ -91,6 +96,15 @@ button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%)
   box-sizing: border-box;
 }
 
+=======
+ 
+  min-width: 20px;
+  height: 20px;
+ 
+  background: #e53935;
+  color: white;
+}
+>>>>>>> 75bdf700ad7d1836616e5adc4fbaeed3cf696ba9
 .table{width:100%; border-collapse: collapse;}
 .table th, .table td{border-bottom:1px solid var(--border); padding:10px; text-align:left}
 .badge{padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border)}
