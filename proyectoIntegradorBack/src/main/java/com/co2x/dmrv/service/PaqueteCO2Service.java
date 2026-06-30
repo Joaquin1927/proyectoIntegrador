@@ -28,10 +28,7 @@ import java.time.LocalDate;
 
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Arrays.stream;
 
@@ -105,6 +102,16 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             } else {
                 h.setCambios("[]");
             }
+
+            String snapshot = generarSnapshot(paquete);
+
+            System.out.println("LARGO SNAPSHOT: " + snapshot.length());
+
+            String cambiosJson = cambios != null
+                    ? mapper.writeValueAsString(cambios)
+                    : "[]";
+
+            System.out.println("LARGO CAMBIOS: " + cambiosJson.length());
 
             historialRepo.save(h);
 
@@ -564,30 +571,50 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
 
 
+
     public PaqueteEdicionDTO getPaqueteParaEdicion(Integer id) {
+
+        System.out.println("1");
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
+        System.out.println("2");
+
         String usuario = getCurrentUserEmailSafe();
 
+        System.out.println("3");
         System.out.println("USER: " + usuario);
         System.out.println("CREATED BY: " + paquete.getCreatedBy());
 
-       // if (!usuario.equals(paquete.getCreatedBy())) {
-        //    throw new RuntimeException("No autorizado");
-        //}
+        System.out.println("4");
+        System.out.println("ESTADO: " + paquete.getEstado());
 
         if (paquete.getEstado() != EstadoPaquete.EN_REVISION) {
             throw new RuntimeException("El paquete no está en revisión");
         }
 
-        HistorialPaquete ultimo = historialRepo
-                .findTopByPaqueteIdOrderByFechaDesc(paquete.getId())
-                .orElseThrow(() -> new RuntimeException("No hay historial"));
+        System.out.println("5");
+
+
+        Optional<HistorialPaquete> test =
+                historialRepo.findTopByPaqueteIdOrderByFechaDesc(paquete.getId());
+
+        System.out.println("OPTIONAL VACIO: " + test.isEmpty());
+
+        if (test.isPresent()) {
+            System.out.println("HISTORIAL ID: " + test.get().getId());
+        }
+
+        HistorialPaquete ultimo =
+                test.orElseThrow(() -> new RuntimeException("No hay historial"));
+
+
+        System.out.println("6");
 
         return construirDTOEdicion(paquete, ultimo);
     }
+
 
 
     private PaqueteEdicionDTO construirDTOEdicion(
@@ -634,7 +661,12 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
             for (Map<String, Object> cambio : cambios) {
 
-                if (cambio.containsKey("campo")) {
+                if
+                (
+                        cambio.containsKey("campo") &&
+                                cambio.containsKey("comentario")
+                )
+                {
 
                     CampoConErrorDTO campo = new CampoConErrorDTO();
 
