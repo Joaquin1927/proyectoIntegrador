@@ -33,7 +33,6 @@ public class PaqueteController {
     public ResponseEntity<?> crear(@RequestBody PaqueteCO2DTO dto) {
         try {
             System.out.println("ENTRO AL CONTROLLER");
-            //System.out.println(dto.plantaId);
 
 
             System.out.println("DTO recibido: " + dto);
@@ -49,7 +48,7 @@ public class PaqueteController {
             return ResponseEntity.ok(creado);
 
         } catch (Exception e) {
-            e.printStackTrace(); // 🔥 CLAVE
+            e.printStackTrace();
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }

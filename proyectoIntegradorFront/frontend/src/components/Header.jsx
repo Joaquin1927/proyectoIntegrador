@@ -133,7 +133,6 @@ export default function Header() {
           </div>
         )}
 
-        <button className="ghost">🌓</button>
 
         <div className="user-pill">{user ? user.email : "Invitado"}</div>
 

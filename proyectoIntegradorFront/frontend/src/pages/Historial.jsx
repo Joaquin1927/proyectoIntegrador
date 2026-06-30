@@ -49,6 +49,7 @@ export default function Historial() {
               <th>Planta</th>
               <th>Fecha</th>
               <th>Volumen</th>
+              <th>Estado</th>
               <th></th>
             </tr>
           </thead>
@@ -60,7 +61,7 @@ export default function Historial() {
                 <td>{p.planta?.nombre}</td>
                 <td>{p.captureDate}</td>
                 <td>{p.tonCO2eq?.toFixed(3)}</td>
-
+                <td>{p.estado}</td>
                 <td>
                   <button onClick={() => navigate(`/paquete/${p.id}`)}>
                     Ver detalle

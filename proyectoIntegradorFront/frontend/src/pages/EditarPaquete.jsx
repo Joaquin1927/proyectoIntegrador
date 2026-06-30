@@ -28,7 +28,6 @@ export default function EditarPaquete() {
       setData(json);
       setMetadata(json.metadata || {});
 
-      // ✅ mapear campos con error
       const errores = Object.fromEntries(
         (json.camposConError || []).map(c => [c.campo, c.comentario])
       );
@@ -40,7 +39,6 @@ export default function EditarPaquete() {
     }
   };
 
-  // ✅ manejar cambio de input
   const handleChange = (key, value) => {
     setMetadata(prev => ({
       ...prev,
@@ -53,7 +51,6 @@ export default function EditarPaquete() {
     }));
   };
 
-  // ✅ guardar cambios
   const guardar = async () => {
 
     if (Object.keys(cambios).length === 0) {
