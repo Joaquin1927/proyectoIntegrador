@@ -10,24 +10,26 @@ export default function PaqueteDetalle() {
   const API = import.meta.env.VITE_API_URL;
  
   const [paquete, setPaquete] = useState(null);
-  const [ultimoHistorial, setUltimoHistorial] = useState(null);
+  const [historial, setHistorial] = useState([]);
  
-  const cargarUltimoHistorial = async () => {
+  
+const cargarHistorial = async () => {
+
   try {
-    const res = await fetch(`${API}/paquetes/${id}/historial/ultimo`);
- 
-    if (res.status === 204) {
-      setUltimoHistorial(null);
-      return;
-    }
- 
+
+    const res = await fetch(
+      `${API}/historial/${id}/getHistorial`
+    );
+
     const data = await res.json();
-    setUltimoHistorial(data);
- 
+
+    setHistorial(data);
+
   } catch (err) {
-    console.error("Error cargando historial:", err);
+    console.error(err);
   }
 };
+
  
  
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function PaqueteDetalle() {
     }
  
     cargarPaquete();
-    cargarUltimoHistorial();
+    cargarHistorial();
   }, [user]);
  
   const cargarPaquete = async () => {
@@ -57,28 +59,35 @@ export default function PaqueteDetalle() {
  
   return (
     <section className="panel">
-      {ultimoHistorial && (
-        <div className="card" style={{ marginBottom: "20px", padding: "15px" }}>
-          <h3>Última modificación</h3>
- 
-          <p>
-            <b>Acción:</b> {ultimoHistorial.accion}
-          </p>
-          <p>
-            <b>Realizado por:</b> {ultimoHistorial.editor}
-          </p>
-          <p>
-            <b>Fecha:</b> {new Date(ultimoHistorial.fecha).toLocaleString()}
-          </p>
- 
-          {ultimoHistorial.cambios && (
-            <>
-              <h4>Cambios realizados</h4>
-              <pre>{JSON.stringify(ultimoHistorial.cambios, null, 2)}</pre>
-            </>
-          )}
-        </div>
-      )}
+      
+<h2>Historial</h2>
+
+{historial.map(h => (
+
+  <div key={h.id} className="card">
+
+    <p>
+      <b>Acción:</b> {h.accion}
+    </p>
+
+    <p>
+      <b>Editor:</b> {h.editor}
+    </p>
+
+    <p>
+      <b>Fecha:</b>{" "}
+      {new Date(h.fecha).toLocaleString()}
+    </p>
+
+    {h.cambios && (
+      <pre>
+        {JSON.stringify(h.cambios, null, 2)}
+      </pre>
+    )}
+
+  </div>
+))}
+
       <h1>Detalle del paquete #{paquete.id}</h1>
  
       <p>

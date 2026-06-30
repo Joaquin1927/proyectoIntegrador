@@ -555,7 +555,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         registrarHistorial(
                 paquete,
-                auditorEmail,
+                paquete.getAuditor(),
                 EstadoPaquete.EN_REVISION,
                 cambiosFinal
         );
