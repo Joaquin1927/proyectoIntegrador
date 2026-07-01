@@ -79,6 +79,26 @@ export function AppProvider({ children }) {
     reloadNotificaciones();
   }, [user]);
 
+const checkBackend = async () => {
+
+  console.log("CHECK BACKEND");
+
+  try {
+
+    const r = await axios.get(`${API}/test/health`);
+
+    console.log("HEALTH OK", r.data);
+
+    setBackendActivo(true);
+
+  } catch (err) {
+
+    console.log("HEALTH ERROR", err);
+
+    setBackendActivo(false);
+  }
+};
+
   // Backend health check
   useEffect(() => {
     const checkBackend = async () => {
