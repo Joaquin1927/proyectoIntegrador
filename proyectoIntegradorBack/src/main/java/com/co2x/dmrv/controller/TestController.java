@@ -43,7 +43,6 @@ public class TestController {
         return ipfsService.uploadJSON(json);
     }
 
-    @PreAuthorize("permitAll()")
     @GetMapping("/health")
     public String health() {
         return "OK";
