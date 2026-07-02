@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import PaqueteModal from "../components/PaqueteModal";
+import { apiGet } from "../api/apiClient";
 
 export default function Pendientes() {
   const { user, plantas } = useApp();
