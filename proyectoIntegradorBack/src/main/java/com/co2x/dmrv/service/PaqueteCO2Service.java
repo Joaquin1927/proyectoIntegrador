@@ -92,6 +92,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             h.setPaquete(paquete);
 
             h.setEditor(usuario);
+            System.out.println("EDITOR EN REGISTRAR HISTORIAL: "+ h.getEditor());
             h.setAccion(accion);
             h.setFecha(LocalDateTime.now());
 
@@ -320,16 +321,26 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         System.out.println("📩 Notificación creada para " + usuario);
     }
 
-
     private String getCurrentUserEmailSafe() {
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
+        System.out.println("AUTH: " + auth);
 
-            System.out.println("CLAIMS: " + jwt.getClaims());
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
 
-            String email = jwt.getClaimAsString("preferred_username");
+            Jwt jwt = jwtAuth.getToken();
+
+            System.out.println("CLAIMS: "
+                    + jwt.getClaims());
+
+            String email =
+                    jwt.getClaimAsString(
+                            "preferred_username"
+                    );
 
             if (email == null || email.isBlank())
                 email = jwt.getClaimAsString("email");
@@ -340,13 +351,11 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             if (email == null || email.isBlank())
                 email = jwt.getSubject();
 
-            if (email != null && !email.isBlank()) {
-                return email;
-            }
+            return email;
         }
 
-        // ✅ fallback seguro
         System.out.println("⚠ Usuario fallback utilizado");
+
         return "desconocido";
     }
 
@@ -552,7 +561,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                     "texto", comentarioGeneral
             ));
         }
-
+        System.out.println("el auditor es: " + auditorEmail);
         registrarHistorial(
                 paquete,
                 auditorEmail,

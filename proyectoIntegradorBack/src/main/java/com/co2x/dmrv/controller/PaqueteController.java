@@ -9,6 +9,8 @@ import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -112,6 +114,17 @@ public class PaqueteController {
         return ResponseEntity.ok(
                 service.getPaqueteParaEdicion(id)
         );
+    }
+
+    @GetMapping("/debug-auth")
+    public String debug() {
+
+        Authentication auth =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        return String.valueOf(auth);
     }
 
 

@@ -7,4 +7,5 @@ export const msalInstance = new PublicClientApplication({
     redirectUri: import.meta.env.VITE_REDIRECT_URI,
 
   },
+  scopes: ["openid", "profile", "email"]
 });

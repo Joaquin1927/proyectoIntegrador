@@ -36,9 +36,8 @@ export default function Pendientes() {
 
   const cargarPendientes = async () => {
     try {
-      const res = await fetch(`${API}/paquetes/pendientes`);
+      const res = await apiGet(`${API}/paquetes/pendientes`);
       const data = await res.json();
-      console.log("PAQUETES PENDIENTES:", data);
       setPendientes(data);
     } catch (err) {
       console.error("Error cargando pendientes:", err);
