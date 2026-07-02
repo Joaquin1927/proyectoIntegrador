@@ -37,8 +37,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     @Autowired
     private HistorialPaqueteRepository historialRepo;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+
 
 
     @Override
@@ -72,10 +71,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     @Autowired
     private RecordService recordService;
 
-    @Autowired
-    private BlockchainService blockchainService;
-
-
 
     private void registrarHistorial(
             PaqueteCO2 paquete,
@@ -85,6 +80,8 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     ) {
 
         try {
+            ObjectMapper mapper = new ObjectMapper();
+
             HistorialPaquete h = new HistorialPaquete();
 
             h.setPaquete(paquete);
@@ -92,11 +89,9 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             h.setAccion(accion);
             h.setFecha(LocalDateTime.now());
 
-
             h.setSnapshot(generarSnapshot(paquete));
 
-            // ✅ usa el mapper de Spring (con JavaTimeModule)
-            h.setCambios(objectMapper.writeValueAsString(cambios));
+            h.setCambios(mapper.writeValueAsString(cambios));
 
             historialRepo.save(h);
 
@@ -104,7 +99,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             throw new RuntimeException(e);
         }
     }
-
 
 
     public List<PaqueteCO2DTO> listar() {
@@ -196,6 +190,8 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
+        ObjectMapper mapper = new ObjectMapper();
+
         Map<String, Object> metadataMap = procesarMetadata(dto.metadata);
 
         Object tonObj = metadataMap.get("_tonCO2eq");
@@ -209,7 +205,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         entity.setTonCO2eq(ton);
 
-        entity.setMetadata(objectMapper.writeValueAsString(metadataMap));
+        entity.setMetadata(mapper.writeValueAsString(metadataMap));
 
         entity.setEstado(EstadoPaquete.PENDIENTE);
         entity.setIssuanceDate(LocalDate.now());
@@ -350,9 +346,8 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
 
     public PaqueteCO2DTO aprobar(Integer id) {
-        System.out.println("🚀 INICIANDO APROBACIÓN");
-        validarAuditor();
 
+        validarAuditor();
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
@@ -360,9 +355,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.APROBADO);
 
-        // =========================
-        // REPORTE
-        // =========================
+
         Reporte reporte = new Reporte();
 
         reporte.setFechaReporte(LocalDate.now());
@@ -376,51 +369,22 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         paquete.setReporte(reporte);
 
-        // =========================
-        // AUDITOR
-        // =========================
         String auditorEmail = getCurrentUserEmailStrict();
         paquete.setAuditor(auditorEmail);
 
         paqueteRepo.save(paquete);
 
-        // =========================
-        // IPFS
-        // =========================
         Record record = recordService.generateFromPaquete(paquete);
-        System.out.println("✅ RECORD GENERADO");
-        String cid = record.getIpfsCid();
-
-        System.out.println("📦 CID generado: " + cid);
-
-        // =========================
-        // ARMAR certId + CID
-        // =========================
-        String certIdFinal = paquete.getCertId() + "|" + cid;
-        System.out.println("🔥 final certId: " + certIdFinal);
-
-        // =========================
-        // BLOCKCHAIN
-        // =========================
-        blockchainService.mintToken(
-                "0xd85DefFdf312092a1e6DbF19919914De53D8D9e1", // después lo podemos sacar del usuario
-                paquete.getTonCO2eq(),
-                certIdFinal
-        );
-        System.out.println("✅ MINT EJECUTADO");
+        System.out.println("Record creado con CID: " + record.getIpfsCid());
 
 
-        // =========================
-        // HISTORIAL
-        // =========================
         registrarHistorial(
                 paquete,
                 auditorEmail,
                 EstadoPaquete.APROBADO,
                 Map.of(
                         "estadoAnterior", estadoAnterior.toString(),
-                        "estadoNuevo", EstadoPaquete.APROBADO.toString(),
-                        "cid", cid
+                        "estadoNuevo", EstadoPaquete.APROBADO.toString()
                 )
         );
 
