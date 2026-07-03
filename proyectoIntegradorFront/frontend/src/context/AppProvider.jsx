@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { AppContext } from "./AppContext";
+import { apiGet } from "../api/apiClient";
+
 
 const DB_KEY = "co2x_db_v1";
 
@@ -81,19 +83,17 @@ export function AppProvider({ children }) {
 
   // Backend health check
   useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        await axios.get(`${API}/test/health`);
-        setBackendActivo(true);
-      } catch (err) {
-        setBackendActivo(false);
-      }
-    };
+  const checkBackend = async () => {
+    try {
+      await apiGet(`${API}/test/health`, false); // false = no requiere token
+      setBackendActivo(true);
+    } catch (err) {
+      setBackendActivo(false);
+    }
+  };
 
-    checkBackend();
-    const interval = setInterval(checkBackend, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  checkBackend();
+}, []);
 
   const login = (userData) => {
     setUser(userData);

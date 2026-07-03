@@ -92,6 +92,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             h.setPaquete(paquete);
 
             h.setEditor(usuario);
+            System.out.println("EDITOR EN REGISTRAR HISTORIAL: "+ h.getEditor());
             h.setAccion(accion);
             h.setFecha(LocalDateTime.now());
 
@@ -321,7 +322,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         System.out.println("📩 Notificación creada para " + usuario);
     }
-
 
     private String getCurrentUserEmailSafe() {
 
@@ -567,7 +567,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                     "texto", comentarioGeneral
             ));
         }
-
+        System.out.println("el auditor es: " + auditorEmail);
         registrarHistorial(
                 paquete,
                 auditorEmail,

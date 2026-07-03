@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import PaqueteModal from "../components/PaqueteModal";
+import { apiGet } from "../api/apiClient";
 
 export default function Pendientes() {
   const { user, plantas } = useApp();
@@ -36,9 +37,8 @@ export default function Pendientes() {
 
   const cargarPendientes = async () => {
     try {
-      const res = await fetch(`${API}/paquetes/pendientes`);
+      const res = await apiGet(`${API}/paquetes/pendientes`);
       const data = await res.json();
-      console.log("PAQUETES PENDIENTES:", data);
       setPendientes(data);
     } catch (err) {
       console.error("Error cargando pendientes:", err);
