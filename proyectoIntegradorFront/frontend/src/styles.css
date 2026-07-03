@@ -61,6 +61,31 @@ button.primary{background:linear-gradient(135deg, var(--brand), var(--brand-2));
 button.ghost{background:transparent}
 button.small{padding:6px 10px}
 button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%); color:#fff; border-color: color-mix(in srgb, var(--danger) 50%, transparent 50%)}
+.timeline {
+  position: relative;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 2px solid #ccc;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.timeline-marker {
+  width: 12px;
+  height: 12px;
+  background-color: #4a90e2;
+  border-radius: 50%;
+  position: absolute;
+  left: -7px;
+  top: 5px;
+}
+
+.timeline-content {
+  padding-left: 10px;
+}
 
 .ghost {
   position: relative;
