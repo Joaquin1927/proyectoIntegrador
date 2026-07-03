@@ -17,6 +17,33 @@ import java.util.Map;
 @RestController
 @RequestMapping("/paquetes")
 public class PaqueteController {
+
+
+
+
+
+
+
+
+
+
+
+
+    @GetMapping("/usuario/{email}")
+    public List<PaqueteCO2DTO> listarPorUsuario(
+            @PathVariable("email") String email) {
+
+        return service.listarPorUsuario(email);
+    }
+
+
+
+
+
+
+
+
+
     @Autowired
     private HistorialPaqueteRepository historialRepo;
 
@@ -52,20 +79,32 @@ public class PaqueteController {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
-    @GetMapping("/usuario/{email}")
-    public List<PaqueteCO2DTO> listarPorUsuario(
-            @PathVariable String email) {
-        return service.listarPorUsuario(email);
-    }
+
+
+
+
+
+
+
+
+
     @GetMapping
     public ResponseEntity<List<PaqueteCO2DTO>> listar() {
         return ResponseEntity.ok(service.listar());
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.obtenerPorId(id));
+    public ResponseEntity<PaqueteCO2DTO> obtener(
+            @PathVariable("id") Integer id) {
+
+        System.out.println("BUSCANDO PAQUETE ID = " + id);
+
+        return ResponseEntity.ok(
+                service.obtenerPorId(id)
+        );
     }
+
 
 
     @PostMapping("/{id}/aprobar")

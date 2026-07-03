@@ -28,10 +28,29 @@ public class NotificacionController {
     }
 
     // 🔔 Obtener solo NO leídas (para el Header)
+
+
     @GetMapping("/noleidas/{usuario}")
-    public List<NotificacionDTO> getNoLeidas(@PathVariable String usuario) {
-        return repo.findByUsuarioAndLeidoFalse(usuario)
-                .stream()
+    public List<NotificacionDTO> getNoLeidas(
+            @PathVariable("usuario") String usuario) {
+
+        System.out.println("USUARIO NOTIF: " + usuario);
+
+        var lista = repo.findByUsuarioAndLeidoFalse(usuario);
+
+        System.out.println("ENCONTRADAS: " + lista.size());
+
+        lista.forEach(n ->
+                System.out.println(
+                        n.getId()
+                                + " - "
+                                + n.getUsuario()
+                                + " - "
+                                + n.isLeido()
+                )
+        );
+
+        return lista.stream()
                 .map(this::toDTO)
                 .toList();
     }
@@ -39,9 +58,16 @@ public class NotificacionController {
 
 
 
+
+
     // 📄 Obtener TODAS (para la página /notificaciones)
+
     @GetMapping("/{usuario}")
-    public List<NotificacionDTO> getTodas(@PathVariable String usuario) {
+    public List<NotificacionDTO> getTodas(
+            @PathVariable("usuario") String usuario) {
+
+        System.out.println("USUARIO TODAS: " + usuario);
+
         return repo.findByUsuario(usuario)
                 .stream()
                 .map(this::toDTO)

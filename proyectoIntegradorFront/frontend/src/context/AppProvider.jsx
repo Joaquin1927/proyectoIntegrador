@@ -62,12 +62,12 @@ export function AppProvider({ children }) {
     savePaquetes(paquetes);
   }, [paquetes]);
 
-  // 🔔 Cargar NOTIFICACIONES NO LEÍDAS
   const reloadNotificaciones = async () => {
     if (!user?.email) return;
 
     try {
       const res = await axios.get(`${API}/notificaciones/noleidas/${user.email}`);
+      console.log("NOTIFICACIONES:", res.data);
       setNotificaciones(res.data);
     } catch (err) {
       console.error("Error recargando notificaciones", err);

@@ -141,12 +141,14 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .map(factory::toPaqueteDTO)
                 .toList();
     }
+
     public List<PaqueteCO2DTO> listarPorUsuario(String email) {
         return paqueteRepo.findByCreatedBy(email)
                 .stream()
                 .map(factory::toPaqueteDTO)
                 .toList();
     }
+
 
 
 
@@ -323,13 +325,24 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
     private String getCurrentUserEmailSafe() {
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
+        System.out.println("AUTH: " + auth);
 
-            System.out.println("CLAIMS: " + jwt.getClaims());
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
 
-            String email = jwt.getClaimAsString("preferred_username");
+            Jwt jwt = jwtAuth.getToken();
+
+            System.out.println("CLAIMS: "
+                    + jwt.getClaims());
+
+            String email =
+                    jwt.getClaimAsString(
+                            "preferred_username"
+                    );
 
             if (email == null || email.isBlank())
                 email = jwt.getClaimAsString("email");
@@ -340,13 +353,11 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             if (email == null || email.isBlank())
                 email = jwt.getSubject();
 
-            if (email != null && !email.isBlank()) {
-                return email;
-            }
+            return email;
         }
 
-        // ✅ fallback seguro
         System.out.println("⚠ Usuario fallback utilizado");
+
         return "desconocido";
     }
 
@@ -409,7 +420,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     public PaqueteCO2DTO aprobar(Integer id) {
 
         validarAuditor();
-
+        System.out.println("ENTRO A APROBAR");
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
@@ -472,7 +483,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
     public PaqueteCO2DTO rechazar(Integer id) {
         validarAuditor();
-
+        System.out.println("ENTRO A RECHAZAR");
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
         String auditorEmail = getCurrentUserEmailSafe();
@@ -513,11 +524,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
         EstadoPaquete estadoAnterior = paquete.getEstado();
-
+        System.out.println("ENTRO A CORRECCION");
         paquete.setEstado(EstadoPaquete.EN_REVISION);
 
         String auditorEmail = getCurrentUserEmailSafe();
         paquete.setAuditor(auditorEmail);
+
+        String email = getCurrentUserEmailSafe();
+
+        System.out.println("EMAIL AUDITOR: " + email);
 
         Object camposObj = data.get("campos");
         List<Map<String, Object>> campos;
