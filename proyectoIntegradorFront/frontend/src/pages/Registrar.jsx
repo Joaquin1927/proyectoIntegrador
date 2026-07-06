@@ -30,10 +30,29 @@ export default function Registrar() {
 
     if (file.type.includes("json")) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const json = JSON.parse(e.target.result);
-        setRows(Array.isArray(json) ? json : [json]);
-      };
+      
+reader.onload = (e) => {
+  const json = JSON.parse(e.target.result);
+
+  const filas = Array.isArray(json)
+    ? json
+    : [json];
+
+  const filasCorregidas = filas.map((row) => {
+
+    const planta = plantas.find(
+      p => p.id === row.plantaId + 1
+    );
+
+    return {
+      ...row,
+      plantaId: planta?.id ?? row.plantaId
+    };
+  });
+
+  setRows(filasCorregidas);
+};
+
       reader.readAsText(file);
     } else {
       Papa.parse(file, {
@@ -142,6 +161,7 @@ const payload = {
   } catch (error) {
     alert("Error general");
   }
+  
 };
 
 console.log("PLANTAS:", plantas);
@@ -175,6 +195,7 @@ console.log("PLANTAS:", plantas);
             if (!file) return;
 
             handleDrop({
+              
               preventDefault: () => {},
               dataTransfer: { files: [file] },
             });

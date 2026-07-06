@@ -4,6 +4,7 @@ import com.co2x.dmrv.dto.HistorialPaqueteDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
+import com.co2x.dmrv.service.AuditoriaService;
 import com.co2x.dmrv.service.PaqueteCO2Service;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,7 +36,7 @@ public class PaqueteController {
     public List<PaqueteCO2DTO> listarPorUsuario(
             @PathVariable("email") String email) {
 
-        return service.listarPorUsuario(email);
+        return paqueteService.listarPorUsuario(email);
     }
 
 
@@ -51,11 +52,17 @@ public class PaqueteController {
 
     @Autowired
     private Factory factory;
+
     @Autowired
-    private PaqueteCO2Service service;
+    private PaqueteCO2Service paqueteService;
+
+
+    @Autowired
+    private AuditoriaService auditoriaService;
+
     @GetMapping("/pendientes")
     public List<PaqueteCO2DTO> pendientes() {
-        return service.listarPendientes();
+        return paqueteService.listarPendientes();
     }
 
     @PostMapping
@@ -72,7 +79,7 @@ public class PaqueteController {
                 return ResponseEntity.badRequest().body("Seleccione una planta");
             }
 
-            PaqueteCO2DTO creado = service.crear(dto);
+            PaqueteCO2DTO creado = paqueteService.crear(dto);
 
             return ResponseEntity.ok(creado);
 
@@ -92,7 +99,7 @@ public class PaqueteController {
 
     @GetMapping
     public ResponseEntity<List<PaqueteCO2DTO>> listar() {
-        return ResponseEntity.ok(service.listar());
+        return ResponseEntity.ok(paqueteService.listar());
     }
 
 
@@ -103,38 +110,16 @@ public class PaqueteController {
         System.out.println("BUSCANDO PAQUETE ID = " + id);
 
         return ResponseEntity.ok(
-                service.obtenerPorId(id)
+                paqueteService.obtenerPorId(id)
         );
     }
 
 
 
-    @PostMapping("/{id}/aprobar")
-    public ResponseEntity<?> aprobar(@PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(service.aprobar(id));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
-    }
 
 
-    @PostMapping("/{id}/rechazar")
-    public ResponseEntity<PaqueteCO2DTO> rechazar(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.rechazar(id));
-    }
 
 
-    @PostMapping("/{id}/correccion")
-    public ResponseEntity<?> solicitarCorreccion(
-            @PathVariable Integer id,
-            @RequestBody Map<String, Object> body) {
-
-        service.solicitarCorreccion(id, body);
-
-        return ResponseEntity.ok().build();
-    }
 
     @GetMapping("/{id}/historial/ultimo")
     public ResponseEntity<?> getUltimoHistorial(@PathVariable Integer id) {
@@ -145,15 +130,7 @@ public class PaqueteController {
     }
 
 
-    @GetMapping("/{id}/edicion")
-    public ResponseEntity<PaqueteEdicionDTO> getEdicion(
-            @PathVariable Integer id
-    ) {
 
-        return ResponseEntity.ok(
-                service.getPaqueteParaEdicion(id)
-        );
-    }
 
     @GetMapping("/debug-auth")
     public String debug() {
@@ -167,11 +144,39 @@ public class PaqueteController {
     }
 
 
+    @GetMapping("/{id}/edicion")
+    public ResponseEntity<PaqueteEdicionDTO> getEdicion(
+            @PathVariable Integer id
+    ) {
+
+        System.out.println("ENTRO A GET EDICION");
+
+        return ResponseEntity.ok(
+                paqueteService.getPaqueteParaEdicion(id)
+        );
+    }
+
+
+
+
+    @PutMapping("/{id}/corregir")
+    public ResponseEntity<?> corregir(
+            @PathVariable Integer id,
+            @RequestBody PaqueteEdicionDTO dto
+    ) {
+
+        paqueteService.corregirPaquete(
+                id,
+                dto
+        );
+
+        return ResponseEntity.ok().build();
+    }
 
 //
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-//        service.eliminar(id);
+//        paqueteService.eliminar(id);
 //        return ResponseEntity.noContent().build();
 //    }
 

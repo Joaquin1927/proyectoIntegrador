@@ -34,6 +34,7 @@ public class PlantaService {
     }
 
     public Planta getEntity(Integer id) {
+        System.out.println("BUSCANDO PLANTA: " + id);
         return plantaRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Planta no encontrada"));
     }

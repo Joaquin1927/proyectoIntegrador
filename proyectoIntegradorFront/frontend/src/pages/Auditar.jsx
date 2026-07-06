@@ -28,7 +28,7 @@ export default function Auditar() {
       const token = response.accessToken;
 
       await axios.post(
-        `${API}/paquetes/${id}/aprobar`,
+        `${API}/auditoria/${id}/aprobar`,
         {},
         {
           headers: {
@@ -62,7 +62,7 @@ export default function Auditar() {
       const token = response.accessToken;
 
       await axios.post(
-        `${API}/paquetes/${id}/rechazar`,
+        `${API}/auditoria/${id}/rechazar`,
         {
           comentario: comentarioGeneral, 
         },
@@ -123,7 +123,7 @@ const response = await instance.acquireTokenSilent({
 const token = response.accessToken;
 
 await axios.post(
-  `${API}/paquetes/${id}/correccion`,
+  `${API}/auditoria/${id}/correccion`,
   body,
   {
     headers: {
