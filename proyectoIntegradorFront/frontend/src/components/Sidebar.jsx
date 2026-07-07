@@ -44,6 +44,13 @@ export default function Sidebar() {
                 </Link>
               </>
             )}
+
+            {/* ✅ SOLO ADMIN */}
+            {user.role === "admin" && (
+              <Link to="/aprobados" className="nav-item">
+                ⛓️ Mintear Tokens
+              </Link>
+            )}
           </>
         )}
       </nav>

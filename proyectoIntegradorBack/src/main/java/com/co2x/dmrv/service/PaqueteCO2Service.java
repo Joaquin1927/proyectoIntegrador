@@ -148,6 +148,14 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .toList();
     }
 
+    public List<PaqueteCO2DTO> listarAprobados() {
+
+        return paqueteRepo
+                .findByEstado(EstadoPaquete.APROBADO)
+                .stream()
+                .map(factory::toPaqueteDTO)
+                .toList();
+    }
 
 
     public Map<String, Object> procesarMetadata(String metadataJson) {

@@ -4,6 +4,7 @@ import com.co2x.dmrv.dto.HistorialPaqueteDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
+import com.co2x.dmrv.service.MintingService;
 import com.co2x.dmrv.service.PaqueteCO2Service;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +20,9 @@ import java.util.Map;
 public class PaqueteController {
     @Autowired
     private HistorialPaqueteRepository historialRepo;
+
+    @Autowired
+    private MintingService mintingService;
 
     @Autowired
     private Factory factory;
@@ -114,7 +118,21 @@ public class PaqueteController {
         );
     }
 
+    @PostMapping("/{id}/mint")
+    public ResponseEntity<?> mintear(@PathVariable Integer id) {
 
+        mintingService.mintearPaquete(id);
+
+        return ResponseEntity.ok("Paquete minteado correctamente");
+    }
+
+    @GetMapping("/aprobados")
+    public List<PaqueteCO2DTO> aprobados() {
+
+        System.out.println("ENTRO A APROBADOS");
+
+        return service.listarAprobados();
+    }
 
 //
 //    @DeleteMapping("/{id}")
