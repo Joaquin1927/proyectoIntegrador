@@ -16,4 +16,9 @@ public interface HistorialPaqueteRepository extends JpaRepository<HistorialPaque
     Optional<HistorialPaquete> findTopByPaqueteIdOrderByFechaDesc(Integer paqueteId);
 
 
+
+    List<HistorialPaquete> findByPaqueteId(
+            Integer paqueteId
+    );
+
 }
