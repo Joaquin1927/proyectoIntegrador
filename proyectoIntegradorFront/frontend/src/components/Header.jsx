@@ -17,12 +17,25 @@ export default function Header() {
 
   const dropdownRef = useRef(null);
 
-  // 🔔 calcular no leídas
   useEffect(() => {
     const nuevas = notificaciones.filter((n) => !n.leido);
     setDropdownNotifs(nuevas);
     setNoLeidas(nuevas.length);
   }, [notificaciones]);
+
+useEffect(() => {
+
+  if (!user?.email) return;
+
+  reloadNotificaciones();
+
+  const interval = setInterval(() => {
+    reloadNotificaciones();
+  }, 5000);
+
+  return () => clearInterval(interval);
+
+}, [user]);
 
   // cerrar al hacer click afuera
   useEffect(() => {

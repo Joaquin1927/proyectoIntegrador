@@ -19,8 +19,47 @@ public class NotificacionObserver implements PaqueteObserver {
         this.repo = repo;
     }
 
+
+    private String generarMensaje(
+            PaqueteCO2 paquete
+    ) {
+
+        return switch (paquete.getEstado()) {
+
+            case APROBADO ->
+                    "El paquete "
+                            + paquete.getId()
+                            + " ha sido aprobado";
+
+            case RECHAZADO ->
+                    "El paquete "
+                            + paquete.getId()
+                            + " ha sido rechazado";
+
+            case EN_REVISION ->
+                    "El paquete "
+                            + paquete.getId()
+                            + " requiere correcciones";
+
+            case EN_REVISION_CORREGIDO ->
+                    "El paquete "
+                            + paquete.getId()
+                            + " ha sido corregido y está listo para revisión";
+
+            default ->
+                    "El paquete "
+                            + paquete.getId()
+                            + " ha sido actualizado";
+        };
+    }
+
+
     @Override
     public void update(PaqueteCO2 paquete) {
+
+        System.out.println("ESTADO: " + paquete.getEstado());
+        System.out.println("CREATED BY: " + paquete.getCreatedBy());
+        System.out.println("AUDITOR: " + paquete.getAuditor());
 
         String destinatario;
 
@@ -35,6 +74,7 @@ public class NotificacionObserver implements PaqueteObserver {
 
             destinatario = paquete.getCreatedBy();
         }
+        System.out.println("DESTINATARIO FINAL: " + destinatario);
 
         Notificacion n = new Notificacion();
 
@@ -43,10 +83,7 @@ public class NotificacionObserver implements PaqueteObserver {
         n.setPaqueteId(paquete.getId());
 
         n.setMensaje(
-                "El paquete "
-                        + paquete.getId()
-                        + " fue "
-                        + paquete.getEstado()
+                generarMensaje(paquete)
         );
 
         n.setLeido(false);

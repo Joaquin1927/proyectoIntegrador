@@ -86,6 +86,23 @@ public class HistorialService {
         }
     }
 
+
+    public int obtenerNumeroRevision(Integer paqueteId) {
+
+        List<HistorialPaquete> historial =
+                historialRepo.findByPaqueteId(paqueteId);
+
+        long revisiones =
+                historial.stream()
+                        .filter(h ->
+                                h.getAccion() == EstadoPaquete.EN_REVISION
+                        )
+                        .count();
+
+        return (int) revisiones + 1;
+    }
+
+
     public Optional<HistorialPaquete> obtenerUltimoHistorial(Integer id) {
         return historialRepo.findTopByPaqueteIdOrderByFechaDesc(id);
     }

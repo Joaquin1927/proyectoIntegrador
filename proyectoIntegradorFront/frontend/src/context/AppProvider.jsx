@@ -76,24 +76,39 @@ export function AppProvider({ children }) {
     }
   };
 
-  // Cargar notificaciones al iniciar
   useEffect(() => {
     reloadNotificaciones();
   }, [user]);
 
-  // Backend health check
-  useEffect(() => {
+  
+useEffect(() => {
+
   const checkBackend = async () => {
     try {
-      await apiGet(`${API}/test/health`, false); // false = no requiere token
+      await apiGet(
+        `${API}/test/health`,
+        false
+      );
+
       setBackendActivo(true);
-    } catch (err) {
+
+    } catch {
+
       setBackendActivo(false);
     }
   };
 
   checkBackend();
+
+  const interval = setInterval(
+    checkBackend,
+    5000
+  );
+
+  return () => clearInterval(interval);
+
 }, []);
+
 
   const login = (userData) => {
     setUser(userData);

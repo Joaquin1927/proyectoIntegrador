@@ -74,6 +74,9 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     private RecordService recordService;
 
 
+    @Autowired
+    private SecurityService securityService;
+
 
 
 
@@ -89,6 +92,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     public List<PaqueteCO2DTO> listarPendientes() {
 
 
+
         return paqueteRepo
                 .findByEstadoIn(
                         List.of(
@@ -97,8 +101,22 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                         )
                 )
                 .stream()
-                .map(factory::toPaqueteDTO)
+                .map(paquete -> {
+
+                    PaqueteCO2DTO dto =
+                            factory.toPaqueteDTO(paquete);
+
+                    dto.setNumeroRevision(
+                            historialService.obtenerNumeroRevision(
+                                    paquete.getId()
+                            )
+                    );
+
+                    return dto;
+
+                })
                 .toList();
+
 
     }
 
@@ -209,33 +227,20 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String email = "desconocido";
+        String email = securityService.getCurrentUserEmail();;
 
-
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-
-            System.out.println("CLAIMS: " + jwt.getClaims());
-
-            email = (String) jwt.getClaims().get("unique_name");
-
-            if (email == null || email.isBlank())
-                email = (String) jwt.getClaims().get("upn");
-
-            if (email == null || email.isBlank())
-                email = (String) jwt.getClaims().get("preferred_username");
-
-            if (email == null || email.isBlank())
-                email = (String) jwt.getClaims().get("email");
-
-            if (email == null || email.isBlank()) {
-                throw new RuntimeException("Token inválido: no contiene email");
-            }
-
-        }
+        System.out.println(
+                "EMAIL OBTENIDO: "
+                        + securityService.getCurrentUserEmail()
+        );
 
         entity.setCreatedBy(email);
+
+        System.out.println(
+                "CREATEDBY ANTES SAVE: "
+                        + entity.getCreatedBy()
+        );
 
         PaqueteCO2 guardado = paqueteRepo.save(entity);
 
@@ -273,51 +278,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
 
 
-    private String getCurrentUserEmailSafe() {
-
-        Authentication auth =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
-
-        System.out.println("AUTH: " + auth);
-
-        if (auth instanceof JwtAuthenticationToken jwtAuth) {
-
-            Jwt jwt = jwtAuth.getToken();
-
-            System.out.println("CLAIMS: "
-                    + jwt.getClaims());
-
-            String email =
-                    jwt.getClaimAsString(
-                            "preferred_username"
-                    );
-
-            if (email == null || email.isBlank())
-                email = jwt.getClaimAsString("email");
-
-            if (email == null || email.isBlank())
-                email = jwt.getClaimAsString("upn");
-
-            if (email == null || email.isBlank())
-                email = jwt.getSubject();
-
-            return email;
-        }
-
-        System.out.println("⚠ Usuario fallback utilizado");
-
-        return "desconocido";
-    }
-
-
-
-
-
-
-
-
     public PaqueteEdicionDTO getPaqueteParaEdicion(Integer id) {
 
 
@@ -325,13 +285,12 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
 
-        String usuario = getCurrentUserEmailSafe();
 
-        if (!usuario.equalsIgnoreCase(paquete.getCreatedBy())) {
-            throw new RuntimeException(
-                    "Acceso denegado"
-            );
-        }
+
+        securityService.validarPropietario(
+                paquete.getCreatedBy()
+        );
+
 
 
 
@@ -468,17 +427,13 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                         );
 
         String usuario =
-                getCurrentUserEmailSafe();
+                securityService.getCurrentUserEmail();
 
-        if (
-                !usuario.equalsIgnoreCase(
-                        paquete.getCreatedBy()
-                )
-        ) {
-            throw new RuntimeException(
-                    "Acceso denegado"
-            );
-        }
+
+        securityService.validarPropietario(
+                paquete.getCreatedBy()
+        );
+
 
         if (
                 paquete.getEstado()

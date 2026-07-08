@@ -4,7 +4,7 @@ import Papa from "papaparse";
 import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import { useNavigate } from "react-router-dom";
-
+import { useMsal } from "@azure/msal-react";
 
 export default function Registrar() {
   const { plantas, paquetes, setPaquetes, user } = useApp();
@@ -12,7 +12,7 @@ export default function Registrar() {
   const API = import.meta.env.VITE_API_URL;
 
   const [rows, setRows] = useState([]);
-
+  const { instance, accounts } = useMsal();
   const paquetesUsuario = paquetes;
 
   useEffect(() => {
@@ -30,28 +30,23 @@ export default function Registrar() {
 
     if (file.type.includes("json")) {
       const reader = new FileReader();
-      
-reader.onload = (e) => {
-  const json = JSON.parse(e.target.result);
 
-  const filas = Array.isArray(json)
-    ? json
-    : [json];
+      reader.onload = (e) => {
+        const json = JSON.parse(e.target.result);
 
-  const filasCorregidas = filas.map((row) => {
+        const filas = Array.isArray(json) ? json : [json];
 
-    const planta = plantas.find(
-      p => p.id === row.plantaId + 1
-    );
+        const filasCorregidas = filas.map((row) => {
+          const planta = plantas.find((p) => p.id === row.plantaId + 1);
 
-    return {
-      ...row,
-      plantaId: planta?.id ?? row.plantaId
-    };
-  });
+          return {
+            ...row,
+            plantaId: planta?.id ?? row.plantaId,
+          };
+        });
 
-  setRows(filasCorregidas);
-};
+        setRows(filasCorregidas);
+      };
 
       reader.readAsText(file);
     } else {
@@ -72,99 +67,89 @@ reader.onload = (e) => {
     setRows(updated);
   };
 
-
-  const fixedFields = [
-    "plantaId",
-    "captureDate",
-  ];
-
+  const fixedFields = ["plantaId", "captureDate"];
 
   const getExtraFields = (row) => {
-    return Object.keys(row).filter(
-      (key) => !fixedFields.includes(key)
-    );
+    return Object.keys(row).filter((key) => !fixedFields.includes(key));
   };
 
+  const getInputType = (value) => {
+    if (value === null || value === undefined) return "text";
+    if (!isNaN(value) && value !== "") return "number";
 
-const getInputType = (value) => {
-  if (value === null || value === undefined) return "text";
-  if (!isNaN(value) && value !== "") return "number";
-
-  // detectar fecha simple
-  if (typeof value === "string" && !isNaN(Date.parse(value))) {
-    return "date";
-  }
-
-  return "text";
-};
-
-const saveAll = async () => {
-  try {
-    const results = [];
-
-    for (const [index, row] of rows.entries()) {
-
-      const extraFields = {};
-
-      Object.keys(row).forEach((key) => {
-        if (!fixedFields.includes(key)) {
-          extraFields[key] = row[key];
-        }
-      });
-
-      if (!extraFields.tonCO2eq) {
-        alert(`Falta tonCO2eq en fila ${index + 1}`);
-        continue;
-      }
-
-      extraFields.tonCO2eq = parseFloat(extraFields.tonCO2eq);
-
-
-if (!row.plantaId) {
-  alert(`Falta planta en fila ${index + 1}`);
-  continue;
-}
-
-
-const payload = {
-  captureDate: row.captureDate || null,
-
-  planta: {
-    id: parseInt(row.plantaId)
-  },
-
-  metadata: JSON.stringify(extraFields),
-  createdBy: user.email
-};
-
-
-
-      console.log("Payload enviado:", payload);
-      try {
-        const res = await axios.post(`${API}/paquetes`, payload, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        results.push(res.data);
-
-      } catch (err) {
-        console.error("Error fila", index, err);
-        alert(`Error en fila ${index + 1}`);
-      }
+    // detectar fecha simple
+    if (typeof value === "string" && !isNaN(Date.parse(value))) {
+      return "date";
     }
 
-    setPaquetes(prev => [...results, ...(prev || [])])
-    alert("Carga completada 🚀");
+    return "text";
+  };
 
-  } catch (error) {
-    alert("Error general");
-  }
-  
-};
+  const saveAll = async () => {
+    try {
+      const response = await instance.acquireTokenSilent({
+        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+        account: accounts[0],
+      });
 
-console.log("PLANTAS:", plantas);
+      const token = response.accessToken;
+
+      const results = [];
+
+      for (const [index, row] of rows.entries()) {
+        const extraFields = {};
+
+        Object.keys(row).forEach((key) => {
+          if (!fixedFields.includes(key)) {
+            extraFields[key] = row[key];
+          }
+        });
+
+        if (!extraFields.tonCO2eq) {
+          alert(`Falta tonCO2eq en fila ${index + 1}`);
+          continue;
+        }
+
+        extraFields.tonCO2eq = parseFloat(extraFields.tonCO2eq);
+
+        if (!row.plantaId) {
+          alert(`Falta planta en fila ${index + 1}`);
+          continue;
+        }
+
+        const payload = {
+          captureDate: row.captureDate || null,
+
+          planta: {
+            id: parseInt(row.plantaId),
+          },
+
+          metadata: JSON.stringify(extraFields),
+        };
+
+        console.log("Payload enviado:", payload);
+        try {
+          const res = await axios.post(`${API}/paquetes`, payload, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          results.push(res.data);
+        } catch (err) {
+          console.error("Error fila", index, err);
+          alert(`Error en fila ${index + 1}`);
+        }
+      }
+
+      setPaquetes((prev) => [...results, ...(prev || [])]);
+      alert("Carga completada 🚀");
+    } catch (error) {
+      alert("Error general");
+    }
+  };
+
+  console.log("PLANTAS:", plantas);
   return (
     <section className="panel">
       <h1>Registrar paquete de captura de CO₂</h1>
@@ -183,7 +168,9 @@ console.log("PLANTAS:", plantas);
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
       >
-        <p><strong>Arrastrá tu CSV o JSON acá</strong></p>
+        <p>
+          <strong>Arrastrá tu CSV o JSON acá</strong>
+        </p>
         <p>o hacé click para seleccionar</p>
 
         <input
@@ -195,7 +182,6 @@ console.log("PLANTAS:", plantas);
             if (!file) return;
 
             handleDrop({
-              
               preventDefault: () => {},
               dataTransfer: { files: [file] },
             });
@@ -211,26 +197,21 @@ console.log("PLANTAS:", plantas);
           {/* ✅ Planta (único campo controlado) */}
           <div className="field">
             <label>Planta</label>
-            
-          <select
-            value={row.plantaId || ""}
-            onChange={(e) =>
-              handleChange(index, "plantaId", e.target.value)
-            }
-          >
-            
-          <option value="" disabled hidden>
-            Seleccionar planta
-          </option>
 
-
-            {plantas.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre}
+            <select
+              value={row.plantaId || ""}
+              onChange={(e) => handleChange(index, "plantaId", e.target.value)}
+            >
+              <option value="" disabled hidden>
+                Seleccionar planta
               </option>
-            ))}
-          </select>
 
+              {plantas.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nombre}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* ✅ CAMPOS DINÁMICOS */}
@@ -241,9 +222,7 @@ console.log("PLANTAS:", plantas);
               <input
                 type={getInputType(value)}
                 value={value || ""}
-                onChange={(e) =>
-                  handleChange(index, field, e.target.value)
-                }
+                onChange={(e) => handleChange(index, field, e.target.value)}
               />
             </div>
           ))}
@@ -261,8 +240,7 @@ console.log("PLANTAS:", plantas);
 
       <div className="panel sub">
         <h2>Últimos paquetes cargados</h2>
-        <TablePaquetes items={paquetesUsuario}plantas={plantas}
- />
+        <TablePaquetes items={paquetesUsuario} plantas={plantas} />
       </div>
     </section>
   );

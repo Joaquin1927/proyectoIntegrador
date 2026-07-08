@@ -53,6 +53,11 @@ public class AuditoriaService  implements PaqueteSubject {
     private Factory factory;
 
 
+    @Autowired
+    private SecurityService securityService;
+
+
+
     public void notificarCambio(
             PaqueteCO2 paquete
     )
@@ -61,70 +66,7 @@ public class AuditoriaService  implements PaqueteSubject {
     }
 
 
-    private String getCurrentUserEmailSafe() {
 
-        Authentication auth =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
-
-        System.out.println("AUTH: " + auth);
-
-        if (auth instanceof JwtAuthenticationToken jwtAuth) {
-
-            Jwt jwt = jwtAuth.getToken();
-
-            System.out.println("CLAIMS: "
-                    + jwt.getClaims());
-
-            String email =
-                    jwt.getClaimAsString(
-                            "preferred_username"
-                    );
-
-            if (email == null || email.isBlank())
-                email = jwt.getClaimAsString("email");
-
-            if (email == null || email.isBlank())
-                email = jwt.getClaimAsString("upn");
-
-            if (email == null || email.isBlank())
-                email = jwt.getSubject();
-
-            return email;
-        }
-
-        System.out.println("⚠ Usuario fallback utilizado");
-
-        return "desconocido";
-    }
-
-    private void validarAuditor() {
-
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-
-
-        if (auth == null) {
-            System.out.println("❌ AUTH ES NULL");
-            throw new RuntimeException("Usuario no autenticado");
-        }
-
-        System.out.println("AUTH CLASS: " + auth.getClass());
-
-        if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
-            throw new RuntimeException("Usuario no autenticado");
-        }
-
-        Jwt jwt = jwtAuth.getToken();
-
-        System.out.println("JWT CLAIMS: " + jwt.getClaims());
-
-        List<String> roles = jwt.getClaimAsStringList("roles");
-
-        if (roles == null || roles.stream().noneMatch(r -> r.equalsIgnoreCase("auditor"))) {
-            throw new RuntimeException("Acceso solo para auditores");
-        }
-    }
 
 
     @Override
@@ -137,7 +79,7 @@ public class AuditoriaService  implements PaqueteSubject {
 
     public PaqueteCO2DTO aprobar(Integer id) {
 
-        validarAuditor();
+        securityService.validarAuditor();
         System.out.println("ENTRO A APROBAR");
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
@@ -159,7 +101,7 @@ public class AuditoriaService  implements PaqueteSubject {
 
         paquete.setReporte(reporte);
 
-        String auditorEmail = getCurrentUserEmailSafe();
+        String auditorEmail = securityService.getCurrentUserEmail();
 
 
         System.out.println("USER: " + auditorEmail);
@@ -195,11 +137,11 @@ public class AuditoriaService  implements PaqueteSubject {
 
 
     public PaqueteCO2DTO rechazar(Integer id) {
-        validarAuditor();
+        securityService.validarAuditor();
         System.out.println("ENTRO A RECHAZAR");
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
-        String auditorEmail = getCurrentUserEmailSafe();
+        String auditorEmail = securityService.getCurrentUserEmail();
         paquete.setAuditor(auditorEmail);
         EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.RECHAZADO);
@@ -220,7 +162,7 @@ public class AuditoriaService  implements PaqueteSubject {
         );
         notifyObservers(paquete);
 
-
+        paqueteRepo.save(paquete);
         return factory.toPaqueteDTO(paquete);
 
     }
@@ -237,12 +179,10 @@ public class AuditoriaService  implements PaqueteSubject {
         System.out.println("ENTRO A CORRECCION");
         paquete.setEstado(EstadoPaquete.EN_REVISION);
 
-        String auditorEmail = getCurrentUserEmailSafe();
+        String auditorEmail = securityService.getCurrentUserEmail();
         paquete.setAuditor(auditorEmail);
 
-        String email = getCurrentUserEmailSafe();
 
-        System.out.println("EMAIL AUDITOR: " + email);
 
         Object camposObj = data.get("campos");
         List<Map<String, Object>> campos;
@@ -303,7 +243,7 @@ public class AuditoriaService  implements PaqueteSubject {
 
         System.out.println("2");
 
-        String usuario = getCurrentUserEmailSafe();
+        String usuario = securityService.getCurrentUserEmail();
 
         System.out.println("3");
         System.out.println("USER: " + usuario);

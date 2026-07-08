@@ -73,6 +73,29 @@ button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%)
   margin-bottom: 25px;
 }
 
+.estado-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.revision-badge {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #f97316;
+  color: white;
+
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
 .timeline-marker {
   width: 12px;
   height: 12px;

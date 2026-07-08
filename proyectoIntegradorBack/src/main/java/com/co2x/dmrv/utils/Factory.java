@@ -63,6 +63,7 @@ public class Factory {
         // 🔥 NEW
         dto.metadata = entity.getMetadata();
         dto.auditor = entity.getAuditor();
+
         return dto;
     }
 
