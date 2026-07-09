@@ -61,6 +61,10 @@ jobs:
           tenant-id: "cbb64725-bd29-4b87-93b2-e5fcf09ff37f"
           subscription-id: "c38be5e0-c994-47b0-8631-84c325f9f5d9"
           allow-no-subscriptions: true
+      - name: Azure Account List
+        run: az account list --output table
+      - name: Azure Account Show
+        run: az account show
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
