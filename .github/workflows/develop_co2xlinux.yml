@@ -59,7 +59,6 @@ jobs:
         with:
           client-id: "36920833-e50a-48be-b51a-e363b373c011"
           tenant-id: "cbb64725-bd29-4b87-93b2-e5fcf09ff37f"
-          subscription-id: "c38be5e0-c994-47b0-8631-84c325f9f5d9"
           allow-no-subscriptions: true
       - name: Azure Account List
         run: az account list --output table
