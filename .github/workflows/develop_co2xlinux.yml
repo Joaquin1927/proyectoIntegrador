@@ -58,7 +58,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: "36920833-e50a-48be-b51a-e363b373c011"
-          tenant-id: "cbb64725-bd29-4b87-93b2-e5fcf09ff37f"
+          tenant-id: "d79720cd-d8c0-4d0c-a404-2dcd025f01e3"
           allow-no-subscriptions: true
       - name: Azure Account List
         run: az account list --output table
