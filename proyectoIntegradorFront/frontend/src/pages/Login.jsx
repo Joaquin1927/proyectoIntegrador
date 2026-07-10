@@ -14,17 +14,16 @@ export default function Login() {
         scopes: [import.meta.env.VITE_SCOPE],
         prompt: "select_account",
       });
-
     } catch (error) {
       console.error(error);
       alert("Error al iniciar sesión");
     }
   };
- 
+
   return (
     <section className="panel">
       <h1>Login</h1>
-
+      <h1 style={{ color: "red" }}>DEPLOY TEST 10 JULIO</h1>
       <div className="actions">
         <button className="primary" onClick={submit}>
           Iniciar sesión con Microsoft
