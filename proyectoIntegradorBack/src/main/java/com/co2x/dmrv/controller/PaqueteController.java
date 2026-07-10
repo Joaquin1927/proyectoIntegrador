@@ -5,11 +5,14 @@ import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.service.MintingService;
+import com.co2x.dmrv.service.AuditoriaService;
 import com.co2x.dmrv.service.PaqueteCO2Service;
 import com.co2x.dmrv.utils.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +21,33 @@ import java.util.Map;
 @RestController
 @RequestMapping("/paquetes")
 public class PaqueteController {
+
+
+
+
+
+
+
+
+
+
+
+
+    @GetMapping("/usuario/{email}")
+    public List<PaqueteCO2DTO> listarPorUsuario(
+            @PathVariable("email") String email) {
+
+        return paqueteService.listarPorUsuario(email);
+    }
+
+
+
+
+
+
+
+
+
     @Autowired
     private HistorialPaqueteRepository historialRepo;
 
@@ -26,11 +56,17 @@ public class PaqueteController {
 
     @Autowired
     private Factory factory;
+
     @Autowired
-    private PaqueteCO2Service service;
+    private PaqueteCO2Service paqueteService;
+
+
+    @Autowired
+    private AuditoriaService auditoriaService;
+
     @GetMapping("/pendientes")
     public List<PaqueteCO2DTO> pendientes() {
-        return service.listarPendientes();
+        return paqueteService.listarPendientes();
     }
 
     @PostMapping
@@ -47,7 +83,7 @@ public class PaqueteController {
                 return ResponseEntity.badRequest().body("Seleccione una planta");
             }
 
-            PaqueteCO2DTO creado = service.crear(dto);
+            PaqueteCO2DTO creado = paqueteService.crear(dto);
 
             return ResponseEntity.ok(creado);
 
@@ -56,48 +92,38 @@ public class PaqueteController {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
-    @GetMapping("/usuario/{email}")
-    public List<PaqueteCO2DTO> listarPorUsuario(
-            @PathVariable String email) {
-        return service.listarPorUsuario(email);
-    }
+
+
+
+
+
+
+
+
+
     @GetMapping
     public ResponseEntity<List<PaqueteCO2DTO>> listar() {
-        return ResponseEntity.ok(service.listar());
+        return ResponseEntity.ok(paqueteService.listar());
     }
+
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaqueteCO2DTO> obtener(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.obtenerPorId(id));
+    public ResponseEntity<PaqueteCO2DTO> obtener(
+            @PathVariable("id") Integer id) {
+
+        System.out.println("BUSCANDO PAQUETE ID = " + id);
+
+        return ResponseEntity.ok(
+                paqueteService.obtenerPorId(id)
+        );
     }
 
 
-    @PostMapping("/{id}/aprobar")
-    public ResponseEntity<?> aprobar(@PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(service.aprobar(id));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
-    }
 
 
-    @PostMapping("/{id}/rechazar")
-    public ResponseEntity<PaqueteCO2DTO> rechazar(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.rechazar(id));
-    }
 
 
-    @PostMapping("/{id}/correccion")
-    public ResponseEntity<?> solicitarCorreccion(
-            @PathVariable Integer id,
-            @RequestBody Map<String, Object> body) {
 
-        service.solicitarCorreccion(id, body);
-
-        return ResponseEntity.ok().build();
-    }
 
     @GetMapping("/{id}/historial/ultimo")
     public ResponseEntity<?> getUltimoHistorial(@PathVariable Integer id) {
@@ -108,13 +134,29 @@ public class PaqueteController {
     }
 
 
+
+
+    @GetMapping("/debug-auth")
+    public String debug() {
+
+        Authentication auth =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        return String.valueOf(auth);
+    }
+
+
     @GetMapping("/{id}/edicion")
     public ResponseEntity<PaqueteEdicionDTO> getEdicion(
             @PathVariable Integer id
     ) {
 
+        System.out.println("ENTRO A GET EDICION");
+
         return ResponseEntity.ok(
-                service.getPaqueteParaEdicion(id)
+                paqueteService.getPaqueteParaEdicion(id)
         );
     }
 
@@ -131,13 +173,28 @@ public class PaqueteController {
 
         System.out.println("ENTRO A APROBADOS");
 
-        return service.listarAprobados();
+        return paqueteService.listarAprobados();
+    }
+
+
+    @PutMapping("/{id}/corregir")
+    public ResponseEntity<?> corregir(
+            @PathVariable Integer id,
+            @RequestBody PaqueteEdicionDTO dto
+    ) {
+
+        paqueteService.corregirPaquete(
+                id,
+                dto
+        );
+
+        return ResponseEntity.ok().build();
     }
 
 //
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-//        service.eliminar(id);
+//        paqueteService.eliminar(id);
 //        return ResponseEntity.noContent().build();
 //    }
 

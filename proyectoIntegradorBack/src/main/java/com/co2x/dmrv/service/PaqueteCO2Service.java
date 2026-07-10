@@ -42,15 +42,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
 
 
-    @Override
-    public void addObserver(PaqueteObserver observer) {
-        observers.add(observer);
-    }
-
-    @Override
-    public void removeObserver(PaqueteObserver observer) {
-        observers.remove(observer);
-    }
 
     @Override
     public void notifyObservers(PaqueteCO2 paquete) {
@@ -74,54 +65,19 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     private PlantaService plantaService;
 
     @Autowired
+    private HistorialService historialService;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
+
+    @Autowired
     private RecordService recordService;
 
 
-    private void registrarHistorial(
-            PaqueteCO2 paquete,
-            String usuario,
-            EstadoPaquete accion,
-            List<Map<String, Object>> cambios
-    ) {
+    @Autowired
+    private SecurityService securityService;
 
-        try {
-            ObjectMapper mapper = new ObjectMapper();
 
-            HistorialPaquete h = new HistorialPaquete();
-
-            h.setPaquete(paquete);
-
-            h.setEditor(usuario);
-            h.setAccion(accion);
-            h.setFecha(LocalDateTime.now());
-
-            h.setSnapshot(generarSnapshot(paquete));
-
-            if (cambios != null && !cambios.isEmpty()) {
-                h.setCambios(mapper.writeValueAsString(cambios));
-            } else {
-                h.setCambios("[]");
-            }
-
-            String snapshot = generarSnapshot(paquete);
-
-            System.out.println("LARGO SNAPSHOT: " + snapshot.length());
-
-            String cambiosJson = cambios != null
-                    ? mapper.writeValueAsString(cambios)
-                    : "[]";
-
-            System.out.println("LARGO CAMBIOS: " + cambiosJson.length());
-
-            historialRepo.save(h);
-
-            System.out.println("✅ Historial guardado correctamente");
-
-        } catch (Exception e) {
-            System.out.println("💥 ERROR EN registrarHistorial:");
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -135,12 +91,35 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     }
     public List<PaqueteCO2DTO> listarPendientes() {
 
+
+
         return paqueteRepo
-                .findByEstado(EstadoPaquete.PENDIENTE)
+                .findByEstadoIn(
+                        List.of(
+                                EstadoPaquete.PENDIENTE,
+                                EstadoPaquete.EN_REVISION_CORREGIDO
+                        )
+                )
                 .stream()
-                .map(factory::toPaqueteDTO)
+                .map(paquete -> {
+
+                    PaqueteCO2DTO dto =
+                            factory.toPaqueteDTO(paquete);
+
+                    dto.setNumeroRevision(
+                            historialService.obtenerNumeroRevision(
+                                    paquete.getId()
+                            )
+                    );
+
+                    return dto;
+
+                })
                 .toList();
+
+
     }
+
     public List<PaqueteCO2DTO> listarPorUsuario(String email) {
         return paqueteRepo.findByCreatedBy(email)
                 .stream()
@@ -156,6 +135,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .map(factory::toPaqueteDTO)
                 .toList();
     }
+
 
 
     public Map<String, Object> procesarMetadata(String metadataJson) {
@@ -220,6 +200,11 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             throw new RuntimeException("Planta es obligatoria");
         }
 
+        System.out.println("PLANTA DTO: " + dto.planta);
+        System.out.println("PLANTA ID: " + dto.planta.id);
+        System.out.println("PLANTA NOMBRE: " + dto.planta.nombre);
+
+
         Planta planta = plantaService.getEntity(dto.planta.id);
 
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
@@ -250,38 +235,25 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
         entity.setCertId(certId);
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String email = "desconocido";
+        String email = securityService.getCurrentUserEmail();;
 
-
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-
-            System.out.println("CLAIMS: " + jwt.getClaims());
-
-            email = (String) jwt.getClaims().get("unique_name");
-
-            if (email == null || email.isBlank())
-                email = (String) jwt.getClaims().get("upn");
-
-            if (email == null || email.isBlank())
-                email = (String) jwt.getClaims().get("preferred_username");
-
-            if (email == null || email.isBlank())
-                email = (String) jwt.getClaims().get("email");
-
-            if (email == null || email.isBlank()) {
-                throw new RuntimeException("Token inválido: no contiene email");
-            }
-
-        }
+        System.out.println(
+                "EMAIL OBTENIDO: "
+                        + securityService.getCurrentUserEmail()
+        );
 
         entity.setCreatedBy(email);
+
+        System.out.println(
+                "CREATEDBY ANTES SAVE: "
+                        + entity.getCreatedBy()
+        );
 
         PaqueteCO2 guardado = paqueteRepo.save(entity);
 
 
-        registrarHistorial(
+        historialService.registrarHistorial(
                 entity,
                 email,
                 EstadoPaquete.PENDIENTE,
@@ -313,300 +285,38 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     }
 
 
-    private void crearNotificacion(String usuario, String mensaje,Integer paqueteId) {
-
-        Notificacion n = new Notificacion();
-
-        n.setUsuario(usuario);
-        n.setMensaje(mensaje);
-        n.setLeido(false);
-        n.setPaqueteId(paqueteId);
-        n.setFecha(LocalDateTime.now());
-
-        notificacionRepo.save(n);
-
-        System.out.println("📩 Notificación creada para " + usuario);
-    }
-
-
-    private String getCurrentUserEmailSafe() {
-
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-
-            System.out.println("CLAIMS: " + jwt.getClaims());
-
-            String email = jwt.getClaimAsString("preferred_username");
-
-            if (email == null || email.isBlank())
-                email = jwt.getClaimAsString("email");
-
-            if (email == null || email.isBlank())
-                email = jwt.getClaimAsString("upn");
-
-            if (email == null || email.isBlank())
-                email = jwt.getSubject();
-
-            if (email != null && !email.isBlank()) {
-                return email;
-            }
-        }
-
-        // ✅ fallback seguro
-        System.out.println("⚠ Usuario fallback utilizado");
-        return "desconocido";
-    }
-
-
-    private void validarAuditor() {
-
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-
-
-        if (auth == null) {
-            System.out.println("❌ AUTH ES NULL");
-            throw new RuntimeException("Usuario no autenticado");
-        }
-
-        System.out.println("AUTH CLASS: " + auth.getClass());
-
-        if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
-            throw new RuntimeException("Usuario no autenticado");
-        }
-
-        Jwt jwt = jwtAuth.getToken();
-
-        System.out.println("JWT CLAIMS: " + jwt.getClaims());
-
-        List<String> roles = jwt.getClaimAsStringList("roles");
-
-        if (roles == null || roles.stream().noneMatch(r -> r.equalsIgnoreCase("auditor"))) {
-            throw new RuntimeException("Acceso solo para auditores");
-        }
-    }
-
-
-
-
-
-    private String generarSnapshot(PaqueteCO2 p) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-
-            Map<String, Object> snap = Map.of(
-                    "id", p.getId(),
-                    "estado", p.getEstado(),
-                    "tonCO2eq", p.getTonCO2eq(),
-                    "planta", p.getPlanta() != null ? p.getPlanta().getNombre() : null,
-                    "metadata", p.getMetadata()
-            );
-
-            return mapper.writeValueAsString(snap);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-
-
-
-
-    public PaqueteCO2DTO aprobar(Integer id) {
-
-        validarAuditor();
-
-        PaqueteCO2 paquete = paqueteRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
-
-        EstadoPaquete estadoAnterior = paquete.getEstado();
-        paquete.setEstado(EstadoPaquete.APROBADO);
-
-
-        Reporte reporte = new Reporte();
-
-        reporte.setFechaReporte(LocalDate.now());
-        reporte.setToneladasCO2(paquete.getTonCO2eq());
-        reporte.setPlanta(paquete.getPlanta());
-        reporte.setEstado("GENERADO");
-        reporte.setMetodologia("Automática");
-        reporte.setUsuarioResponsable(paquete.getCreatedBy());
-
-        reporteRepo.save(reporte);
-
-        paquete.setReporte(reporte);
-
-        String auditorEmail = getCurrentUserEmailSafe();
-
-
-        System.out.println("USER: " + auditorEmail);
-        System.out.println("CREATED BY: " + paquete.getCreatedBy());
-
-
-        paquete.setAuditor(auditorEmail);
-
-        paqueteRepo.save(paquete);
-
-        Record record = recordService.generateFromPaquete(paquete);
-        System.out.println("Record creado con CID: " + record.getIpfsCid());
-
-
-        crearNotificacion(
-                paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " ha sido aprobado",
-                paquete.getId()
-        );
-        registrarHistorial(
-                paquete,
-                auditorEmail,
-                EstadoPaquete.APROBADO,
-                List.of(
-                        Map.of(
-                                "campo", "estado",
-                                "valorAnterior", estadoAnterior.toString(),
-                                "valorNuevo", "APROBADO"
-                        )
-                )
-        );
-
-
-        notifyObservers(paquete);
-
-        return factory.toPaqueteDTO(paquete);
-    }
-
-
-    public PaqueteCO2DTO rechazar(Integer id) {
-        validarAuditor();
-
-        PaqueteCO2 paquete = paqueteRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
-        String auditorEmail = getCurrentUserEmailSafe();
-        paquete.setAuditor(auditorEmail);
-        EstadoPaquete estadoAnterior = paquete.getEstado();
-        paquete.setEstado(EstadoPaquete.RECHAZADO);
-
-
-        crearNotificacion(
-                paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " ha sido rechazado",
-                paquete.getId()
-        );
-        registrarHistorial(
-                paquete,
-                auditorEmail,
-                EstadoPaquete.RECHAZADO,
-                List.of(
-                        Map.of(
-                                "campo", "estado",
-                                "valorAnterior", estadoAnterior.toString(),
-                                "valorNuevo", "RECHAZADO"
-                        )
-                )
-        );
-
-
-        return factory.toPaqueteDTO(paquete);
-
-    }
-
-
-
-
-    public void solicitarCorreccion(Integer id, Map<String, Object> data) {
-
-        PaqueteCO2 paquete = paqueteRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
-
-        EstadoPaquete estadoAnterior = paquete.getEstado();
-
-        paquete.setEstado(EstadoPaquete.EN_REVISION);
-
-        String auditorEmail = getCurrentUserEmailSafe();
-        paquete.setAuditor(auditorEmail);
-
-        Object camposObj = data.get("campos");
-        List<Map<String, Object>> campos;
-
-        if (camposObj instanceof List<?> lista) {
-            campos = lista.stream()
-                    .map(item -> (Map<String, Object>) item)
-                    .toList();
-        } else {
-            campos = List.of();
-        }
-
-        String comentarioGeneral = (String) data.getOrDefault("comentarioGeneral", "");
-
-        System.out.println("CAMPOS: " + campos);
-        System.out.println("COMENTARIO GENERAL: " + comentarioGeneral);
-
-        paqueteRepo.save(paquete);
-
-        Map<String, Object> cambioEstado = Map.of(
-                "campo", "estado",
-                "valorAnterior", estadoAnterior.toString(),
-                "valorNuevo", "EN_REVISION"
-        );
-
-        List<Map<String, Object>> cambiosFinal = new ArrayList<>(campos);
-        cambiosFinal.add(cambioEstado);
-
-        if (!comentarioGeneral.isBlank()) {
-            cambiosFinal.add(Map.of(
-                    "tipo", "COMENTARIO_GENERAL",
-                    "texto", comentarioGeneral
-            ));
-        }
-
-        registrarHistorial(
-                paquete,
-                auditorEmail,
-                EstadoPaquete.EN_REVISION,
-                cambiosFinal
-        );
-
-        crearNotificacion(
-                paquete.getCreatedBy(),
-                "El paquete " + paquete.getId() + " fue enviado a revisión",
-                paquete.getId()
-        );
-
-        System.out.println("✅ SOLICITAR CORRECCION COMPLETO");
-    }
-
-
-
 
     public PaqueteEdicionDTO getPaqueteParaEdicion(Integer id) {
 
-        System.out.println("1");
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        System.out.println("2");
 
-        String usuario = getCurrentUserEmailSafe();
 
-        System.out.println("3");
-        System.out.println("USER: " + usuario);
-        System.out.println("CREATED BY: " + paquete.getCreatedBy());
 
-        System.out.println("4");
-        System.out.println("ESTADO: " + paquete.getEstado());
+        securityService.validarPropietario(
+                paquete.getCreatedBy()
+        );
 
-        if (paquete.getEstado() != EstadoPaquete.EN_REVISION) {
+
+
+
+
+        if
+        (
+                paquete.getEstado() != EstadoPaquete.EN_REVISION
+                        &&
+                        paquete.getEstado() != EstadoPaquete.EN_REVISION_CORREGIDO
+        )
+        {
             throw new RuntimeException("El paquete no está en revisión");
         }
 
-        System.out.println("5");
 
 
         Optional<HistorialPaquete> test =
-                historialRepo.findTopByPaqueteIdOrderByFechaDesc(paquete.getId());
+                historialService.obtenerUltimoHistorial(paquete.getId());
 
         System.out.println("OPTIONAL VACIO: " + test.isEmpty());
 
@@ -618,7 +328,6 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 test.orElseThrow(() -> new RuntimeException("No hay historial"));
 
 
-        System.out.println("6");
 
         return construirDTOEdicion(paquete, ultimo);
     }
@@ -709,6 +418,82 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             );
         }
     }
+
+
+
+    public PaqueteCO2DTO corregirPaquete(
+            Integer id,
+            PaqueteEdicionDTO dto
+    ) {
+
+        PaqueteCO2 paquete =
+                paqueteRepo.findById(id)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Paquete no encontrado"
+                                )
+                        );
+
+        String usuario =
+                securityService.getCurrentUserEmail();
+
+
+        securityService.validarPropietario(
+                paquete.getCreatedBy()
+        );
+
+
+        if (
+                paquete.getEstado()
+                        != EstadoPaquete.EN_REVISION
+        ) {
+            throw new RuntimeException(
+                    "El paquete no está en revisión"
+            );
+        }
+
+        ObjectMapper mapper =
+                new ObjectMapper();
+
+        try {
+
+            paquete.setMetadata(
+                    mapper.writeValueAsString(
+                            dto.getMetadata()
+                    )
+            );
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Error procesando metadata"
+            );
+        }
+
+        paquete.setEstado(
+                EstadoPaquete.EN_REVISION_CORREGIDO
+        );
+
+        paqueteRepo.save(paquete);
+
+        historialService.registrarHistorial(
+                paquete,
+                usuario,
+                EstadoPaquete.EN_REVISION_CORREGIDO,
+                List.of(
+                        Map.of(
+                                "tipo",
+                                "CORRECCION"
+                        )
+                )
+        );
+        auditoriaService.notificarCambio(paquete);
+
+        return factory.toPaqueteDTO(
+                paquete
+        );
+    }
+
 
 
 }

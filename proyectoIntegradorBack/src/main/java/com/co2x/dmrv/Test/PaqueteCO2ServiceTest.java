@@ -43,36 +43,94 @@ class PaqueteCO2ServiceTest {
     @Test
     void deberiaCrearPaqueteCorrectamente() throws Exception {
 
-        // 🔹 DTO
         PaqueteCO2DTO dto = new PaqueteCO2DTO();
 
-        // ✅ USAR PlantaDTO (no Planta)
         PlantaDTO plantaDTO = new PlantaDTO();
         plantaDTO.setId(1);
 
         dto.setPlanta(plantaDTO);
 
-        // ✅ metadata válida
         dto.setMetadata("{\"tonCO2eq\": 10}");
 
-        // 🔹 entidad simulada
         PaqueteCO2 entity = new PaqueteCO2();
 
         Planta planta = new Planta();
         planta.setId(1);
 
-        // 🔹 mocks
         when(plantaService.getEntity(1)).thenReturn(planta);
         when(factory.toPaqueteEntity(any(), eq(planta))).thenReturn(entity);
         when(paqueteRepo.save(any())).thenReturn(entity);
         when(factory.toPaqueteDTO(any())).thenReturn(dto);
 
-        // 🔹 ejecutar
         PaqueteCO2DTO result = service.crear(dto);
 
-        // 🔹 asserts
         assertNotNull(result);
         verify(paqueteRepo).save(any());
     }
 
+    @Test
+    void deberiaFallarSiNoExisteTonCO2eq() {
+
+        IllegalArgumentException ex =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> service.procesarMetadata("""
+                    {
+                        "captureMethod":"post_combustion"
+                    }
+                    """)
+                );
+
+        assertEquals(
+                "tonCO2eq es obligatorio",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void deberiaFallarSiNoHayPlanta() {
+
+        PaqueteCO2DTO dto = new PaqueteCO2DTO();
+
+        RuntimeException ex =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> service.crear(dto)
+                );
+
+        assertEquals(
+                "Planta es obligatoria",
+                ex.getMessage()
+        );
+    }
+    @Test
+    void deberiaFallarConJsonInvalido() {
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.procesarMetadata("{")
+        );
+    }
+    @Test
+    void deberiaEliminarCamposProhibidos() {
+
+        Map<String,Object> result =
+                service.procesarMetadata("""
+            {
+                "createdBy":"hack",
+                "estado":"APROBADO",
+                "tonCO2eq":10
+            }
+            """);
+
+        assertEquals(
+                false,
+                result.containsKey("createdBy")
+        );
+
+        assertEquals(
+                false,
+                result.containsKey("estado")
+        );
+    }
 }

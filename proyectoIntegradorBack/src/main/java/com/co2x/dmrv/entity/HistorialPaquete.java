@@ -32,7 +32,7 @@ public class HistorialPaquete {
 
     private LocalDateTime fecha = LocalDateTime.now();
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String snapshot;
 
 

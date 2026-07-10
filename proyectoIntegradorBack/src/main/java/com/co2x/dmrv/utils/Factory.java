@@ -63,6 +63,7 @@ public class Factory {
         // 🔥 NEW
         dto.metadata = entity.getMetadata();
         dto.auditor = entity.getAuditor();
+
         return dto;
     }
 
@@ -114,6 +115,7 @@ public class Factory {
         dto.setId(h.getId());
         dto.setPaqueteId(h.getPaquete().getId());
         dto.setEditor(h.getEditor());
+        System.out.println("EDITOR EN DTO: "+ h.getEditor());
         dto.setAccion(h.getAccion());
         dto.setFecha(h.getFecha());
 

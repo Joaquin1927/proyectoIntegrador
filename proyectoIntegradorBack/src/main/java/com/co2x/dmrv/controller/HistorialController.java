@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/paquetes")
+@RequestMapping("/historial")
 public class HistorialController {
 
 
@@ -26,7 +26,7 @@ public class HistorialController {
     @Autowired
     private Factory factory;
 
-    @GetMapping("/{id}/historial")
+    @GetMapping("/{id}/getHistorial")
     public ResponseEntity<List<HistorialPaqueteDTO>> historial(@PathVariable Integer id) {
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)

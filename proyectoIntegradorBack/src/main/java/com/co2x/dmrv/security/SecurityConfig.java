@@ -39,7 +39,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ CORS dinámico (MULTI ENTORNO)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
