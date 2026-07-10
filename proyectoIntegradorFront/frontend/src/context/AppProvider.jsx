@@ -80,38 +80,6 @@ export function AppProvider({ children }) {
     reloadNotificaciones();
   }, [user]);
 
-<<<<<<< HEAD
-const checkBackend = async () => {
-
-  console.log("CHECK BACKEND");
-
-  try {
-
-    const r = await axios.get(`${API}/test/health`);
-
-    console.log("HEALTH OK", r.data);
-
-    setBackendActivo(true);
-
-  } catch (err) {
-
-    console.log("HEALTH ERROR", err);
-
-    setBackendActivo(false);
-  }
-};
-
-  // Backend health check
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        await axios.get(`${API}/test/health`);
-        setBackendActivo(true);
-      } catch (err) {
-        setBackendActivo(false);
-      }
-    };
-=======
   
 useEffect(() => {
 
@@ -140,7 +108,6 @@ useEffect(() => {
   return () => clearInterval(interval);
 
 }, []);
->>>>>>> 3b7243afb4d11b0a232fa6d79bc47e52a39d1e13
 
 
   const login = (userData) => {
