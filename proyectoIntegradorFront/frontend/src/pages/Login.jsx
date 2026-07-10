@@ -9,12 +9,12 @@ export default function Login() {
   const submit = async () => {
     try {
       await msalInstance.initialize();
-      console.log("CLIENT_ID:", import.meta.env.production.VITE_CLIENT_ID);
-      console.log("AUTHORITY:", import.meta.env.production.VITE_AUTHORITY);
-      console.log("REDIRECT_URI:", import.meta.env.production.VITE_REDIRECT_URI);
-      console.log("API_URL:", import.meta.env.production.VITE_API_URL);
+      console.log("CLIENT_ID:", import.meta.env.VITE_CLIENT_ID);
+      console.log("AUTHORITY:", import.meta.env.VITE_AUTHORITY);
+      console.log("REDIRECT_URI:", import.meta.env.VITE_REDIRECT_URI);
+      console.log("API_URL:", import.meta.env.VITE_API_URL);
       await msalInstance.loginRedirect({
-        scopes: [import.meta.env.production.VITE_SCOPE],
+        scopes: [import.meta.env.VITE_SCOPE],
         prompt: "select_account",
       });
     } catch (error) {
