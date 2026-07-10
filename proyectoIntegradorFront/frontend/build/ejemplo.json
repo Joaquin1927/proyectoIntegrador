@@ -1,0 +1,16 @@
+[
+  {
+    "certId": "C-2001",
+    "projectName": "Proyecto Azul",
+    "captureDate": "2024-03-15",
+    "issuanceDate": "2024-04-01",
+    "retirementDate": "2025-03-01",
+    "tonCO2eq": 200.75,
+    "retirementStatus": false,
+    "beneficiary": "Empresa B",
+    "coBenefits": "Agua limpia",
+    "projectType": "Hidroelectrico",
+    "externalUrl": "https://example.com",
+    "reporteId": 2
+  }
+]
