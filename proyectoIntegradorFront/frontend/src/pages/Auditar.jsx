@@ -28,7 +28,7 @@ export default function Auditar() {
       const token = response.accessToken;
 
       await axios.post(
-        `${API}/paquetes/${id}/aprobar`,
+        `${API}/auditoria/${id}/aprobar`,
         {},
         {
           headers: {
@@ -62,7 +62,7 @@ export default function Auditar() {
       const token = response.accessToken;
 
       await axios.post(
-        `${API}/paquetes/${id}/rechazar`,
+        `${API}/auditoria/${id}/rechazar`,
         {
           comentario: comentarioGeneral, 
         },
@@ -113,13 +113,25 @@ export default function Auditar() {
     }
     console.log("BODY QUE ENVIO:", body);
     try {
-      await fetch(`${API}/paquetes/${id}/correccion`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+      
+  
+const response = await instance.acquireTokenSilent({
+  scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+  account: accounts[0],
+});
+    
+const token = response.accessToken;
+
+await axios.post(
+  `${API}/auditoria/${id}/correccion`,
+  body,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
 
       navigate(-1);
     } catch (err) {

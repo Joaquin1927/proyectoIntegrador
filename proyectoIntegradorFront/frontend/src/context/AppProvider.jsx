@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { AppContext } from "./AppContext";
+import { apiGet } from "../api/apiClient";
+
 
 const DB_KEY = "co2x_db_v1";
 
@@ -62,23 +64,23 @@ export function AppProvider({ children }) {
     savePaquetes(paquetes);
   }, [paquetes]);
 
-  // 🔔 Cargar NOTIFICACIONES NO LEÍDAS
   const reloadNotificaciones = async () => {
     if (!user?.email) return;
 
     try {
       const res = await axios.get(`${API}/notificaciones/noleidas/${user.email}`);
+      console.log("NOTIFICACIONES:", res.data);
       setNotificaciones(res.data);
     } catch (err) {
       console.error("Error recargando notificaciones", err);
     }
   };
 
-  // Cargar notificaciones al iniciar
   useEffect(() => {
     reloadNotificaciones();
   }, [user]);
 
+<<<<<<< HEAD
 const checkBackend = async () => {
 
   console.log("CHECK BACKEND");
@@ -109,11 +111,37 @@ const checkBackend = async () => {
         setBackendActivo(false);
       }
     };
+=======
+  
+useEffect(() => {
 
-    checkBackend();
-    const interval = setInterval(checkBackend, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const checkBackend = async () => {
+    try {
+      await apiGet(
+        `${API}/test/health`,
+        false
+      );
+
+      setBackendActivo(true);
+
+    } catch {
+
+      setBackendActivo(false);
+    }
+  };
+
+  checkBackend();
+
+  const interval = setInterval(
+    checkBackend,
+    5000
+  );
+
+  return () => clearInterval(interval);
+
+}, []);
+>>>>>>> 3b7243afb4d11b0a232fa6d79bc47e52a39d1e13
+
 
   const login = (userData) => {
     setUser(userData);

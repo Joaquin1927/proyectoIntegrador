@@ -5,10 +5,17 @@ export default defineConfig({
   plugins: [react()],
 
   optimizeDeps: {
-    exclude: ["@azure/msal-browser", "@azure/msal-react"]
+    include: ["@azure/msal-browser", "@azure/msal-react"]
+  },
+
+  resolve: {
+    alias: {
+      crypto: "crypto-browserify"
+    }
   },
 
   build: {
+    outDir: "build",
     chunkSizeWarningLimit: 1000
   }
 })

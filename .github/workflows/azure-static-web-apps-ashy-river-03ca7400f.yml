@@ -56,7 +56,7 @@ jobs:
           action: "upload"
           app_location: "./proyectoIntegradorFront/frontend"
           api_location: ""
-          output_location: "dist"
+          output_location: "build"
           github_id_token: ${{ steps.idtoken.outputs.result }}
 
   close_pull_request_job:

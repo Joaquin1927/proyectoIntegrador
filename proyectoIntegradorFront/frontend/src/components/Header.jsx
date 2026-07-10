@@ -17,12 +17,25 @@ export default function Header() {
 
   const dropdownRef = useRef(null);
 
-  // 🔔 calcular no leídas
   useEffect(() => {
     const nuevas = notificaciones.filter((n) => !n.leido);
     setDropdownNotifs(nuevas);
     setNoLeidas(nuevas.length);
   }, [notificaciones]);
+
+useEffect(() => {
+
+  if (!user?.email) return;
+
+  reloadNotificaciones();
+
+  const interval = setInterval(() => {
+    reloadNotificaciones();
+  }, 5000);
+
+  return () => clearInterval(interval);
+
+}, [user]);
 
   // cerrar al hacer click afuera
   useEffect(() => {
@@ -39,21 +52,32 @@ export default function Header() {
 }, [open]);
 
 
-  const cerrarDropdown = async () => {
-    setOpen(false);
+  
+const cerrarDropdown = async () => {
 
-    if (user?.email) {
-      await axios.post(`${API}/notificaciones/leer/${user.email}`);
-      await reloadNotificaciones(); // 👈 recarga contexto
-    }
+  console.log("CERRANDO DROPDOWN");
 
-    setDropdownNotifs([]);
-  };
+  setOpen(false);
+
+  if (user?.email) {
+
+    console.log("MARCANDO LEIDAS");
+
+    await axios.post(
+      `${API}/notificaciones/leer/${user.email}`
+    );
+
+    await reloadNotificaciones();
+  }
+
+  setDropdownNotifs([]);
+};
+
 
   const toggleDropdown = async () => {
     if (!open) {
       setOpen(true);
-      setNoLeidas(0);
+      //setNoLeidas(0);
       return;
     }
 
@@ -98,7 +122,7 @@ export default function Header() {
                   border: "1px solid #444",
                   borderRadius: "8px",
                   padding: "10px",
-                  zIndex: 1000,
+                  zIndex: 9999,
                   boxShadow: "0px 4px 10px rgba(0,0,0,0.3)",
                 }}
               >

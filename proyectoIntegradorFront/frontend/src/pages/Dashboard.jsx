@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
-
+import DashboardImp from "../web3dashboard/dashboardImp";
 function getEmail(value) {
   if (!value) return "";
   if (typeof value === "string") return value.toLowerCase();
@@ -13,6 +13,9 @@ export default function Dashboard() {
   const canvasRef = useRef(null);
 
   const isAuditor = user?.role === "auditor";
+  
+const isAdmin =
+  user?.role?.toUpperCase() === "ADMIN";
 
   useEffect(() => {
     cargarPaquetes();
@@ -92,6 +95,10 @@ export default function Dashboard() {
         <p>Cargando usuario...</p>
       </section>
     );
+  }
+
+  if (isAdmin) {
+    return <DashboardImp />;
   }
 
   return (

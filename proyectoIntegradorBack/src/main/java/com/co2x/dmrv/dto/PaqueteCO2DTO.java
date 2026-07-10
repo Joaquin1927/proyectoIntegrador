@@ -30,7 +30,7 @@ public class PaqueteCO2DTO {
     public String coBenefits;
     public String projectType;
     public String externalUrl;
-
+    private Integer numeroRevision;
     public EstadoPaquete estado;
 
     public Long reporteId;

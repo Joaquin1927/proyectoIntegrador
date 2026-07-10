@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import PaqueteModal from "../components/PaqueteModal";
+import { apiGet } from "../api/apiClient";
 
 export default function Pendientes() {
   const { user, plantas } = useApp();
@@ -27,18 +28,25 @@ export default function Pendientes() {
     }
   }, [user]);
 
-  // ✅ bloquear render
   if (!user) return <p>Cargando...</p>;
 
   if (user.role.toLowerCase() !== "auditor") {
     return null;
   }
 
+  useEffect(() => {
+    cargarPendientes();
+
+    const interval = setInterval(cargarPendientes, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const cargarPendientes = async () => {
     try {
-      const res = await fetch(`${API}/paquetes/pendientes`);
+      const res = await apiGet(`${API}/paquetes/pendientes`);
       const data = await res.json();
-      console.log("PAQUETES PENDIENTES:", data);
+      console.log(data);
       setPendientes(data);
     } catch (err) {
       console.error("Error cargando pendientes:", err);
@@ -124,6 +132,16 @@ export default function Pendientes() {
                 <td>{p.planta?.nombre}</td>
                 <td>{p.captureDate}</td>
                 <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
+
+                <td>
+                  <div className="estado-wrapper">
+                    <span>{p.estado}</span>
+
+                    {p.numeroRevision > 1 && (
+                      <span className="revision-badge">{p.numeroRevision}</span>
+                    )}
+                  </div>
+                </td>
 
                 <td>
                   <button onClick={() => navigate(`/auditar/${p.id}`)}>

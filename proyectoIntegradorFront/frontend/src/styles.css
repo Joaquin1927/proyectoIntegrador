@@ -61,22 +61,83 @@ button.primary{background:linear-gradient(135deg, var(--brand), var(--brand-2));
 button.ghost{background:transparent}
 button.small{padding:6px 10px}
 button.danger{background: color-mix(in srgb, var(--danger) 20%, transparent 80%); color:#fff; border-color: color-mix(in srgb, var(--danger) 50%, transparent 50%)}
+.timeline {
+  position: relative;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 2px solid #ccc;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.estado-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.revision-badge {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #f97316;
+  color: white;
+
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.timeline-marker {
+  width: 12px;
+  height: 12px;
+  background-color: #4a90e2;
+  border-radius: 50%;
+  position: absolute;
+  left: -7px;
+  top: 5px;
+}
+
+.timeline-content {
+  padding-left: 10px;
+}
 
 .ghost {
   position: relative;
 }
- 
 .badge {
   position: absolute;
   top: -6px;
   right: -6px;
- 
+
   min-width: 20px;
   height: 20px;
- 
+
   background: #e53935;
   color: white;
+
+  border: 2px solid white;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: bold;
+
+  padding: 0 4px;
+  box-sizing: border-box;
 }
+
 .table{width:100%; border-collapse: collapse;}
 .table th, .table td{border-bottom:1px solid var(--border); padding:10px; text-align:left}
 .badge{padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border)}

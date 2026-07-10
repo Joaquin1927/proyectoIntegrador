@@ -52,14 +52,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
-
+      - name: Debug IDs
+        run: echo "Using configured Azure credentials"
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_960A47F2E7204AB19C08234E08681F87 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_25F21750847A4B93BEE7A844E7C857BB }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0DBB9140CC204F8696331B2D86047829 }}
-
+          client-id: "b03fa26c-b605-4710-a269-e1a8aea00b42"
+          tenant-id: "d79720cd-d8c0-4d0c-a404-2dcd025f01e3"
+          subscription-id: "c38be5e0-c994-47b0-8631-84c325f9f5d9"
+      - name: Azure Account List
+        run: az account list --output table
+      - name: Azure Account Show
+        run: az account show
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-
+import { useMsal } from "@azure/msal-react";
 export default function EditarPaquete() {
   const { id } = useParams();
   const { user } = useApp();
   const navigate = useNavigate();
+  const { instance, accounts } = useMsal();
 
   const API = import.meta.env.VITE_API_URL;
 
@@ -20,24 +21,50 @@ export default function EditarPaquete() {
     cargar();
   }, [user]);
 
-  const cargar = async () => {
-    try {
-      const res = await fetch(`${API}/paquetes/${id}/edicion`);
-      const json = await res.json();
+  
+const cargar = async () => {
 
-      setData(json);
-      setMetadata(json.metadata || {});
+  try {
 
-      const errores = Object.fromEntries(
-        (json.camposConError || []).map(c => [c.campo, c.comentario])
-      );
+    const response = await instance.acquireTokenSilent({
+      scopes: [
+        "api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"
+      ],
+      account: accounts[0],
+    });
 
-      setCamposError(errores);
+    const token = response.accessToken;
 
-    } catch (err) {
-      console.error("Error cargando paquete:", err);
+    const res = await fetch(
+      `${API}/paquetes/${id}/edicion`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
     }
-  };
+
+    const json = await res.json();
+
+    setData(json);
+    setMetadata(json.metadata || {});
+
+    const errores = Object.fromEntries(
+      (json.camposConError || [])
+        .map(c => [c.campo, c.comentario])
+    );
+
+    setCamposError(errores);
+
+  } catch (err) {
+    console.error("Error cargando paquete:", err);
+  }
+};
+
 
   const handleChange = (key, value) => {
     setMetadata(prev => ({
@@ -53,35 +80,52 @@ export default function EditarPaquete() {
 
   const guardar = async () => {
 
-    if (Object.keys(cambios).length === 0) {
-      alert("Debes modificar al menos un campo");
-      return;
-    }
+  if (Object.keys(cambios).length === 0) {
+    alert("Debes modificar al menos un campo");
+    return;
+  }
 
-    try {
-      const res = await fetch(`${API}/paquetes/${id}/corregir`, {
+  try {
+
+    const response = await instance.acquireTokenSilent({
+      scopes: [
+        "api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"
+      ],
+      account: accounts[0],
+    });
+
+    const token = response.accessToken;
+
+    const res = await fetch(
+      `${API}/paquetes/${id}/corregir`,
+      {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           metadata,
           comentarioGeneral: ""
         })
-      });
-
-      if (!res.ok) {
-        throw new Error("Error en backend");
       }
+    );
 
-      alert("Corrección enviada ✅");
-      navigate("/historial");
-
-    } catch (err) {
-      console.error("Error guardando:", err);
-      alert("Error al guardar");
+    if (!res.ok) {
+      throw new Error("Error en backend");
     }
-  };
+
+    alert("Corrección enviada ✅");
+
+    navigate("/historial");
+
+  } catch (err) {
+
+    console.error("Error guardando:", err);
+
+    alert("Error al guardar");
+  }
+};
 
   if (!data) return <p>Cargando...</p>;
 
@@ -92,7 +136,7 @@ export default function EditarPaquete() {
       <p><strong>Estado:</strong> {data.estado}</p>
 
       <h3>Comentario del auditor</h3>
-      <p style={{ background: "#f5f5f5", padding: "10px" }}>
+      <p style={{ background: "#f5f5f5",color:"#060606", padding: "10px" }}>
         {data.comentarioGeneral || "Sin comentario"}
       </p>
 
