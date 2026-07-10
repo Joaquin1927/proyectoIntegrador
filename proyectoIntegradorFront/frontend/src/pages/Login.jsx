@@ -9,7 +9,9 @@ export default function Login() {
   const submit = async () => {
     try {
       await msalInstance.initialize();
-
+console.log("CLIENT_ID:", import.meta.env.VITE_CLIENT_ID);
+console.log("AUTHORITY:", import.meta.env.VITE_AUTHORITY);
+console.log("REDIRECT_URI:", import.meta.env.VITE_REDIRECT_URI);
       await msalInstance.loginRedirect({
         scopes: [import.meta.env.VITE_SCOPE],
         prompt: "select_account",
