@@ -21,6 +21,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,6 +32,8 @@ import java.time.LocalDate;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 import static java.util.Arrays.stream;
 
@@ -121,6 +126,7 @@ public class PaqueteCO2Service  implements PaqueteSubject {
     }
 
     public List<PaqueteCO2DTO> listarPorUsuario(String email) {
+        securityService.validarUsuarioSolicitado(email);
         return paqueteRepo.findByCreatedBy(email)
                 .stream()
                 .map(factory::toPaqueteDTO)
@@ -132,6 +138,55 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         return paqueteRepo
                 .findByEstado(EstadoPaquete.APROBADO)
                 .stream()
+                .map(factory::toPaqueteDTO)
+                .toList();
+    }
+
+    public List<PaqueteCO2DTO> buscar(
+            Integer id,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta,
+            Integer plantaId,
+            EstadoPaquete estado,
+            String tipoProyecto) {
+
+        if (fechaDesde != null && fechaHasta != null && fechaDesde.isAfter(fechaHasta)) {
+            throw new IllegalArgumentException("La fecha desde no puede ser posterior a la fecha hasta");
+        }
+
+        Specification<PaqueteCO2> spec = (root, query, cb) -> cb.conjunction();
+
+        if (id != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), id));
+        }
+        if (fechaDesde != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("captureDate"), fechaDesde));
+        }
+        if (fechaHasta != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.get("captureDate"), fechaHasta));
+        }
+        if (plantaId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("planta").get("id"), plantaId));
+        }
+        if (estado != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("estado"), estado));
+        }
+        if (tipoProyecto != null && !tipoProyecto.isBlank()) {
+            String value = "%\"projectType\":\"%" + tipoProyecto.trim().toLowerCase() + "%\"%";
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("metadata")), value));
+        }
+
+        if (!securityService.esAdmin() && !securityService.esAuditor()) {
+            String email = securityService.getCurrentUserEmail();
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(cb.lower(root.get("createdBy")), email.toLowerCase()));
+        }
+
+        return paqueteRepo.findAll(spec).stream()
                 .map(factory::toPaqueteDTO)
                 .toList();
     }
@@ -149,6 +204,10 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
             Map<String, Object> metadataMap =
                     mapper.readValue(metadataJson, Map.class);
+
+            if (metadataMap.isEmpty()) {
+                throw new IllegalArgumentException("metadata debe contener datos");
+            }
 
             Set<String> forbiddenFields = Set.of(
                     "certId",
@@ -175,9 +234,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 ton = Double.parseDouble(tonObj.toString());
             }
 
-            if (ton <= 0) {
+            if (!Double.isFinite(ton) || ton <= 0) {
                 throw new IllegalArgumentException("tonCO2eq debe ser mayor a 0");
             }
+
+            validarFraccion(metadataMap, "co2Fraction");
+            validarFraccion(metadataMap, "ch4Fraction");
+            validarFraccion(metadataMap, "n2Fraction");
+            validarPorcentaje(metadataMap, "pureza");
+            validarPorcentaje(metadataMap, "purity");
 
             metadataMap.remove("tonCO2eq");
             metadataMap.put("_tonCO2eq", ton);
@@ -191,9 +256,36 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         }
     }
 
+    private void validarFraccion(Map<String, Object> metadata, String campo) {
+        validarRango(metadata, campo, 0, 1);
+    }
+
+    private void validarPorcentaje(Map<String, Object> metadata, String campo) {
+        validarRango(metadata, campo, 0, 100);
+    }
+
+    private void validarRango(Map<String, Object> metadata, String campo,
+                              double minimo, double maximo) {
+        Object valor = metadata.get(campo);
+        if (valor == null) return;
+        final double numero;
+        try {
+            numero = valor instanceof Number n ? n.doubleValue()
+                    : Double.parseDouble(valor.toString());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(campo + " debe ser numérico");
+        }
+        if (!Double.isFinite(numero) || numero < minimo || numero > maximo) {
+            throw new IllegalArgumentException(
+                    campo + " debe estar entre " + minimo + " y " + maximo
+            );
+        }
+    }
 
 
 
+
+    @Transactional
     public PaqueteCO2DTO crear(PaqueteCO2DTO dto) throws JsonProcessingException {
 
         if (dto.planta == null || dto.planta.id == null) {
@@ -209,7 +301,8 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         PaqueteCO2 entity = factory.toPaqueteEntity(dto, planta);
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper()
+                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
 
         Map<String, Object> metadataMap = procesarMetadata(dto.metadata);
 
@@ -224,19 +317,21 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
         entity.setTonCO2eq(ton);
 
-        entity.setMetadata(mapper.writeValueAsString(metadataMap));
+        String canonicalMetadata = mapper.writeValueAsString(metadataMap);
+        entity.setMetadata(canonicalMetadata);
 
         entity.setEstado(EstadoPaquete.PENDIENTE);
         entity.setIssuanceDate(LocalDate.now());
 
-        String fecha = LocalDate.now().toString().replace("-", "");
-        Long count = paqueteRepo.countByPlanta(planta);
-
-        String certId = "CO2X-" + planta.getId() + "-" + fecha + "-" + (count + 1);
-        entity.setCertId(certId);
-
-
         String email = securityService.getCurrentUserEmail();;
+
+        String fingerprint = fingerprint(
+                planta.getId(), dto.captureDate, email, canonicalMetadata
+        );
+        if (paqueteRepo.existsByDataFingerprint(fingerprint)) {
+            throw new IllegalArgumentException("Ya existe un paquete con los mismos datos");
+        }
+        entity.setDataFingerprint(fingerprint);
 
         System.out.println(
                 "EMAIL OBTENIDO: "
@@ -250,11 +345,16 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                         + entity.getCreatedBy()
         );
 
-        PaqueteCO2 guardado = paqueteRepo.save(entity);
+        PaqueteCO2 guardado = paqueteRepo.saveAndFlush(entity);
+
+        String fecha = dto.captureDate.toString().replace("-", "");
+        guardado.setCertId(
+                "CO2X-" + planta.getId() + "-" + fecha + "-" + guardado.getId()
+        );
 
 
         historialService.registrarHistorial(
-                entity,
+                guardado,
                 email,
                 EstadoPaquete.PENDIENTE,
                 List.of(
@@ -281,7 +381,29 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                         )
                 );
 
+        securityService.validarPropietarioOPrivilegiado(paquete.getCreatedBy());
+
         return factory.toPaqueteDTO(paquete);
+    }
+
+    public void validarAccesoPaquete(Integer id) {
+        PaqueteCO2 paquete = paqueteRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paquete no encontrado"));
+        securityService.validarPropietarioOPrivilegiado(paquete.getCreatedBy());
+    }
+
+    private String fingerprint(Integer plantaId, LocalDate captureDate,
+                               String createdBy, String metadata) {
+        try {
+            String value = plantaId + "|" + captureDate + "|"
+                    + createdBy.toLowerCase() + "|" + metadata;
+            return HexFormat.of().formatHex(
+                    MessageDigest.getInstance("SHA-256")
+                            .digest(value.getBytes(StandardCharsets.UTF_8))
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("No se pudo validar la unicidad del paquete", e);
+        }
     }
 
 

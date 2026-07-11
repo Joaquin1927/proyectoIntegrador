@@ -18,6 +18,33 @@ public class RecordService {
 
     public Record generateFromPaquete(PaqueteCO2 paquete) {
 
+        return repository.findByPaqueteId(paquete.getId())
+                .map(this::ensureIpfsCid)
+                .orElseGet(() -> createFromPaquete(paquete));
+    }
+
+    /**
+     * Completa el CID de records creados antes de que la carga a IPFS formara
+     * parte del flujo de aprobación.
+     */
+    public Record ensureIpfsCid(Record record) {
+
+        if (record.getIpfsCid() != null && !record.getIpfsCid().isBlank()) {
+            return record;
+        }
+
+        String cid = metadataService.processApprovedRecord(record);
+
+        if (cid == null || cid.isBlank()) {
+            throw new RuntimeException("IPFS no devolvió un CID válido");
+        }
+
+        record.setIpfsCid(cid);
+        return repository.save(record);
+    }
+
+    private Record createFromPaquete(PaqueteCO2 paquete) {
+
         Record record = new Record();
 
         record.setStatus("APPROVED");
@@ -27,12 +54,7 @@ public class RecordService {
         // ✅ guardar primero para obtener ID
         Record saved = repository.save(record);
 
-        // ✅ generar metadata + subir a IPFS
-        String cid = metadataService.processApprovedRecord(saved);
-
-        saved.setIpfsCid(cid);
-
-        // ✅ guardar CID
-        return repository.save(saved);
+        // ✅ generar metadata, subir a IPFS y guardar el CID
+        return ensureIpfsCid(saved);
     }
 }

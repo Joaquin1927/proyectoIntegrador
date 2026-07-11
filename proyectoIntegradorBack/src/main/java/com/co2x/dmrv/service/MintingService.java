@@ -1,5 +1,6 @@
 package com.co2x.dmrv.service;
 
+import com.co2x.dmrv.dto.MintResultDTO;
 import com.co2x.dmrv.entity.EstadoPaquete;
 import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.entity.Record;
@@ -25,12 +26,15 @@ public class MintingService {
     private RecordRepository recordRepo;
 
     @Autowired
+    private RecordService recordService;
+
+    @Autowired
     private BlockchainService blockchainService;
 
     @Value("${blockchain.destination.wallet}")
     private String destinationWallet;
 
-    public void mintearPaquete(Integer id) {
+    public MintResultDTO mintearPaquete(Integer id) {
 
         System.out.println("PASO 1");
         validarAdmin();
@@ -50,31 +54,38 @@ public class MintingService {
 
         System.out.println("PASO 4");
 
+        // Los paquetes aprobados antes de incorporar IPFS pueden no tener
+        // record o tenerlo sin CID. Se completa antes de intentar el mint.
         Record record = recordRepo.findByPaqueteId(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "No existe Record asociado al paquete"
-                        ));
+                .map(recordService::ensureIpfsCid)
+                .orElseGet(() -> recordService.generateFromPaquete(paquete));
 
         System.out.println("PASO 5");
-
-        if (record.getIpfsCid() == null ||
-                record.getIpfsCid().isBlank()) {
-
-            throw new RuntimeException(
-                    "El Record no posee CID de IPFS"
-            );
-        }
 
         System.out.println("PASO 6");
 
         System.out.println("CID: " + record.getIpfsCid());
 
-        blockchainService.mintToken(
-                destinationWallet,
-                paquete.getTonCO2eq(),
-                record.getIpfsCid()
-        );
+        boolean transaccionReutilizada = record.getBlockchainTxHash() != null &&
+                !record.getBlockchainTxHash().isBlank();
+
+        if (!transaccionReutilizada) {
+
+            String transactionHash = blockchainService.mintToken(
+                    destinationWallet,
+                    paquete.getTonCO2eq(),
+                    record.getIpfsCid()
+            );
+
+            // Se guarda antes de cambiar el estado. Si falla PostgreSQL luego,
+            // un reintento no vuelve a emitir tokens en blockchain.
+            record.setBlockchainTxHash(transactionHash);
+            recordRepo.saveAndFlush(record);
+        } else {
+            System.out.println(
+                    "Mint ya enviado. TX HASH: " + record.getBlockchainTxHash()
+            );
+        }
 
         System.out.println("PASO 7");
 
@@ -83,6 +94,14 @@ public class MintingService {
         paqueteRepo.save(paquete);
 
         System.out.println("PASO 8");
+
+        return new MintResultDTO(
+                paquete.getId(),
+                paquete.getEstado().name(),
+                record.getIpfsCid(),
+                record.getBlockchainTxHash(),
+                transaccionReutilizada
+        );
     }
 
     private void validarAdmin() {

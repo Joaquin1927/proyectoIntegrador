@@ -19,6 +19,9 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Maven puede ejecutarse con un JDK más nuevo aunque el proyecto
+             compile para Java 17. Esta versión también soporta JDK 26. -->
+        <lombok.version>1.18.46</lombok.version>
     </properties>
 
     <dependencies>
@@ -74,6 +77,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -96,6 +100,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <parameters>true</parameters>
+                    <proc>full</proc>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 

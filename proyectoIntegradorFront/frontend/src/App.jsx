@@ -13,6 +13,7 @@ import Auditar from "./pages/Auditar";
 import PaqueteDetalle from "./pages/PaqueteDetalle";
 import EditarPaquete from "./pages/EditarPaquete";
 import Aprobados from "./pages/Aprobados";
+import Ayuda from "./pages/Ayuda";
 
 import "./styles.css";
 
@@ -137,6 +138,11 @@ useEffect(() => {
                 : <Navigate to="/" />
             }
           />
+
+        <Route
+          path="ayuda"
+          element={isAuthenticated ? <Ayuda /> : <Navigate to="/" />}
+        />
 
       </Route>
     </Routes>

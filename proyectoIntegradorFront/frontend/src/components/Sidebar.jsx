@@ -26,6 +26,10 @@ export default function Sidebar() {
               📈 Dashboard
             </Link>
 
+            <Link to="/historial" className="nav-item">
+              🔎 Consultar paquetes
+            </Link>
+
             {/* ✅ SOLO AUDITOR */}
             {user.role === "auditor" && (
               <Link to="/pendientes" className="nav-item">
@@ -39,9 +43,6 @@ export default function Sidebar() {
                 <Link to="/registrar" className="nav-item">
                   ➕ Registrar
                 </Link>
-                <Link to="/historial" className="nav-item">
-                  📋 Historial
-                </Link>
               </>
             )}
 
@@ -51,6 +52,11 @@ export default function Sidebar() {
                 ⛓️ Mintear Tokens
               </Link>
             )}
+
+            <div className="nav-sep" />
+            <Link to="/ayuda" className="nav-item">
+              ❔ Ayuda / Acerca de
+            </Link>
           </>
         )}
       </nav>

@@ -25,7 +25,11 @@ public class PaqueteCO2 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "cert_id", unique = true)
     private String certId;
+
+    @Column(name = "data_fingerprint", length = 64, unique = true)
+    private String dataFingerprint;
     private LocalDate captureDate;
 
     @Column(name = "ton_co2eq")
