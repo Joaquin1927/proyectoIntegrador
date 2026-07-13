@@ -1,8 +1,8 @@
 // src/web3/provider.js
 import { JsonRpcProvider, FallbackProvider, BrowserProvider } from "ethers";
-
+ 
 const CHAIN = { chainId: 80002, name: "polygon-amoy" };
-
+ 
 // --- helpers para limpiar y validar URLs
 function isValid(u) {
   if (!u) return false;
@@ -14,20 +14,20 @@ function isValid(u) {
 function uniqTrim(arr) {
   return [...new Set(arr.map((s) => String(s).trim()))];
 }
-
+ 
 // toma env, trimea, quita duplicados y placeholders
 const urls = uniqTrim([
   import.meta.env.VITE_RPC_PRIMARY,
   import.meta.env.VITE_RPC_FALLBACK,
 ]).filter(isValid);
-
+ 
 if (urls.length === 0) {
   throw new Error("No RPC URLs configured. Set VITE_RPC_PRIMARY in .env");
 }
-
+ 
 // crear providers fijando la red -> evita 'detect network' y 'network changed'
 const providers = urls.map((u) => new JsonRpcProvider(u, CHAIN));
-
+ 
 // Lecturas: fallback (o único) según cuántas URLs pasaron el filtro
 export const readProvider =
   providers.length === 1
@@ -39,27 +39,27 @@ export const readProvider =
         ],
         1 // quorum: con 1 que responda, alcanza
       );
-
+ 
 // Provider de wallet (MetaMask) para firmar escrituras
 export async function getWalletProvider() {
   const eth = window.ethereum;
   if (!eth) throw new Error("MetaMask not detected");
   return new BrowserProvider(eth, "any"); // "any" evita cachear chainId
 }
-
+ 
 export async function getSigner() {
   const walletProvider = await getWalletProvider();
   return walletProvider.getSigner();
 }
-
+ 
 // (Opcional) asegurar red Amoy (80002)
 export async function ensureAmoy() {
   const eth = window.ethereum;
   if (!eth) return;
-
+ 
   // usa las mismas URLs saneadas para registrar la red en la wallet
   const rpcUrls = urls.length ? urls : [import.meta.env.VITE_RPC_PRIMARY].filter(Boolean);
-
+ 
   try {
     await eth.request({
       method: "wallet_switchEthereumChain",
@@ -84,7 +84,7 @@ export async function ensureAmoy() {
     }
   }
 }
-
+ 
 // (Opcional) debug rápido para confirmar chainIds de cada RPC
 export async function debugReadProviders() {
   const nets = await Promise.all(providers.map((p) => p.getNetwork()));
