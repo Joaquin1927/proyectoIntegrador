@@ -33,10 +33,30 @@ public class PaqueteController {
 
 
     @GetMapping("/usuario/{email}")
-    public List<PaqueteCO2DTO> listarPorUsuario(
-            @PathVariable("email") String email) {
+    public ResponseEntity<?> listarPorUsuario(
+            @PathVariable String email) {
 
-        return paqueteService.listarPorUsuario(email);
+        System.out.println("EMAIL RECIBIDO: " + email);
+
+        try {
+
+            var paquetes =
+                    paqueteService.listarPorUsuario(email);
+
+            System.out.println(
+                    "PAQUETES ENCONTRADOS: "
+                            + paquetes.size());
+
+            return ResponseEntity.ok(paquetes);
+
+        } catch (Exception e) {
+
+            System.out.println("ERROR LISTAR USUARIO");
+
+            e.printStackTrace();
+
+            throw e;
+        }
     }
 
 
