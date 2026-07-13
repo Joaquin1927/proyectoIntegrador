@@ -9,18 +9,24 @@ import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.repository.ReporteRepository;
 import com.co2x.dmrv.service.AuditoriaService;
+import com.co2x.dmrv.service.HistorialService;
 import com.co2x.dmrv.service.RecordService;
+import com.co2x.dmrv.service.SecurityService;
 import com.co2x.dmrv.service.observer.PaqueteObserver;
 import com.co2x.dmrv.utils.Factory;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,29 +34,40 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class AuditoriaServiceTest {
 
-    @Autowired
+    @InjectMocks
     private AuditoriaService auditoriaService;
 
-    @MockBean
+    @Mock
     private PaqueteCO2Repository paqueteRepo;
 
-    @MockBean
+    @Mock
     private ReporteRepository reporteRepo;
 
-    @MockBean
+    @Mock
     private HistorialPaqueteRepository historialRepo;
 
-    @MockBean
+    @Mock
     private RecordService recordService;
 
-    @MockBean
+    @Mock
     private Factory factory;
 
-    @MockBean
-    private PaqueteObserver observer;
+    @Spy
+    private List<PaqueteObserver> observers = new ArrayList<>();
+
+    @Mock
+    private HistorialService historialService;
+
+    @Mock
+    private SecurityService securityService;
+
+    @BeforeEach
+    void configurarUsuario() {
+        lenient().when(securityService.getCurrentUserEmail()).thenReturn("auditor@test.com");
+    }
 
     private void mockAuditor() {
 

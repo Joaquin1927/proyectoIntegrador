@@ -116,8 +116,6 @@ public class MintingService {
 
         Jwt jwt = jwtAuth.getToken();
 
-        System.out.println("JWT CLAIMS: " + jwt.getClaims());
-
         List<String> roles = jwt.getClaimAsStringList("roles");
 
         if (roles == null ||
