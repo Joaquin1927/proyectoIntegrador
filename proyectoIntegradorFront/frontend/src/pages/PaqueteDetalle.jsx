@@ -16,7 +16,7 @@ export default function PaqueteDetalle() {
  
   const cargarHistorialCompleto = async () => {
     try {
-      const res = await apiGet(`${API}/paquetes/${id}/historial`);
+      const res = await apiGet(`${API}/historial/${id}/getHistorial`);
       const data = await res.json();
       setHistorialCompleto(data);
     } catch (err) {

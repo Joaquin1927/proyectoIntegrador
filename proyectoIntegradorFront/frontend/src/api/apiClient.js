@@ -6,7 +6,7 @@ const obtenerToken = async () => {
 
   try {
     const response = await msalInstance.acquireTokenSilent({
-      scopes: ["openid", "profile", "email"],
+      scopes: [import.meta.env.VITE_SCOPE],
       account
     });
 
@@ -22,9 +22,8 @@ export const apiGet = async (url, requireAuth = true) => {
 
   if (requireAuth) {
     const token = await obtenerToken();
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    if (!token) throw new Error("No hay una sesión autenticada");
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   return fetch(url, { headers });
@@ -37,9 +36,8 @@ export const apiPost = async (url, body, requireAuth = true) => {
 
   if (requireAuth) {
     const token = await obtenerToken();
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    if (!token) throw new Error("No hay una sesión autenticada");
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   return fetch(url, {

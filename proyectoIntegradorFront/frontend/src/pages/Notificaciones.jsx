@@ -29,7 +29,7 @@ export default function Notificaciones() {
           <p>{n.mensaje}</p>
           <small>{new Date(n.fecha).toLocaleString()}</small>
 
-          <button onClick={() => navigate(`/paquete/${n.paqueteId}`)}>
+          <button onClick={() => navigate(`/r/${n.paqueteId}`)}>
             Ver
           </button>
         </div>

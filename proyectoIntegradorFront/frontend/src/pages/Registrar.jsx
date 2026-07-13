@@ -85,69 +85,127 @@ export default function Registrar() {
     return "text";
   };
 
-  const saveAll = async () => {
-    try {
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
-      });
+ const saveAll = async () => {
+try {
+const response = await instance.acquireTokenSilent({
+scopes: [
+"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
+],
+account: accounts[0],
+});
+ 
+const token = response.accessToken;
+ 
+const results = [];
+const errores = [];
+ 
+let successCount = 0;
+let errorCount = 0;
+ 
+for (const [index, row] of rows.entries()) {
+const extraFields = {};
+ 
+Object.keys(row).forEach((key) => {
+if (!fixedFields.includes(key)) {
+extraFields[key] = row[key];
+}
+});
+ 
+if (!extraFields.tonCO2eq) {
+errores.push(
+`Fila ${index + 1}: Falta el campo tonCO2eq`
+);
+errorCount++;
+continue;
+}
+ 
+extraFields.tonCO2eq = parseFloat(
+extraFields.tonCO2eq
+);
+ 
+if (!row.plantaId) {
+errores.push(
+`Fila ${index + 1}: Falta seleccionar una planta`
+);
+errorCount++;
+continue;
+}
+ 
+const payload = {
+captureDate: row.captureDate || null,
+planta: {
+id: parseInt(row.plantaId),
+},
+metadata: JSON.stringify(extraFields),
+};
 
-      const token = response.accessToken;
+console.log("Payload enviado:", payload);
 
-      const results = [];
-
-      for (const [index, row] of rows.entries()) {
-        const extraFields = {};
-
-        Object.keys(row).forEach((key) => {
-          if (!fixedFields.includes(key)) {
-            extraFields[key] = row[key];
-          }
-        });
-
-        if (!extraFields.tonCO2eq) {
-          alert(`Falta tonCO2eq en fila ${index + 1}`);
-          continue;
-        }
-
-        extraFields.tonCO2eq = parseFloat(extraFields.tonCO2eq);
-
-        if (!row.plantaId) {
-          alert(`Falta planta en fila ${index + 1}`);
-          continue;
-        }
-
-        const payload = {
-          captureDate: row.captureDate || null,
-
-          planta: {
-            id: parseInt(row.plantaId),
-          },
-
-          metadata: JSON.stringify(extraFields),
-        };
-
-        console.log("Payload enviado:", payload);
-        try {
-          const res = await axios.post(`${API}/paquetes`, payload, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-
-          results.push(res.data);
-        } catch (err) {
-          console.error("Error fila", index, err);
-          alert(`Error en fila ${index + 1}`);
-        }
-      }
-
-      setPaquetes((prev) => [...results, ...(prev || [])]);
-      alert("Carga completada 🚀");
-    } catch (error) {
-      alert("Error general");
-    }
-  };
+try {
+console.log("FILA ORIGINAL:", row);
+ 
+console.log("EXTRAFIELDS:", extraFields);
+ 
+console.log("PAYLOAD:", payload);
+const res = await axios.post(
+`${API}/paquetes`,
+payload,
+{
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+ 
+results.push(res.data);
+successCount++;
+} catch (err) {
+console.error("Error fila", index, err);
+ 
+const backendMessage =
+err.response?.data?.message ||
+err.response?.data?.error ||
+err.message ||
+"Error desconocido";
+ 
+errores.push(
+`Fila ${index + 1}: ${backendMessage}`
+);
+ 
+errorCount++;
+}
+}
+ 
+setPaquetes((prev) => [
+...results,
+...(prev || []),
+]);
+ 
+if (successCount > 0 && errorCount === 0) {
+alert(
+`Carga completada 🚀\n${successCount} paquetes registrados.`
+);
+} else if (successCount > 0 && errorCount > 0) {
+alert(
+`Carga parcial.\n` +
+`${successCount} paquetes registrados.\n` +
+`${errorCount} paquetes con error.\n\n` +
+errores.join("\n")
+);
+} else {
+alert(
+`No se registró ningún paquete.\n\n` +
+errores.join("\n")
+);
+}
+ 
+} catch (error) {
+console.error(error);
+alert(
+"Error obteniendo el token de autenticación."
+);
+}
+};
 
   console.log("PLANTAS:", plantas);
   return (

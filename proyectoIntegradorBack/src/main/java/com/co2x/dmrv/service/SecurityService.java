@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
@@ -18,16 +19,9 @@ public class SecurityService {
                         .getContext()
                         .getAuthentication();
 
-        System.out.println("AUTH: " + auth);
-
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
 
             Jwt jwt = jwtAuth.getToken();
-
-            System.out.println(
-                    "CLAIMS: "
-                            + jwt.getClaims()
-            );
 
             String email =
                     jwt.getClaimAsString(
@@ -46,7 +40,7 @@ public class SecurityService {
             return email;
         }
 
-        throw new RuntimeException(
+        throw new AccessDeniedException(
                 "Usuario no autenticado"
         );
     }
@@ -60,14 +54,14 @@ public class SecurityService {
 
         if (auth == null) {
 
-            throw new RuntimeException(
+            throw new AccessDeniedException(
                     "Usuario no autenticado"
             );
         }
 
         if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
 
-            throw new RuntimeException(
+            throw new AccessDeniedException(
                     "Usuario no autenticado"
             );
         }
@@ -90,7 +84,7 @@ public class SecurityService {
                                 )
         ) {
 
-            throw new RuntimeException(
+            throw new AccessDeniedException(
                     "Acceso solo para auditores"
             );
         }
@@ -124,6 +118,30 @@ public class SecurityService {
                         );
     }
 
+    public boolean esAdmin() {
+        return tieneRol("ADMIN");
+    }
+
+    private boolean tieneRol(String rol) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth instanceof JwtAuthenticationToken jwtAuth)) return false;
+        List<String> roles = jwtAuth.getToken().getClaimAsStringList("roles");
+        return roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase(rol));
+    }
+
+    public void validarPropietarioOPrivilegiado(String propietario) {
+        if (esAdmin() || esAuditor()) return;
+        validarPropietario(propietario);
+    }
+
+    public void validarUsuarioSolicitado(String usuario) {
+        if (esAdmin()) return;
+        String actual = getCurrentUserEmail();
+        if (usuario == null || !actual.equalsIgnoreCase(usuario)) {
+            throw new AccessDeniedException("No puede consultar información de otro usuario");
+        }
+    }
+
     public void validarPropietario(
             String propietario
     ) {
@@ -139,7 +157,7 @@ public class SecurityService {
                         )
         ) {
 
-            throw new RuntimeException(
+            throw new AccessDeniedException(
                     "Acceso denegado"
             );
         }

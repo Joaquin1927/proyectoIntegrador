@@ -18,6 +18,9 @@ public class Record {
 
     private String ipfsCid;
 
+    /** Hash de la transacción de mint. También actúa como clave de idempotencia. */
+    private String blockchainTxHash;
+
     private String createdBy;
 
     @ManyToOne

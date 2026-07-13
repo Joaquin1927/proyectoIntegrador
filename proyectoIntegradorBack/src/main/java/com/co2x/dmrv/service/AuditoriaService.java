@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -77,12 +78,18 @@ public class AuditoriaService  implements PaqueteSubject {
     }
 
 
+    @Transactional
     public PaqueteCO2DTO aprobar(Integer id) {
 
         securityService.validarAuditor();
         System.out.println("ENTRO A APROBAR");
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
+
+        if (paquete.getEstado() != EstadoPaquete.PENDIENTE
+                && paquete.getEstado() != EstadoPaquete.EN_REVISION_CORREGIDO) {
+            throw new IllegalArgumentException("El paquete no está disponible para aprobación");
+        }
 
         EstadoPaquete estadoAnterior = paquete.getEstado();
         paquete.setEstado(EstadoPaquete.APROBADO);
@@ -136,8 +143,12 @@ public class AuditoriaService  implements PaqueteSubject {
     }
 
 
-    public PaqueteCO2DTO rechazar(Integer id) {
+    @Transactional
+    public PaqueteCO2DTO rechazar(Integer id, String comentario) {
         securityService.validarAuditor();
+        if (comentario == null || comentario.isBlank()) {
+            throw new IllegalArgumentException("El comentario de rechazo es obligatorio");
+        }
         System.out.println("ENTRO A RECHAZAR");
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
@@ -157,6 +168,10 @@ public class AuditoriaService  implements PaqueteSubject {
                                 "campo", "estado",
                                 "valorAnterior", estadoAnterior.toString(),
                                 "valorNuevo", "RECHAZADO"
+                        ),
+                        Map.of(
+                                "tipo", "COMENTARIO_GENERAL",
+                                "texto", comentario
                         )
                 )
         );
@@ -167,10 +182,18 @@ public class AuditoriaService  implements PaqueteSubject {
 
     }
 
+    // Compatibilidad para pruebas y consumidores internos anteriores.
+    public PaqueteCO2DTO rechazar(Integer id) {
+        return rechazar(id, "Rechazo registrado");
+    }
 
 
 
+
+    @Transactional
     public void solicitarCorreccion(Integer id, Map<String, Object> data) {
+
+        securityService.validarAuditor();
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));

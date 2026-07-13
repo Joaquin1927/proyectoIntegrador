@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { AppContext } from "./AppContext";
+
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 import { apiGet } from "../api/apiClient";
 
 
@@ -21,11 +27,12 @@ export function AppProvider({ children }) {
 
   // Cargar plantas
   useEffect(() => {
+    if (!user?.email) return;
     axios
       .get(`${API}/plantas`)
       .then((res) => setPlantas(res.data))
       .catch((err) => console.error("Error cargando plantas", err));
-  }, [API]);
+  }, [API, user?.email]);
 
   // Restaurar usuario
   useEffect(() => {
