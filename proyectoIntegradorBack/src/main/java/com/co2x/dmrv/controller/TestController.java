@@ -38,6 +38,7 @@ public class TestController {
     }
 
     @GetMapping("/ipfs-test")
+    @PreAuthorize("hasRole('ADMIN')")
     public String testIpfs() {
         String json = "{\"test\":\"hola IPFS\"}";
         return ipfsService.uploadJSON(json);

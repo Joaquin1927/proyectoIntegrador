@@ -27,12 +27,10 @@ public class HistorialPaquete {
     @Enumerated(EnumType.STRING)
     private EstadoPaquete accion;
 
-
     @Column(columnDefinition = "text")
     private String cambios;
 
     private LocalDateTime fecha = LocalDateTime.now();
-
 
     @Column(columnDefinition = "TEXT")
     private String snapshot;

@@ -3,7 +3,9 @@ package com.co2x.dmrv.controller;
 import com.co2x.dmrv.dto.HistorialPaqueteDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.PaqueteEdicionDTO;
+import com.co2x.dmrv.dto.MintResultDTO;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
+import com.co2x.dmrv.service.MintingService;
 import com.co2x.dmrv.service.AuditoriaService;
 import com.co2x.dmrv.service.PaqueteCO2Service;
 import com.co2x.dmrv.utils.Factory;
@@ -13,9 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import com.co2x.dmrv.entity.EstadoPaquete;
 
 @RestController
 @RequestMapping("/paquetes")
@@ -33,6 +39,7 @@ public class PaqueteController {
 
 
     @GetMapping("/usuario/{email}")
+    @PreAuthorize("hasAnyRole('EMPLEADO','AUDITOR','ADMIN')")
     public ResponseEntity<?> listarPorUsuario(
             @PathVariable String email) {
 
@@ -71,6 +78,9 @@ public class PaqueteController {
     private HistorialPaqueteRepository historialRepo;
 
     @Autowired
+    private MintingService mintingService;
+
+    @Autowired
     private Factory factory;
 
     @Autowired
@@ -81,32 +91,16 @@ public class PaqueteController {
     private AuditoriaService auditoriaService;
 
     @GetMapping("/pendientes")
+    @PreAuthorize("hasRole('AUDITOR')")
     public List<PaqueteCO2DTO> pendientes() {
         return paqueteService.listarPendientes();
     }
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody PaqueteCO2DTO dto) {
-        try {
-            System.out.println("ENTRO AL CONTROLLER");
-
-
-            System.out.println("DTO recibido: " + dto);
-            System.out.println("Planta: " + dto.planta);
-            System.out.println("Metadata: " + dto.metadata);
-
-            if (dto.planta == null) {
-                return ResponseEntity.badRequest().body("Seleccione una planta");
-            }
-
-            PaqueteCO2DTO creado = paqueteService.crear(dto);
-
-            return ResponseEntity.ok(creado);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
+    @PreAuthorize("hasRole('EMPLEADO')")
+    public ResponseEntity<PaqueteCO2DTO> crear(@Valid @RequestBody PaqueteCO2DTO dto)
+            throws JsonProcessingException {
+        return ResponseEntity.ok(paqueteService.crear(dto));
     }
 
 
@@ -118,12 +112,28 @@ public class PaqueteController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('AUDITOR','ADMIN')")
     public ResponseEntity<List<PaqueteCO2DTO>> listar() {
         return ResponseEntity.ok(paqueteService.listar());
     }
 
+    @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('EMPLEADO','AUDITOR','ADMIN')")
+    public List<PaqueteCO2DTO> buscar(
+            @RequestParam(required = false) Integer id,
+            @RequestParam(required = false) LocalDate fechaDesde,
+            @RequestParam(required = false) LocalDate fechaHasta,
+            @RequestParam(required = false) Integer plantaId,
+            @RequestParam(required = false) EstadoPaquete estado,
+            @RequestParam(required = false) String tipoProyecto) {
+        return paqueteService.buscar(
+                id, fechaDesde, fechaHasta, plantaId, estado, tipoProyecto
+        );
+    }
+
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('EMPLEADO','AUDITOR','ADMIN')")
     public ResponseEntity<PaqueteCO2DTO> obtener(
             @PathVariable("id") Integer id) {
 
@@ -142,7 +152,10 @@ public class PaqueteController {
 
 
     @GetMapping("/{id}/historial/ultimo")
+    @PreAuthorize("hasAnyRole('EMPLEADO','AUDITOR','ADMIN')")
     public ResponseEntity<?> getUltimoHistorial(@PathVariable Integer id) {
+
+        paqueteService.validarAccesoPaquete(id);
 
         return historialRepo.findTopByPaqueteIdOrderByFechaDesc(id)
                 .map(h -> ResponseEntity.ok(factory.toHistorialDTO(h)))
@@ -152,19 +165,8 @@ public class PaqueteController {
 
 
 
-    @GetMapping("/debug-auth")
-    public String debug() {
-
-        Authentication auth =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
-
-        return String.valueOf(auth);
-    }
-
-
     @GetMapping("/{id}/edicion")
+    @PreAuthorize("hasRole('EMPLEADO')")
     public ResponseEntity<PaqueteEdicionDTO> getEdicion(
             @PathVariable Integer id
     ) {
@@ -176,10 +178,25 @@ public class PaqueteController {
         );
     }
 
+    @PostMapping("/{id}/mint")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MintResultDTO> mintear(@PathVariable Integer id) {
 
+        return ResponseEntity.ok(mintingService.mintearPaquete(id));
+    }
+
+    @GetMapping("/aprobados")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<PaqueteCO2DTO> aprobados() {
+
+        System.out.println("ENTRO A APROBADOS");
+
+        return paqueteService.listarAprobados();
+    }
 
 
     @PutMapping("/{id}/corregir")
+    @PreAuthorize("hasRole('EMPLEADO')")
     public ResponseEntity<?> corregir(
             @PathVariable Integer id,
             @RequestBody PaqueteEdicionDTO dto

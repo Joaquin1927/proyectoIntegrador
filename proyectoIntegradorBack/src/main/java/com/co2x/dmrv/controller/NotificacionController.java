@@ -3,6 +3,7 @@ package com.co2x.dmrv.controller;
 import com.co2x.dmrv.dto.NotificacionDTO;
 import com.co2x.dmrv.entity.Notificacion;
 import com.co2x.dmrv.repository.NotificacionRepository;
+import com.co2x.dmrv.service.SecurityService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.List;
 public class NotificacionController {
 
     private final NotificacionRepository repo;
+    private final SecurityService securityService;
 
-    public NotificacionController(NotificacionRepository repo) {
+    public NotificacionController(NotificacionRepository repo, SecurityService securityService) {
         this.repo = repo;
+        this.securityService = securityService;
     }
 
     private NotificacionDTO toDTO(Notificacion n) {
@@ -33,6 +36,8 @@ public class NotificacionController {
     @GetMapping("/noleidas/{usuario}")
     public List<NotificacionDTO> getNoLeidas(
             @PathVariable("usuario") String usuario) {
+
+        securityService.validarUsuarioSolicitado(usuario);
 
         System.out.println("USUARIO NOTIF: " + usuario);
 
@@ -66,6 +71,8 @@ public class NotificacionController {
     public List<NotificacionDTO> getTodas(
             @PathVariable("usuario") String usuario) {
 
+        securityService.validarUsuarioSolicitado(usuario);
+
         System.out.println("USUARIO TODAS: " + usuario);
 
         return repo.findByUsuario(usuario)
@@ -77,6 +84,7 @@ public class NotificacionController {
     // ✔️ Marcar todas como leídas
     @PostMapping("/leer/{usuario}")
     public void marcarLeidas(@PathVariable String usuario) {
+        securityService.validarUsuarioSolicitado(usuario);
         List<Notificacion> lista = repo.findByUsuarioAndLeidoFalse(usuario);
         lista.forEach(n -> n.setLeido(true));
         System.out.println("set leido");

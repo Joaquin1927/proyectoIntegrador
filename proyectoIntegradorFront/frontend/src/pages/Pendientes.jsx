@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-import PaqueteModal from "../components/PaqueteModal";
 import { apiGet } from "../api/apiClient";
 
 export default function Pendientes() {
@@ -12,83 +11,47 @@ export default function Pendientes() {
   const navigate = useNavigate();
 
   const [pendientes, setPendientes] = useState([]);
-  const [seleccionado, setSeleccionado] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const API = import.meta.env.VITE_API_URL;
+  const userRole = user?.role?.toLowerCase();
 
-  useEffect(() => {
-    if (!user) return;
-
-    if (user.role.toLowerCase() !== "auditor") {
-      alert("acceso exclusivo para auditores");
-      navigate("/dashboard");
-    } else {
-      cargarPendientes();
-    }
-  }, [user]);
-
-  if (!user) return <p>Cargando...</p>;
-
-  if (user.role.toLowerCase() !== "auditor") {
-    return null;
-  }
-
-  useEffect(() => {
-    cargarPendientes();
-
-    const interval = setInterval(cargarPendientes, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const cargarPendientes = async () => {
+  async function cargarPendientes() {
     try {
       const res = await apiGet(`${API}/paquetes/pendientes`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      console.log(data);
       setPendientes(data);
     } catch (err) {
       console.error("Error cargando pendientes:", err);
     }
-  };
+  }
 
-  const aceptarPaquete = async () => {
-    if (!seleccionado) return;
-
-    try {
-      setLoading(true);
-
-      // ✅ PUT → cambiar estado
-      await fetch(`${API}/paquetes/${seleccionado.id}/aceptar`, {
-        method: "PUT",
-      });
-
-      // ✅ POST → crear reporte
-      await fetch(`${API}/reportes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paqueteId: seleccionado.id,
-        }),
-      });
-
-      setSeleccionado(null);
-      cargarPendientes();
-    } catch (err) {
-      console.error("Error al aceptar paquete:", err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!userRole) return;
+    if (userRole !== "auditor") {
+      navigate("/dashboard");
+      return;
     }
-  };
+
+    let active = true;
+    const refresh = () => {
+      if (active) cargarPendientes();
+    };
+
+    refresh();
+    const interval = setInterval(refresh, 5000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [API, navigate, userRole]);
 
   const pendientesFiltrados = plantaSeleccionada
     ? pendientes.filter((p) => p.planta.id === plantaSeleccionada)
     : pendientes;
 
   if (!user) return <p>Cargando...</p>;
+  if (userRole !== "auditor") return null;
 
   return (
     <section className="panel">
@@ -154,13 +117,6 @@ export default function Pendientes() {
         </table>
       )}
 
-      {/* ✅ MODAL LIMPIO */}
-      <PaqueteModal
-        paquete={seleccionado}
-        onClose={() => setSeleccionado(null)}
-        onAceptar={aceptarPaquete}
-        loading={loading}
-      />
     </section>
   );
 }
