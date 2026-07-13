@@ -12,6 +12,8 @@ import Historial from "./pages/Historial";
 import Auditar from "./pages/Auditar";
 import PaqueteDetalle from "./pages/PaqueteDetalle";
 import EditarPaquete from "./pages/EditarPaquete";
+import Aprobados from "./pages/Aprobados";
+import Ayuda from "./pages/Ayuda";
 
 import "./styles.css";
 
@@ -127,6 +129,20 @@ useEffect(() => {
 
         <Route path="/paquete/:id" element={<PaqueteDetalle />} />
         <Route path="/editar/:id" element={<EditarPaquete />} />
+
+        <Route
+            path="aprobados"
+            element={
+              isAuthenticated
+                ? <Aprobados />
+                : <Navigate to="/" />
+            }
+          />
+
+        <Route
+          path="ayuda"
+          element={isAuthenticated ? <Ayuda /> : <Navigate to="/" />}
+        />
 
       </Route>
     </Routes>

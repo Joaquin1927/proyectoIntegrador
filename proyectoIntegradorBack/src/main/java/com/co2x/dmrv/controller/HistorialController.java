@@ -5,6 +5,7 @@ import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.utils.Factory;
+import com.co2x.dmrv.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/paquetes")
+@RequestMapping("/historial")
 public class HistorialController {
 
 
@@ -26,11 +27,16 @@ public class HistorialController {
     @Autowired
     private Factory factory;
 
-    @GetMapping("/{id}/historial")
+    @Autowired
+    private SecurityService securityService;
+
+    @GetMapping("/{id}/getHistorial")
     public ResponseEntity<List<HistorialPaqueteDTO>> historial(@PathVariable Integer id) {
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
+
+        securityService.validarPropietarioOPrivilegiado(paquete.getCreatedBy());
 
         var historial = historialRepo.findByPaqueteOrderByFechaDesc(paquete)
                 .stream()

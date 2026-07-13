@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
+import { authFetch } from "../api/authFetch";
 import { useMsal } from "@azure/msal-react";
 export default function EditarPaquete() {
   const { id } = useParams();
@@ -35,7 +36,7 @@ const cargar = async () => {
 
     const token = response.accessToken;
 
-    const res = await fetch(
+    const res = await authFetch(
       `${API}/paquetes/${id}/edicion`,
       {
         headers: {
@@ -96,7 +97,7 @@ const cargar = async () => {
 
     const token = response.accessToken;
 
-    const res = await fetch(
+    const res = await authFetch(
       `${API}/paquetes/${id}/corregir`,
       {
         method: "PUT",

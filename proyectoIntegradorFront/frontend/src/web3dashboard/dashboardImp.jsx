@@ -6,7 +6,7 @@ import { CONTRACT_ADDRESS, ABI } from "../web3/contractConfig";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import TransactionHistory from "./TransactionHistory";
 import BurnForm from "./BurnForm";
-import MintForm from "./MintForm";
+import mintForm from "./mintForm";
 import { useToast } from "../ui/Toaster";
 import { withTx } from "../utils/tx";
 import { toastMessageFromError, logEthersError } from "../utils/errors";

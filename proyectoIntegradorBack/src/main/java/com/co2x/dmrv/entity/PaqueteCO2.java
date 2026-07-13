@@ -1,19 +1,13 @@
 package com.co2x.dmrv.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
-import org.hibernate.annotations.Type;
-import org.hibernate.mapping.ToOne;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import static org.skyscreamer.jsonassert.JSONParser.parseJSON;
 
 @ToString(exclude = {"planta", "historial"})
 @Entity
@@ -25,7 +19,11 @@ public class PaqueteCO2 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "cert_id", unique = true)
     private String certId;
+
+    @Column(name = "data_fingerprint", length = 64, unique = true)
+    private String dataFingerprint;
     private LocalDate captureDate;
 
     @Column(name = "ton_co2eq")

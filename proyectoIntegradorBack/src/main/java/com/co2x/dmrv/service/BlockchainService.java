@@ -33,7 +33,7 @@ public class BlockchainService {
     @Value("${blockchain.contract.address}")
     private String contractAddress;
 
-    public void mintToken(String wallet, Double amount, String certId) {
+    public String mintToken(String wallet, Double amount, String certId) {
 
         try {
             // =========================
@@ -91,7 +91,14 @@ public class BlockchainService {
                 throw new RuntimeException("Blockchain error: " + tx.getError().getMessage());
             }
 
-            System.out.println("🚀 TX HASH: " + tx.getTransactionHash());
+            String transactionHash = tx.getTransactionHash();
+
+            if (transactionHash == null || transactionHash.isBlank()) {
+                throw new RuntimeException("Blockchain no devolvió el hash de la transacción");
+            }
+
+            System.out.println("🚀 TX HASH: " + transactionHash);
+            return transactionHash;
 
         } catch (Exception e) {
             e.printStackTrace();
