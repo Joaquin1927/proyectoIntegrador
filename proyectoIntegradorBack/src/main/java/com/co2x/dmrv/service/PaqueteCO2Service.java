@@ -357,9 +357,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                         + entity.getCreatedBy()
         );
 
+        String fecha = dto.captureDate.toString().replace("-", "");
+        entity.setCertId(
+                "TEMP-" + UUID.randomUUID()
+        );
+
+
         PaqueteCO2 guardado = paqueteRepo.saveAndFlush(entity);
 
-        String fecha = dto.captureDate.toString().replace("-", "");
+
         guardado.setCertId(
                 "CO2X-" + planta.getId() + "-" + fecha + "-" + guardado.getId()
         );
