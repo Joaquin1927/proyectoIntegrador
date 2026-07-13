@@ -6,5 +6,5 @@ public enum EstadoPaquete {
     EN_REVISION_CORREGIDO,
     APROBADO,
     RECHAZADO,
-
+    MINTEADO,
 }
