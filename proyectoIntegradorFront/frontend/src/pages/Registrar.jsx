@@ -145,7 +145,7 @@ try {
 console.log("FILA ORIGINAL:", row);
  
 console.log("EXTRAFIELDS:", extraFields);
- 
+ console.log("TOKEN:", token);
 console.log("PAYLOAD:", payload);
 const res = await axios.post(
 `${API}/paquetes`,

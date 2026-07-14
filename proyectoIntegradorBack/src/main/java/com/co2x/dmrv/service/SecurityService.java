@@ -135,10 +135,17 @@ public class SecurityService {
     }
 
     public void validarUsuarioSolicitado(String usuario) {
-        if (esAdmin()) return;
+        if (esAdmin()) {
+            System.out.println("ES ADMIN");
+            return;
+        }
         String actual = getCurrentUserEmail();
+        System.out.println("USUARIO URL: " + usuario);
+        System.out.println("USUARIO TOKEN: " + actual);
         if (usuario == null || !actual.equalsIgnoreCase(usuario)) {
-            throw new AccessDeniedException("No puede consultar información de otro usuario");
+            throw new AccessDeniedException(
+                    "No puede consultar información de otro usuario"
+            );
         }
     }
 

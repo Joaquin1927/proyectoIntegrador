@@ -6,7 +6,12 @@ import axios from "axios";
 
 export default function Header() {
   const API = import.meta.env.VITE_API_URL;
-  const { user, logout: logoutContext, notificaciones, reloadNotificaciones } = useApp();
+  const {
+    user,
+    logout: logoutContext,
+    notificaciones,
+    reloadNotificaciones,
+  } = useApp();
 
   const { instance } = useMsal();
   const navigate = useNavigate();
@@ -20,59 +25,51 @@ export default function Header() {
   useEffect(() => {
     const nuevas = notificaciones.filter((n) => !n.leido);
     setDropdownNotifs(nuevas);
+
     setNoLeidas(nuevas.length);
   }, [notificaciones]);
 
-useEffect(() => {
+  useEffect(() => {
+    if (!user?.email) return;
 
-  if (!user?.email) return;
-
-  reloadNotificaciones();
-
-  const interval = setInterval(() => {
     reloadNotificaciones();
-  }, 5000);
 
-  return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      reloadNotificaciones();
+    }, 5000);
 
-}, [user]);
+    return () => clearInterval(interval);
+  }, [user]);
 
   // cerrar al hacer click afuera
   useEffect(() => {
-  function handleClickOutside(event) {
-    if (!open) return; // 👈 si no está abierto, no cierres nada
+    function handleClickOutside(event) {
+      if (!open) return; // 👈 si no está abierto, no cierres nada
 
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      cerrarDropdown();
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        cerrarDropdown();
+      }
     }
-  }
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, [open]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
+  const cerrarDropdown = async () => {
+    console.log("CERRANDO DROPDOWN");
 
-  
-const cerrarDropdown = async () => {
+    setOpen(false);
 
-  console.log("CERRANDO DROPDOWN");
+    if (user?.email) {
+      console.log("MARCANDO LEIDAS");
 
-  setOpen(false);
+      await axios.post(`${API}/notificaciones/leer/${user.email}`);
 
-  if (user?.email) {
+      await reloadNotificaciones();
+    }
 
-    console.log("MARCANDO LEIDAS");
-
-    await axios.post(
-      `${API}/notificaciones/leer/${user.email}`
-    );
-
-    await reloadNotificaciones();
-  }
-
-  setDropdownNotifs([]);
-};
-
+    setDropdownNotifs([]);
+  };
 
   const toggleDropdown = async () => {
     if (!open) {
@@ -100,12 +97,17 @@ const cerrarDropdown = async () => {
 
       <div className="top-actions">
         {user && (
-          
-          <div ref={dropdownRef} style={{ position: "relative", display: "inline-block" }}>
-            <button className="ghost" onClick={(e) => {
-             e.stopPropagation(); // 👈 evita que el click se considere afuera
-             toggleDropdown();
-              }}>
+          <div
+            ref={dropdownRef}
+            style={{ position: "relative", display: "inline-block" }}
+          >
+            <button
+              className="ghost"
+              onClick={(e) => {
+                e.stopPropagation(); // 👈 evita que el click se considere afuera
+                toggleDropdown();
+              }}
+            >
               🔔
               {noLeidas > 0 && <span className="badge">{noLeidas}</span>}
             </button>
@@ -135,7 +137,14 @@ const cerrarDropdown = async () => {
                       <small>{new Date(n.fecha).toLocaleString()}</small>
                       <button
                         onClick={() => {
-                          navigate(`/paquete/${n.paqueteId}`);
+                          console.log("ROL:", user.role);
+                          if (user.role?.toLowerCase() === "auditor") {
+                            console.log("VOY A AUDITORIA");
+                            navigate(`/auditar/${n.paqueteId}`);
+                          } else {
+                            console.log("VOY A DETALLE");
+                            navigate(`/paquete/${n.paqueteId}`);
+                          }
                           cerrarDropdown();
                         }}
                       >
@@ -154,7 +163,6 @@ const cerrarDropdown = async () => {
             )}
           </div>
         )}
-
 
         <div className="user-pill">{user ? user.email : "Invitado"}</div>
 

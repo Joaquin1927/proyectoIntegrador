@@ -98,8 +98,10 @@ public class PaqueteController {
 
     @PostMapping
     @PreAuthorize("hasRole('EMPLEADO')")
-    public ResponseEntity<PaqueteCO2DTO> crear(@Valid @RequestBody PaqueteCO2DTO dto)
+    public ResponseEntity<PaqueteCO2DTO> crear(
+            @Valid @RequestBody PaqueteCO2DTO dto)
             throws JsonProcessingException {
+        System.out.println("ENTRO AL CONTROLLER");
         return ResponseEntity.ok(paqueteService.crear(dto));
     }
 
