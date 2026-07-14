@@ -577,11 +577,9 @@ public class PaqueteCO2Service  implements PaqueteSubject {
         String usuario =
                 securityService.getCurrentUserEmail();
 
-
         securityService.validarPropietario(
                 paquete.getCreatedBy()
         );
-
 
         if (
                 paquete.getEstado()
@@ -592,46 +590,95 @@ public class PaqueteCO2Service  implements PaqueteSubject {
             );
         }
 
-        ObjectMapper mapper =
-                new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
 
         try {
 
+            String metadataAnterior =
+                    paquete.getMetadata();
+
+            Map<String, Object> metadataVieja =
+                    mapper.readValue(
+                            metadataAnterior,
+                            new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                            }
+                    );
+
+            Map<String, Object> metadataNueva =
+                    dto.getMetadata();
+
+            List<Map<String, Object>> cambios =
+                    new ArrayList<>();
+
+            for (String key : metadataNueva.keySet()) {
+
+                Object valorAnterior =
+                        metadataVieja.get(key);
+
+                Object valorNuevo =
+                        metadataNueva.get(key);
+
+                if (!java.util.Objects.equals(
+                        valorAnterior,
+                        valorNuevo
+                )) {
+
+                    Map<String, Object> cambio =
+                            new HashMap<>();
+
+                    cambio.put(
+                            "campo",
+                            key
+                    );
+
+                    cambio.put(
+                            "antes",
+                            valorAnterior
+                    );
+
+                    cambio.put(
+                            "despues",
+                            valorNuevo
+                    );
+
+                    cambios.add(cambio);
+                }
+            }
+
             paquete.setMetadata(
                     mapper.writeValueAsString(
-                            dto.getMetadata()
+                            metadataNueva
                     )
+            );
+
+            paquete.setEstado(
+                    EstadoPaquete.EN_REVISION_CORREGIDO
+            );
+
+            paqueteRepo.save(paquete);
+
+            historialService.registrarHistorial(
+                    paquete,
+                    usuario,
+                    EstadoPaquete.EN_REVISION_CORREGIDO,
+                    cambios
+            );
+
+            auditoriaService.notificarCambio(
+                    paquete
+            );
+
+            return factory.toPaqueteDTO(
+                    paquete
             );
 
         } catch (Exception e) {
 
             throw new RuntimeException(
-                    "Error procesando metadata"
+                    "Error procesando metadata",
+                    e
             );
         }
-
-        paquete.setEstado(
-                EstadoPaquete.EN_REVISION_CORREGIDO
-        );
-
-        paqueteRepo.save(paquete);
-
-        historialService.registrarHistorial(
-                paquete,
-                usuario,
-                EstadoPaquete.EN_REVISION_CORREGIDO,
-                List.of(
-                        Map.of(
-                                "tipo",
-                                "CORRECCION"
-                        )
-                )
-        );
-        auditoriaService.notificarCambio(paquete);
-
-        return factory.toPaqueteDTO(
-                paquete
-        );
     }
 
 
