@@ -14,6 +14,7 @@ import PaqueteDetalle from "./pages/PaqueteDetalle";
 import EditarPaquete from "./pages/EditarPaquete";
 import Aprobados from "./pages/Aprobados";
 import Ayuda from "./pages/Ayuda";
+import CrearPlanta from "./pages/CrearPlanta";
 
 import "./styles.css";
 
@@ -138,6 +139,8 @@ useEffect(() => {
                 : <Navigate to="/" />
             }
           />
+
+          <Route path="/plantas/crear" element={<CrearPlanta />} />
 
         <Route
           path="ayuda"

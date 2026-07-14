@@ -48,9 +48,14 @@ export default function Sidebar() {
 
             {/* ✅ SOLO ADMIN */}
             {user.role === "admin" && (
-              <Link to="/aprobados" className="nav-item">
-                ⛓️ Mintear Tokens
-              </Link>
+              <>
+                <Link to="/aprobados" className="nav-item">
+                  ⛓️ Mintear Tokens
+                </Link>
+                <Link to="/plantas/crear" className="nav-item">
+                  🏭 Registrar Planta
+                </Link>
+              </>
             )}
 
             <div className="nav-sep" />

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
 public class Factory {
 
@@ -69,19 +71,6 @@ public class Factory {
 
 
 
-    public Planta toPlantaEntity(PlantaDTO dto) {
-
-        Planta p = new Planta();
-
-        p.setNombre(dto.nombre);
-        p.setDireccion(dto.direccion);
-        p.setLatitud(dto.latitud);
-        p.setLongitud(dto.longitud);
-
-        return p;
-    }
-
-
     private NotificacionDTO toDTO(Notificacion n) {
 
         NotificacionDTO dto = new NotificacionDTO();
@@ -96,18 +85,6 @@ public class Factory {
     }
 
 
-    public PlantaDTO toPlantaDTO(Planta entity) {
-
-        PlantaDTO dto = new PlantaDTO();
-
-        dto.id = entity.getId();
-        dto.nombre = entity.getNombre();
-        dto.direccion = entity.getDireccion();
-        dto.latitud = entity.getLatitud();
-        dto.longitud = entity.getLongitud();
-        
-        return dto;
-    }
 
     public HistorialPaqueteDTO toHistorialDTO(HistorialPaquete h) {
         HistorialPaqueteDTO dto = new HistorialPaqueteDTO();
@@ -128,6 +105,61 @@ public class Factory {
 
         return dto;
     }
+
+
+    public Planta toPlantaEntity(PlantaDTO dto) {
+        Planta p = new Planta();
+        p.setId(dto.getId());
+        p.setNombre(dto.getNombre());
+        p.setEmpresa(dto.getEmpresa());
+        p.setDireccion(dto.getDireccion());
+        p.setLatitud(dto.getLatitud());
+        p.setLongitud(dto.getLongitud());
+        p.setManagerEmail(dto.getManagerEmail());
+        p.setMetadata(dto.getMetadata());
+        p.setPdfTecnico(dto.getPdfTecnico());
+
+        if (dto.getPozos() != null) {
+            p.setPozos(
+                    dto.getPozos().stream().map(pozoDTO -> {
+                        Pozo pozo = new Pozo();
+                        pozo.setNombre(pozoDTO.getNombre());
+                        pozo.setPlanta(p);
+                        return pozo;
+                    }).collect(Collectors.toList())
+            );
+        }
+
+        return p;
+    }
+
+    public PlantaDTO toPlantaDTO(Planta entity) {
+        PlantaDTO dto = new PlantaDTO();
+        dto.setId(entity.getId());
+        dto.setNombre(entity.getNombre());
+        dto.setEmpresa(entity.getEmpresa());
+        dto.setDireccion(entity.getDireccion());
+        dto.setLatitud(entity.getLatitud());
+        dto.setLongitud(entity.getLongitud());
+        dto.setManagerEmail(entity.getManagerEmail());
+        dto.setMetadata(entity.getMetadata());
+        dto.setPdfTecnico(entity.getPdfTecnico());
+
+        if (entity.getPozos() != null) {
+            dto.setPozos(
+                    entity.getPozos().stream().map(pozo -> {
+                        PozoDTO pozoDTO = new PozoDTO();
+                        pozoDTO.setId(pozo.getId());
+                        pozoDTO.setNombre(pozo.getNombre());
+                        return pozoDTO;
+                    }).collect(Collectors.toList())
+            );
+        }
+
+        return dto;
+    }
+
+
 
 
 

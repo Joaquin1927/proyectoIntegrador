@@ -19,10 +19,8 @@ public class PlantaService {
     private Factory factory;
 
     public PlantaDTO crear(PlantaDTO dto) {
-
         Planta entity = factory.toPlantaEntity(dto);
         Planta guardada = plantaRepo.save(entity);
-
         return factory.toPlantaDTO(guardada);
     }
 
