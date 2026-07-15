@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 import { AppContext } from "./AppContext";
 
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+ 
+const token = localStorage.getItem("token");
+ 
+console.log("REQUEST:", config.url);
+console.log("TOKEN ENVIADO:", !!token);
+ 
+if (token) {
+config.headers.Authorization =
+`Bearer ${token}`;
+}
+ 
+return config;
 });
 import { apiGet } from "../api/apiClient";
 
@@ -23,8 +32,6 @@ export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
   const [backendActivo, setBackendActivo] = useState(true);
   const [notificaciones, setNotificaciones] = useState([]);
-
-
 
   // Restaurar usuario
   useEffect(() => {
@@ -62,43 +69,33 @@ export function AppProvider({ children }) {
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
-const cargarPlantas = async () => {
-try {
- 
-const response =
-await instance.acquireTokenSilent({
-scopes: [
-"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
-],
-account: accounts[0],
-});
- 
-const token = response.accessToken;
- 
-const res = await axios.get(
-`${API}/plantas`,
-{
-headers: {
-Authorization: `Bearer ${token}`,
-},
-}
-);
- 
-console.log("TOKEN USER:", response.account?.username);
-console.log("PLANTAS:", res.data);
- 
-setPlantas(res.data);
- 
-} catch (err) {
- 
-console.error(err);
- 
-}
-};
+  const cargarPlantas = async () => {
+    try {
+      const response = await instance.acquireTokenSilent({
+        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+        account: accounts[0],
+      });
+      const token = response.accessToken;
+      const res = await axios.get(`${API}/plantas`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("TOKEN USER:", response.account?.username);
+      console.log("PLANTAS:", res.data);
+      setPlantas(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const reloadNotificaciones = async () => {
     if (!user?.email) return;
 
     try {
+      console.log(
+"TOKEN LS:",
+localStorage.getItem("token")
+);
       const res = await axios.get(
         `${API}/notificaciones/noleidas/${user.email}`,
       );

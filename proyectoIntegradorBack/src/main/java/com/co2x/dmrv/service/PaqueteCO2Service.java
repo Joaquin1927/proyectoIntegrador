@@ -89,9 +89,17 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
 
     public List<PaqueteCO2DTO> listar() {
-        return paqueteRepo.findAll()
-                .stream()
-                .map(factory::toPaqueteDTO)
+        List<PaqueteCO2> paquetes =
+                paqueteRepo.findAll();
+        System.out.println("PAQUETES: " + paquetes.size());
+        return paquetes.stream()
+                .map(p -> {
+                    System.out.println(
+                            "MAPEANDO PAQUETE: "
+                                    + p.getId()
+                    );
+                    return factory.toPaqueteDTO(p);
+                })
                 .toList();
     }
     public List<PaqueteCO2DTO> listarPendientes() {
