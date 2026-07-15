@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -31,12 +32,19 @@ public class HistorialController {
     private SecurityService securityService;
 
     @GetMapping("/{id}/getHistorial")
-    public ResponseEntity<List<HistorialPaqueteDTO>> historial(@PathVariable Integer id) {
+    public ResponseEntity<List<HistorialPaqueteDTO>> historial(@PathVariable Integer id) throws AccessDeniedException {
 
         PaqueteCO2 paquete = paqueteRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
 
-        securityService.validarPropietarioOPrivilegiado(paquete.getCreatedBy());
+        // 🔥 Permitir acceso a cualquier auditor del frontend
+        String emailActual = securityService.getCurrentUserEmail();
+        if (!securityService.esAdmin() && !securityService.esAuditor()) {
+            // Si no es admin ni auditor, debe ser propietario
+            if (!emailActual.equalsIgnoreCase(paquete.getCreatedBy())) {
+                throw new AccessDeniedException("Acceso denegado");
+            }
+        }
 
         var historial = historialRepo.findByPaqueteOrderByFechaDesc(paquete)
                 .stream()

@@ -2,20 +2,69 @@ import { useEffect, useMemo, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import DashboardImp from "../web3dashboard/dashboardImp";
+import { useMsal } from "@azure/msal-react";
+
+
+const API = import.meta.env.VITE_API_URL;
+
 function getEmail(value) {
   if (!value) return "";
   if (typeof value === "string") return value.toLowerCase();
   return (value.email || value.username || value.mail || "").toLowerCase();
 }
 
+async function obtenerFechaAprobacion(paqueteId, API, accessToken) {
+  const res = await fetch(`${API}/historial/${paqueteId}/getHistorial`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) return null;
+
+  const historial = await res.json();
+
+  const aprobado = historial.find(
+    (h) => (h.estado || "").toUpperCase() === "APROBADO"
+  );
+
+  return aprobado ? new Date(aprobado.fecha) : null;
+}
+
+async function obtenerAprobadosPorMes(paquetesAprobados, API, accessToken) {
+  const fechas = [];
+
+  for (const p of paquetesAprobados) {
+    const fecha = await obtenerFechaAprobacion(p.id, API, accessToken);
+    if (fecha) fechas.push(fecha);
+  }
+
+  const ahora = new Date();
+  const mesActual = ahora.getMonth();
+  const mesPasado = mesActual === 0 ? 11 : mesActual - 1;
+  const añoActual = ahora.getFullYear();
+  const añoMesPasado = mesActual === 0 ? añoActual - 1 : añoActual;
+
+  const aprobadosMesActual = fechas.filter(
+    (f) => f.getMonth() === mesActual && f.getFullYear() === añoActual
+  ).length;
+
+  const aprobadosMesPasado = fechas.filter(
+    (f) => f.getMonth() === mesPasado && f.getFullYear() === añoMesPasado
+  ).length;
+
+  return { aprobadosMesActual, aprobadosMesPasado };
+}
+
 export default function Dashboard() {
   const { paquetes, user, cargarPaquetes } = useApp();
+  const { instance } = useMsal();
+
   const canvasRef = useRef(null);
+  const graficoRef = useRef(null);
 
   const isAuditor = user?.role === "auditor";
-  
-const isAdmin =
-  user?.role?.toUpperCase() === "ADMIN";
+  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
 
   useEffect(() => {
     cargarPaquetes();
@@ -35,10 +84,25 @@ const isAdmin =
     );
   }, [isAuditor, paquetes, user]);
 
-  const aprobados = paquetesUsuario.filter((p) => p.estado === "APROBADO");
-  const pendientes = paquetesUsuario.filter((p) => p.estado === "PENDIENTE");
-  const enRevision = paquetesUsuario.filter((p) => p.estado === "EN_REVISION");
-  const rechazados = paquetesUsuario.filter((p) => p.estado === "RECHAZADO");
+  const pendientesGlobal = paquetes.filter(
+    (p) => (p.estado || "").toUpperCase() === "PENDIENTE"
+  );
+
+  const aprobados = paquetesUsuario.filter(
+    (p) => (p.estado || "").toUpperCase() === "APROBADO"
+  );
+
+  const enRevision = paquetesUsuario.filter(
+    (p) => (p.estado || "").toUpperCase() === "EN_REVISION"
+  );
+
+  const enRevisionCorregido = paquetesUsuario.filter(
+    (p) => (p.estado || "").toUpperCase() === "EN_REVISION_CORREGIDO"
+  );
+
+  const rechazados = paquetesUsuario.filter(
+    (p) => (p.estado || "").toUpperCase() === "RECHAZADO"
+  );
 
   const toneladasRegistradas = paquetesUsuario.reduce(
     (acc, p) => acc + (p.tonCO2eq || 0),
@@ -50,6 +114,7 @@ const isAdmin =
     0
   );
 
+  // Gráfico de línea
   useEffect(() => {
     const c = canvasRef.current;
     if (!c) return;
@@ -88,6 +153,60 @@ const isAdmin =
     ctx.stroke();
   }, [paquetesUsuario]);
 
+  // Gráfico de barras
+  useEffect(() => {
+    if (!isAuditor) return;
+
+    async function cargarGrafico() {
+      const account = instance.getActiveAccount();
+      if (!account) return;
+
+      const response = await instance.acquireTokenSilent({
+        account,
+      });
+
+      const accessToken = response.accessToken;
+
+      const aprobados = paquetesUsuario.filter(
+        (p) => (p.estado || "").toUpperCase() === "APROBADO"
+      );
+
+      const { aprobadosMesActual, aprobadosMesPasado } =
+        await obtenerAprobadosPorMes(aprobados, API, accessToken);
+
+      const canvas = graficoRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      const W = (canvas.width = canvas.clientWidth);
+      const H = (canvas.height = 200);
+
+      ctx.clearRect(0, 0, W, H);
+
+      const datos = [aprobadosMesPasado, aprobadosMesActual];
+      const labels = ["Mes pasado", "Mes actual"];
+
+      const maxVal = Math.max(...datos, 1);
+      const barWidth = W / 4;
+
+      datos.forEach((val, i) => {
+        const x = (i + 1) * (W / 3) - barWidth / 2;
+        const y = H - (val / maxVal) * (H - 40);
+
+        ctx.fillStyle = "#2bd48d";
+        ctx.fillRect(x, y, barWidth, H - y);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "16px Arial";
+        ctx.fillText(labels[i], x, H - 10);
+
+        ctx.fillText(val, x + barWidth / 2 - 10, y - 10);
+      });
+    }
+
+    cargarGrafico();
+  }, [paquetesUsuario, isAuditor, instance]);
+
   if (!user) {
     return (
       <section className="panel">
@@ -125,10 +244,46 @@ const isAdmin =
       )}
 
       {isAuditor && (
-        <div className="panel sub">
-          <h2>Paquetes auditados</h2>
-          <TablePaquetes items={paquetesUsuario} />
-        </div>
+        <>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+              <div className="kpi-title">Pendientes (global)</div>
+              <div className="kpi-value">{pendientesGlobal.length}</div>
+            </div>
+
+            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+              <div className="kpi-title">Revisión corregida</div>
+              <div className="kpi-value">{enRevisionCorregido.length}</div>
+            </div>
+
+            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+              <div className="kpi-title">En revisión</div>
+              <div className="kpi-value">{enRevision.length}</div>
+            </div>
+
+            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+              <div className="kpi-title">Aprobados</div>
+              <div className="kpi-value">{aprobados.length}</div>
+            </div>
+
+            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+              <div className="kpi-title">Rechazados</div>
+              <div className="kpi-value">{rechazados.length}</div>
+            </div>
+          </div>
+
+          <canvas
+            ref={graficoRef}
+            style={{ width: "100%", height: "200px", marginTop: "30px" }}
+          ></canvas>
+        </>
       )}
 
       <canvas ref={canvasRef} style={{ width: "100%", height: "160px" }} />
