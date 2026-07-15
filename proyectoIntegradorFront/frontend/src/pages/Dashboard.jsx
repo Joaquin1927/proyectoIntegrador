@@ -4,7 +4,6 @@ import TablePaquetes from "../components/TablePaquetes";
 import DashboardImp from "../web3dashboard/dashboardImp";
 import { useMsal } from "@azure/msal-react";
 
-
 const API = import.meta.env.VITE_API_URL;
 
 function getEmail(value) {
@@ -24,11 +23,14 @@ async function obtenerFechaAprobacion(paqueteId, API, accessToken) {
 
   const historial = await res.json();
 
+  // ⬅️ CAMBIO CLAVE: usar "accion" en vez de "estado"
   const aprobado = historial.find(
-    (h) => (h.estado || "").toUpperCase() === "APROBADO"
+    (h) => (h.accion || "").toUpperCase() === "APROBADO"
   );
 
-  return aprobado ? new Date(aprobado.fecha) : null;
+  if (!aprobado || !aprobado.fecha) return null;
+
+  return new Date(aprobado.fecha);
 }
 
 async function obtenerAprobadosPorMes(paquetesAprobados, API, accessToken) {
@@ -174,6 +176,9 @@ export default function Dashboard() {
       const { aprobadosMesActual, aprobadosMesPasado } =
         await obtenerAprobadosPorMes(aprobados, API, accessToken);
 
+      console.log("MES ACTUAL:", aprobadosMesActual);
+      console.log("MES PASADO:", aprobadosMesPasado);
+
       const canvas = graficoRef.current;
       if (!canvas) return;
 
@@ -253,27 +258,42 @@ export default function Dashboard() {
               width: "100%",
             }}
           >
-            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+            <div
+              className="kpi"
+              style={{ fontSize: "22px", padding: "20px", flex: 1 }}
+            >
               <div className="kpi-title">Pendientes (global)</div>
               <div className="kpi-value">{pendientesGlobal.length}</div>
             </div>
 
-            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+            <div
+              className="kpi"
+              style={{ fontSize: "22px", padding: "20px", flex: 1 }}
+            >
               <div className="kpi-title">Revisión corregida</div>
               <div className="kpi-value">{enRevisionCorregido.length}</div>
             </div>
 
-            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+            <div
+              className="kpi"
+              style={{ fontSize: "22px", padding: "20px", flex: 1 }}
+            >
               <div className="kpi-title">En revisión</div>
               <div className="kpi-value">{enRevision.length}</div>
             </div>
 
-            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+            <div
+              className="kpi"
+              style={{ fontSize: "22px", padding: "20px", flex: 1 }}
+            >
               <div className="kpi-title">Aprobados</div>
               <div className="kpi-value">{aprobados.length}</div>
             </div>
 
-            <div className="kpi" style={{ fontSize: "22px", padding: "20px", flex: 1 }}>
+            <div
+              className="kpi"
+              style={{ fontSize: "22px", padding: "20px", flex: 1 }}
+            >
               <div className="kpi-title">Rechazados</div>
               <div className="kpi-value">{rechazados.length}</div>
             </div>
