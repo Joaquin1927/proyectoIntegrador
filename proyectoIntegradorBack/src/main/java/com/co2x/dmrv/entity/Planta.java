@@ -16,8 +16,9 @@ public class Planta {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false)
-    private String empresa;
+    @ManyToOne
+    @JoinColumn(name = "empresa_id", nullable = false)
+    private Empresa empresa;
 
     @Column(nullable = false)
     private String direccion;

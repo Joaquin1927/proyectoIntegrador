@@ -1,20 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { authFetch } from "../api/authFetch";
+import { useMsal } from "@azure/msal-react";
 
 export default function CrearPlanta() {
+  const API = import.meta.env.VITE_API_URL;
+  const { instance, accounts } = useMsal();
+
+useEffect(() => {
+const cargarEmpresas = async () => {
+try {
+const response = await instance.acquireTokenSilent({
+scopes: [
+"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
+],
+account: accounts[0],
+});
+ 
+const token = response.accessToken;
+ 
+const res = await axios.get(
+`${API}/empresas`,
+{
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+ 
+console.log("EMPRESAS:", res.data);
+ 
+setEmpresas(res.data);
+ 
+} catch (err) {
+console.error("Error cargando empresas", err);
+}
+};
+ 
+cargarEmpresas();
+ 
+}, [instance, accounts, API]);
   const [form, setForm] = useState({
     nombre: "",
-    empresa: "",
+    empresaId: "",
     direccion: "",
     managerEmail: "",
     metadata: "{}",
     pozos: [{ nombre: "" }],
   });
-
+  const [empresas, setEmpresas] = useState([]);
   const [pdf, setPdf] = useState(null);
   const [error, setError] = useState("");
-  const API = import.meta.env.VITE_API_URL;
+
   const updateField = (field, value) => {
     setForm({ ...form, [field]: value });
   };
@@ -36,38 +73,45 @@ export default function CrearPlanta() {
   };
   const handleJson = (e) => {
     const file = e.target.files?.[0];
-
     if (!file) return;
-
     const reader = new FileReader();
-
     reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target.result);
-
-        const { nombre, empresa, direccion, managerEmail, pozos, ...metadata } =
-          json;
-
-        setForm({
-          nombre: nombre || "",
-          empresa: empresa || "",
-          direccion: direccion || "",
-          managerEmail: managerEmail || "",
-          metadata: JSON.stringify(metadata, null, 2),
-          pozos: pozos?.length > 0 ? pozos : [{ nombre: "" }],
-        });
-
-        setError("");
-      } catch {
-        setError("El archivo JSON no es válido");
+      const json = JSON.parse(event.target.result);
+      const {
+        nombre,
+        empresa,
+        empresaId: jsonEmpresaId,
+        direccion,
+        managerEmail,
+        pozos,
+        ...metadata
+      } = json;
+      let empresaId = "";
+      if (jsonEmpresaId) {
+        empresaId = jsonEmpresaId;
+      } else if (empresa) {
+        const encontrada = empresas.find(
+          (emp) => emp.nombre.toLowerCase() === empresa.toLowerCase(),
+        );
+        if (encontrada) {
+          empresaId = encontrada.id;
+        }
       }
+      setForm({
+        nombre: nombre || "",
+        empresaId,
+        direccion: direccion || "",
+        managerEmail: managerEmail || "",
+        metadata: JSON.stringify(metadata, null, 2),
+        pozos: pozos?.length ? pozos : [{ nombre: "" }],
+      });
+      setError("");
     };
-
     reader.readAsText(file);
   };
   const validar = () => {
     if (!form.nombre.trim()) return "El nombre de la planta es obligatorio";
-    if (!form.empresa.trim()) return "El nombre de la empresa es obligatorio";
+    if (!form.empresaId) return "Debe seleccionar una empresa";
     if (!form.direccion.trim()) return "La dirección es obligatoria";
     if (!form.managerEmail.trim()) return "El email del manager es obligatorio";
 
@@ -93,10 +137,24 @@ export default function CrearPlanta() {
       return;
     }
     try {
+      console.log("FORM:", form);
+      const payload = {
+        nombre: form.nombre,
+        empresa: {
+          id: parseInt(form.empresaId),
+        },
+        direccion: form.direccion,
+        managerEmail: form.managerEmail,
+        metadata: form.metadata,
+        pozos: form.pozos,
+      };
+      console.log("PAYLOAD:", payload);
       const fd = new FormData();
       fd.append(
         "data",
-        new Blob([JSON.stringify(form)], { type: "application/json" }),
+        new Blob([JSON.stringify(payload)], {
+          type: "application/json",
+        }),
       );
       fd.append("pdf", pdf);
       const res = await authFetch(`${API}/plantas`, {
@@ -153,10 +211,20 @@ export default function CrearPlanta() {
 
           <div className="field">
             <label>Empresa</label>
-            <input
-              value={form.empresa}
-              onChange={(e) => updateField("empresa", e.target.value)}
-            />
+            <select
+              value={form.empresaId || ""}
+              onChange={(e) => updateField("empresaId", e.target.value)}
+            >
+              <option value="" disabled>
+                Seleccionar empresa
+              </option>
+               
+              {empresas.map((empresa) => (
+                <option key={empresa.id} value={empresa.id}>
+                  {empresa.nombre}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="field">

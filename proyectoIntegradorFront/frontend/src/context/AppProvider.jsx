@@ -9,7 +9,6 @@ axios.interceptors.request.use((config) => {
 });
 import { apiGet } from "../api/apiClient";
 
-
 const DB_KEY = "co2x_db_v1";
 
 function savePaquetes(paquetes) {
@@ -25,14 +24,7 @@ export function AppProvider({ children }) {
   const [backendActivo, setBackendActivo] = useState(true);
   const [notificaciones, setNotificaciones] = useState([]);
 
-  // Cargar plantas
-  useEffect(() => {
-    if (!user?.email) return;
-    axios
-      .get(`${API}/plantas`)
-      .then((res) => setPlantas(res.data))
-      .catch((err) => console.error("Error cargando plantas", err));
-  }, [API, user?.email]);
+
 
   // Restaurar usuario
   useEffect(() => {
@@ -70,12 +62,46 @@ export function AppProvider({ children }) {
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
-
+const cargarPlantas = async () => {
+try {
+ 
+const response =
+await instance.acquireTokenSilent({
+scopes: [
+"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
+],
+account: accounts[0],
+});
+ 
+const token = response.accessToken;
+ 
+const res = await axios.get(
+`${API}/plantas`,
+{
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+ 
+console.log("TOKEN USER:", response.account?.username);
+console.log("PLANTAS:", res.data);
+ 
+setPlantas(res.data);
+ 
+} catch (err) {
+ 
+console.error(err);
+ 
+}
+};
   const reloadNotificaciones = async () => {
     if (!user?.email) return;
 
     try {
-      const res = await axios.get(`${API}/notificaciones/noleidas/${user.email}`);
+      const res = await axios.get(
+        `${API}/notificaciones/noleidas/${user.email}`,
+      );
       console.log("NOTIFICACIONES:", res.data);
       setNotificaciones(res.data);
     } catch (err) {
@@ -87,35 +113,23 @@ export function AppProvider({ children }) {
     reloadNotificaciones();
   }, [user]);
 
-  
-useEffect(() => {
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        await apiGet(`${API}/test/health`, false);
 
-  const checkBackend = async () => {
-    try {
-      await apiGet(
-        `${API}/test/health`,
-        false
-      );
+        setBackendActivo(true);
+      } catch {
+        setBackendActivo(false);
+      }
+    };
 
-      setBackendActivo(true);
+    checkBackend();
 
-    } catch {
+    const interval = setInterval(checkBackend, 5000);
 
-      setBackendActivo(false);
-    }
-  };
-
-  checkBackend();
-
-  const interval = setInterval(
-    checkBackend,
-    5000
-  );
-
-  return () => clearInterval(interval);
-
-}, []);
-
+    return () => clearInterval(interval);
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -143,7 +157,7 @@ useEffect(() => {
         cargarPaquetes,
         backendActivo,
         notificaciones,
-        reloadNotificaciones,   // 👈 CLAVE
+        reloadNotificaciones, // 👈 CLAVE
       }}
     >
       {children}

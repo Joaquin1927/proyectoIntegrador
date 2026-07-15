@@ -90,6 +90,44 @@ public class SecurityService {
         }
     }
 
+    public void validarAdmin() {
+        Authentication auth =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+        if (auth == null) {
+            throw new AccessDeniedException(
+                    "Usuario no autenticado"
+            );
+        }
+        if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
+            throw new AccessDeniedException(
+                    "Usuario no autenticado"
+            );
+        }
+        Jwt jwt = jwtAuth.getToken();
+        List<String> roles =
+                jwt.getClaimAsStringList(
+                        "roles"
+                );
+
+        if (
+                roles == null
+                        ||
+                        roles.stream()
+                                .noneMatch(
+                                        r -> r.equalsIgnoreCase(
+                                                "ADMIN"
+                                        )
+                                )
+        ) {
+
+            throw new AccessDeniedException(
+                    "Acceso solo para administradores"
+            );
+        }
+    }
+
     public boolean esAuditor() {
 
         Authentication auth =
@@ -119,7 +157,32 @@ public class SecurityService {
     }
 
     public boolean esAdmin() {
-        return tieneRol("ADMIN");
+
+        Authentication auth =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
+            return false;
+        }
+
+        Jwt jwt = jwtAuth.getToken();
+
+        List<String> roles =
+                jwt.getClaimAsStringList(
+                        "roles"
+                );
+
+        return roles != null
+                &&
+                roles.stream()
+                        .anyMatch(
+                                r ->
+                                        r.equalsIgnoreCase(
+                                                "ADMIN"
+                                        )
+                        );
     }
 
     private boolean tieneRol(String rol) {

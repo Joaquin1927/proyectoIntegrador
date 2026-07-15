@@ -10,7 +10,7 @@ public class PlantaDTO {
 
     public String nombre;
 
-    public String empresa;
+    public EmpresaDTO empresa;
 
     public String direccion;
 

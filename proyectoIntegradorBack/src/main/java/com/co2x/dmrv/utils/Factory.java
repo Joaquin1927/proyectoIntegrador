@@ -111,12 +111,10 @@ public class Factory {
         Planta p = new Planta();
         p.setId(dto.getId());
         p.setNombre(dto.getNombre());
-        p.setEmpresa(dto.getEmpresa());
         p.setDireccion(dto.getDireccion());
         p.setManagerEmail(dto.getManagerEmail());
         p.setMetadata(dto.getMetadata());
         p.setPdfTecnico(dto.getPdfTecnico());
-
         if (dto.getPozos() != null) {
             p.setPozos(
                     dto.getPozos().stream().map(pozoDTO -> {
@@ -127,7 +125,6 @@ public class Factory {
                     }).collect(Collectors.toList())
             );
         }
-
         return p;
     }
 
@@ -135,7 +132,17 @@ public class Factory {
         PlantaDTO dto = new PlantaDTO();
         dto.setId(entity.getId());
         dto.setNombre(entity.getNombre());
-        dto.setEmpresa(entity.getEmpresa());
+        if (entity.getEmpresa() != null) {
+            EmpresaDTO empresaDTO = new EmpresaDTO();
+            empresaDTO.setId(
+                    entity.getEmpresa().getId()
+            );
+            empresaDTO.setNombre(
+                    entity.getEmpresa().getNombre()
+            );
+            dto.setEmpresa(empresaDTO);
+        }
+
         dto.setDireccion(entity.getDireccion());
         dto.setManagerEmail(entity.getManagerEmail());
         dto.setMetadata(entity.getMetadata());
