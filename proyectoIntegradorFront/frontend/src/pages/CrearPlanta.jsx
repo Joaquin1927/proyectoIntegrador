@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "../api/axios";
+import { authFetch } from "../api/authFetch";
 
 export default function CrearPlanta() {
   const [form, setForm] = useState({
@@ -7,15 +8,13 @@ export default function CrearPlanta() {
     empresa: "",
     direccion: "",
     managerEmail: "",
-    latitud: "",
-    longitud: "",
     metadata: "{}",
     pozos: [{ nombre: "" }],
   });
 
   const [pdf, setPdf] = useState(null);
   const [error, setError] = useState("");
-
+  const API = import.meta.env.VITE_API_URL;
   const updateField = (field, value) => {
     setForm({ ...form, [field]: value });
   };
@@ -35,7 +34,37 @@ export default function CrearPlanta() {
     updated.splice(index, 1);
     setForm({ ...form, pozos: updated });
   };
+  const handleJson = (e) => {
+    const file = e.target.files?.[0];
 
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target.result);
+
+        const { nombre, empresa, direccion, managerEmail, pozos, ...metadata } =
+          json;
+
+        setForm({
+          nombre: nombre || "",
+          empresa: empresa || "",
+          direccion: direccion || "",
+          managerEmail: managerEmail || "",
+          metadata: JSON.stringify(metadata, null, 2),
+          pozos: pozos?.length > 0 ? pozos : [{ nombre: "" }],
+        });
+
+        setError("");
+      } catch {
+        setError("El archivo JSON no es válido");
+      }
+    };
+
+    reader.readAsText(file);
+  };
   const validar = () => {
     if (!form.nombre.trim()) return "El nombre de la planta es obligatorio";
     if (!form.empresa.trim()) return "El nombre de la empresa es obligatorio";
@@ -63,7 +92,6 @@ export default function CrearPlanta() {
       setError(err);
       return;
     }
-
     try {
       const fd = new FormData();
       fd.append(
@@ -71,29 +99,27 @@ export default function CrearPlanta() {
         new Blob([JSON.stringify(form)], { type: "application/json" }),
       );
       fd.append("pdf", pdf);
-
-      await axios.post("http://localhost:8080/plantas", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const res = await authFetch(`${API}/plantas`, {
+        method: "POST",
+        body: fd,
       });
 
+      console.log("STATUS:", res.status);
+
+      const text = await res.text();
+      console.log("STATUS:", res.status);
+      console.log("RESPONSE:", text);
+      if (!res.ok) {
+        let message = "Error al registrar la planta";
+        try {
+          message = JSON.parse(text).message;
+        } catch {}
+        throw new Error(message);
+      }
       alert("Planta registrada correctamente");
-
-      setForm({
-        nombre: "",
-        empresa: "",
-        direccion: "",
-        managerEmail: "",
-        latitud: "",
-        longitud: "",
-        metadata: "{}",
-        pozos: [{ nombre: "" }],
-      });
-
-      setPdf(null);
-      setError("");
     } catch (e) {
       console.error(e);
-      setError("Error al registrar la planta");
+      setError(e.message || "Error al registrar la planta");
     }
   };
 
@@ -148,26 +174,8 @@ export default function CrearPlanta() {
               onChange={(e) => updateField("managerEmail", e.target.value)}
             />
           </div>
-
-          <div className="field">
-            <label>Latitud (opcional)</label>
-            <input
-              value={form.latitud}
-              onChange={(e) => updateField("latitud", e.target.value)}
-            />
-          </div>
-
-          <div className="field">
-            <label>Longitud (opcional)</label>
-            <input
-              value={form.longitud}
-              onChange={(e) => updateField("longitud", e.target.value)}
-            />
-          </div>
         </div>
-
         <h3>Pozos</h3>
-
         {form.pozos.map((pozo, i) => (
           <div className="field" key={i}>
             <label>Pozo {i + 1}</label>
@@ -192,11 +200,13 @@ export default function CrearPlanta() {
             </div>
           </div>
         ))}
-
         <button className="ghost small" onClick={addPozo}>
           ➕ Agregar Pozo
         </button>
-
+        <h3>JSON de Planta</h3> 
+        <div className="field">
+          <input type="file" accept=".json" onChange={handleJson} />
+        </div>
         <h3>PDF Técnico (obligatorio)</h3>
         <div className="field">
           <input
@@ -206,17 +216,6 @@ export default function CrearPlanta() {
           />
           <span className="hint">Debe ser un archivo PDF válido</span>
         </div>
-
-        <h3>Metadata JSON</h3>
-        <div className="field">
-          <textarea
-            rows={6}
-            value={form.metadata}
-            onChange={(e) => updateField("metadata", e.target.value)}
-          />
-          <span className="hint">Debe ser JSON válido</span>
-        </div>
-
         <div className="actions">
           <button className="primary" onClick={submit}>
             Registrar Planta

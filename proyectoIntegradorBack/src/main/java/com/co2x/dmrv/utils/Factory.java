@@ -113,8 +113,6 @@ public class Factory {
         p.setNombre(dto.getNombre());
         p.setEmpresa(dto.getEmpresa());
         p.setDireccion(dto.getDireccion());
-        p.setLatitud(dto.getLatitud());
-        p.setLongitud(dto.getLongitud());
         p.setManagerEmail(dto.getManagerEmail());
         p.setMetadata(dto.getMetadata());
         p.setPdfTecnico(dto.getPdfTecnico());
@@ -139,8 +137,6 @@ public class Factory {
         dto.setNombre(entity.getNombre());
         dto.setEmpresa(entity.getEmpresa());
         dto.setDireccion(entity.getDireccion());
-        dto.setLatitud(entity.getLatitud());
-        dto.setLongitud(entity.getLongitud());
         dto.setManagerEmail(entity.getManagerEmail());
         dto.setMetadata(entity.getMetadata());
         dto.setPdfTecnico(entity.getPdfTecnico());

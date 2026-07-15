@@ -22,21 +22,19 @@ public class Planta {
     @Column(nullable = false)
     private String direccion;
 
-    private Double latitud;
-    private Double longitud;
-
     @Column(nullable = false)
     private String managerEmail;
 
-    // ✔ Atributos flexibles en JSON
     @Column(columnDefinition = "json")
     private String metadata;
 
-    // ✔ Relación con pozos
-    @OneToMany(mappedBy = "planta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "planta",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<Pozo> pozos;
 
     @Column(name = "pdf_tecnico")
-    private String pdfTecnico; // ruta del archivo
-
+    private String pdfTecnico;
 }

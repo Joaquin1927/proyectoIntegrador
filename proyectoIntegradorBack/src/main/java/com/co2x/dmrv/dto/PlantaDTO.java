@@ -7,17 +7,18 @@ import java.util.List;
 public class PlantaDTO {
 
     public Integer id;
+
     public String nombre;
+
     public String empresa;
+
     public String direccion;
-    public Double latitud;
-    public Double longitud;
+
     public String managerEmail;
 
-    public String metadata; // JSON string
+    public String metadata;
 
     public List<PozoDTO> pozos;
 
     public String pdfTecnico;
-
 }

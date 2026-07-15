@@ -19,8 +19,33 @@ public class PlantaService {
     private Factory factory;
 
     public PlantaDTO crear(PlantaDTO dto) {
+        System.out.println("=== ENTRE A PLANTA SERVICE ===");
+        System.out.println(dto);
+
+        if (dto.getNombre() == null || dto.getNombre().isBlank()) {
+            throw new RuntimeException("Nombre obligatorio");
+        }
+
+        if (dto.getEmpresa() == null || dto.getEmpresa().isBlank()) {
+            throw new RuntimeException("Empresa obligatoria");
+        }
+
+        if (dto.getDireccion() == null || dto.getDireccion().isBlank()) {
+            throw new RuntimeException("Dirección obligatoria");
+        }
+
+        if (dto.getManagerEmail() == null || dto.getManagerEmail().isBlank()) {
+            throw new RuntimeException("ManagerEmail obligatorio");
+        }
+
+        if (dto.getMetadata() == null) {
+            dto.setMetadata("{}");
+        }
+
         Planta entity = factory.toPlantaEntity(dto);
+
         Planta guardada = plantaRepo.save(entity);
+
         return factory.toPlantaDTO(guardada);
     }
 
@@ -32,8 +57,14 @@ public class PlantaService {
     }
 
     public Planta getEntity(Integer id) {
+
         System.out.println("BUSCANDO PLANTA: " + id);
+
         return plantaRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Planta no encontrada"));
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Planta no encontrada"
+                        )
+                );
     }
 }
