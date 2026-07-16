@@ -154,20 +154,59 @@ await axios.post(
   if (user.role.toLowerCase() !== "auditor") {
     return null;
   }
+const [error, setError] = useState(null);
+useEffect(() => {
+const cargarPaquete = async () => {
+try {
+const response = await instance.acquireTokenSilent({
+scopes: [
+"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
+],
+account: accounts[0],
+});
+ 
+const token = response.accessToken;
+ 
+const res = await axios.get(`${API}/paquetes/${id}`, {
+headers: {
+Authorization: `Bearer ${token}`,
+},
+});
+ 
+setPaquete(res.data);
+setError(null);
+} catch (err) {
+console.error("Error cargando paquete:", err);
+ 
+if (err.response?.status === 401) {
+setError("Tu sesión expiró. Volvé a iniciar sesión.");
+} else if (err.response?.status === 403) {
+setError(
+"No tenés permisos para acceder a este paquete. Se requiere perfil de auditor."
+);
+} else {
+setError(
+err.response?.data?.message ||
+"Ocurrió un error al cargar el paquete."
+);
+}
+}
+};if (accounts.length > 0) {
+cargarPaquete();
+}
+}, [id, accounts]);
 
-  useEffect(() => {
-    console.log("Buscando paquete ID:", id);
-
-    axios
-      .get(`${API}/paquetes/${id}`)
-      .then((res) => {
-        console.log("PAQUETE:", res.data);
-        setPaquete(res.data);
-      })
-      .catch((err) => {
-        console.error("Error cargando paquete", err);
-      });
-  }, [id]);
+if (error) {
+return (
+<div className="panel">
+<h3>Error</h3>
+<p>{error}</p>
+<button onClick={() => navigate("/dashboard")}>
+Volver
+</button>
+</div>
+);
+}
 
   if (!paquete) return <p>Cargando...</p>;
 
