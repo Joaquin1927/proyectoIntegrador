@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useApp } from "./context/AppContext";
 import Notificaciones from "./pages/Notificaciones";
@@ -24,8 +24,12 @@ export default function App() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  const authInitializationStarted = useRef(false);
 
 useEffect(() => {
+  if (authInitializationStarted.current) return;
+  authInitializationStarted.current = true;
+
   const init = async () => {
     try {
       await instance.initialize();

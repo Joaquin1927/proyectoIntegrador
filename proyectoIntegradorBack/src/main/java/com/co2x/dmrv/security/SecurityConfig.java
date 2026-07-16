@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auditoria/**").hasRole("AUDITOR")
                         .requestMatchers(HttpMethod.GET, "/paquetes/pendientes").hasRole("AUDITOR")
                         .requestMatchers(HttpMethod.POST, "/paquetes/*/mint").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/blockchain/transfer").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/paquetes/aprobados").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/paquetes").hasRole("EMPLEADO")
                         .anyRequest().authenticated()

@@ -1,5 +1,6 @@
 package com.co2x.dmrv.service;
 
+import com.co2x.dmrv.dto.TransferTokenResultDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,16 @@ import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
 
 import java.math.BigInteger;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 @Service
 public class BlockchainService {
+
+    private static final long CHAIN_ID = 80002L;
+    private static final int TOKEN_DECIMALS = 18;
+    private static final BigInteger GAS_PRICE = BigInteger.valueOf(30_000_000_000L);
 
     @Value("${blockchain.rpc.url}")
     private String rpcUrl;
@@ -103,6 +110,61 @@ public class BlockchainService {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error minting token", e);
+        }
+    }
+
+    public TransferTokenResultDTO transferToken(String destinationWallet, BigDecimal amount) {
+        if (!org.web3j.crypto.WalletUtils.isValidAddress(destinationWallet)) {
+            throw new IllegalArgumentException("La wallet de destino no es una dirección EVM válida");
+        }
+
+        BigInteger value;
+        try {
+            value = amount.movePointRight(TOKEN_DECIMALS)
+                    .setScale(0, RoundingMode.UNNECESSARY)
+                    .toBigIntegerExact();
+        } catch (ArithmeticException exception) {
+            throw new IllegalArgumentException("El monto admite como máximo 18 decimales", exception);
+        }
+
+        if (value.signum() <= 0) {
+            throw new IllegalArgumentException("El monto debe ser mayor a cero");
+        }
+
+        Web3j web3j = Web3j.build(new HttpService(rpcUrl));
+        try {
+            Credentials credentials = Credentials.create(privateKey);
+            RawTransactionManager txManager = new RawTransactionManager(web3j, credentials, CHAIN_ID);
+            Function function = new Function(
+                    "transfer",
+                    Arrays.asList(new Address(destinationWallet), new Uint256(value)),
+                    Arrays.asList()
+            );
+
+            EthSendTransaction transaction = txManager.sendTransaction(
+                    GAS_PRICE,
+                    BigInteger.valueOf(150_000),
+                    contractAddress,
+                    FunctionEncoder.encode(function),
+                    BigInteger.ZERO
+            );
+
+            if (transaction.hasError()) {
+                throw new RuntimeException("Blockchain rechazó la transferencia: " + transaction.getError().getMessage());
+            }
+            String hash = transaction.getTransactionHash();
+            if (hash == null || hash.isBlank()) {
+                throw new RuntimeException("Blockchain no devolvió el hash de la transferencia");
+            }
+
+            return new TransferTokenResultDTO(
+                    credentials.getAddress(), destinationWallet, amount, hash);
+        } catch (IllegalArgumentException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new RuntimeException("No se pudo transferir tokens desde la wallet owner", exception);
+        } finally {
+            web3j.shutdown();
         }
     }
 }
