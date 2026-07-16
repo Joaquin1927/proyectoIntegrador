@@ -1,54 +1,35 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy JAR app to Azure Web App - BackendWebApp
+name: Deploy CO2XBackend
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Set up Java version
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'microsoft'
+          distribution: 'temurin'
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build backend with Maven
+        run: mvn clean install -DskipTests
         working-directory: ./proyectoIntegradorBack
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: java-app
-          path: '${{ github.workspace }}/target/*.jar'
+      - name: Publish artifact
+        run: mvn package -DskipTests
+        working-directory: ./proyectoIntegradorBack
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - name: Deploy to Azure WebApp (Windows)
+        uses: azure/webapps-deploy@v2
         with:
-          name: java-app
-      
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'BackendWebApp'
-          slot-name: 'Production'
-          package: '*.jar'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0F052BAFCFA5424B9D6EC8D19595E200 }}
+          app-name: 'CO2XBackend'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_CREDENTIALS }}
+          package: ./proyectoIntegradorBack/target/*.jar
