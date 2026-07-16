@@ -1,4 +1,4 @@
-name: Deploy CO2XBackend
+name: Deploy BackendWebApp
 
 on:
   push:
@@ -23,13 +23,9 @@ jobs:
         run: mvn clean install -DskipTests
         working-directory: ./proyectoIntegradorBack
 
-      - name: Publish artifact
-        run: mvn package -DskipTests
-        working-directory: ./proyectoIntegradorBack
-
-      - name: Deploy to Azure WebApp (Windows)
+      - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'CO2XBackend'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_CREDENTIALS }}
+          app-name: 'BackendWebApp'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./proyectoIntegradorBack/target/*.jar
