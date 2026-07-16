@@ -17,8 +17,10 @@ export default function TransactionHistory() {
     if (!storageKey) return;
     try {
       const raw = localStorage.getItem(storageKey);
-      if (raw) setRows(JSON.parse(raw));
-    } catch {}
+      if (raw) queueMicrotask(() => setRows(JSON.parse(raw)));
+    } catch (error) {
+      console.warn("No se pudo recuperar el historial local", error);
+    }
   }, [storageKey]);
  
   // Fetch inicial desde cadena
@@ -48,7 +50,8 @@ export default function TransactionHistory() {
       setRows((prev) => {
         const next = mergeDedupe([...prev, mapToRow(ev, decimals)]).sort(sorter);
         if (storageKey) {
-          try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+          try { localStorage.setItem(storageKey, JSON.stringify(next)); }
+          catch (error) { console.warn("No se pudo guardar el historial local", error); }
         }
         return next;
       });
@@ -59,7 +62,8 @@ export default function TransactionHistory() {
   // Persistencia
   useEffect(() => {
     if (!storageKey) return;
-    try { localStorage.setItem(storageKey, JSON.stringify(rows)); } catch {}
+    try { localStorage.setItem(storageKey, JSON.stringify(rows)); }
+    catch (error) { console.warn("No se pudo guardar el historial local", error); }
   }, [rows, storageKey]);
  
   // Export CSV
@@ -81,44 +85,44 @@ export default function TransactionHistory() {
       : "https://polygonscan.com/tx/";
  
   return (
-    <div style={panel}>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12}}>
-        <h3 style={{color:"#DAA520"}}>Transaction History</h3>
-        <button onClick={exportCSV} style={btn}>Export CSV</button>
+    <section className="chain-panel history-panel">
+      <div className="history-panel__header">
+        <div><span className="chain-eyebrow">ACTIVIDAD ON-CHAIN</span><h2>Historial de transacciones</h2></div>
+        <button onClick={exportCSV} className="chain-secondary-action" disabled={rows.length === 0}>Exportar CSV</button>
       </div>
-      <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%", borderCollapse:"collapse", color:"#fff"}}>
+      <div className="history-table-wrap">
+        <table className="history-table">
           <thead>
             <tr>
               {["Time","Type","From","To","Amount","Tx"].map(h=>(
-                <th key={h} style={th}>{h}</th>
+                <th key={h}>{translateHeader(h)}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r,i)=>(
               <tr key={`${r.tx}:${r.block}:${r.idx ?? i}`}>
-                <td style={td}>{r.time}</td>
-                <td style={{...td, color: typeColor(r.type), fontWeight:600}}>{r.type}</td>
-                <td style={td}><Short a={r.from}/></td>
-                <td style={td}><Short a={r.to}/></td>
-                <td style={td}>
+                <td>{r.time}</td>
+                <td><span className={`tx-type tx-type--${r.type.toLowerCase()}`}>{r.type}</span></td>
+                <td><Short a={r.from}/></td>
+                <td><Short a={r.to}/></td>
+                <td>
                   {Number(r.value).toLocaleString(undefined, { maximumFractionDigits: 4 })}
                 </td>
-                <td style={td}>
-                  <a href={`${explorerBase}${r.tx}`} target="_blank" rel="noreferrer" style={{color:"#DAA520"}}>
+                <td>
+                  <a href={`${explorerBase}${r.tx}`} target="_blank" rel="noreferrer" className="history-tx-link">
                     {r.tx.slice(0,10)}…
                   </a>
                 </td>
               </tr>
             ))}
             {rows.length===0 && (
-              <tr><td style={td} colSpan={6}>No activity yet.</td></tr>
+              <tr><td className="history-empty" colSpan={6}>Todavía no hay actividad para esta wallet.</td></tr>
             )}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   );
 }
  
@@ -154,21 +158,7 @@ function sorter(a,b) {
  
 const Short = ({a}) => <span title={a}>{a.slice(0,6)}…{a.slice(-4)}</span>;
  
-function typeColor(type) {
-  if (type === "MINT") return "#00FF00";
-  if (type === "BURN") return "#808080";
-  return "#bbb";
+function translateHeader(header) {
+  return ({ Time: "Fecha", Type: "Tipo", From: "Origen", To: "Destino", Amount: "Cantidad", Tx: "Transacción" })[header] || header;
 }
- 
-const panel = {
-  background: "#1e1e1e",
-  borderRadius: 12,
-  padding: 16,
-  marginTop: 16,
-  border: "1px solid #333",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.35)",
-};
-const th = { textAlign:"left", borderBottom:"1px solid #333", padding:"8px", color:"#bbb", fontWeight:600 };
-const td = { borderBottom:"1px solid #222", padding:"8px", fontSize:14 };
-const btn = { background:"#DAA520", color:"#111", border:"none", padding:"8px 12px", borderRadius:8, fontWeight:700, cursor:"pointer" };
  

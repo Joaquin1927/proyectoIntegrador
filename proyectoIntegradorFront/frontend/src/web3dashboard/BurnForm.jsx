@@ -45,64 +45,44 @@ export default function BurnForm() {
   };
  
   return (
-    <div style={panel}>
-      <h3 style={{ color: "#DAA520", marginBottom: "1rem" }}>Burn Tokens</h3>
+    <section className="chain-panel burn-panel">
+      <div className="chain-panel__header chain-panel__header--compact">
+        <div><span className="chain-eyebrow">RETIRO PERMANENTE</span><h2>Retirar tokens</h2><p>La quema reduce de forma irreversible el suministro circulante.</p></div>
+      </div>
  
-      <form onSubmit={handleBurn}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      <form onSubmit={handleBurn} className="burn-form">
           <input
             type="text"
             inputMode="decimal"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="e.g. 1"
-            style={inputStyle}
+            placeholder="Cantidad a retirar"
+            className="input"
           />
  
           <button
             type="submit"
-            className="custom-gold-button"
+            className="chain-danger-action"
             disabled={sending || !account}
           >
-            {sending ? "Burning…" : "Burn"}
+            {sending ? "Retirando…" : "Retirar tokens"}
           </button>
-        </div>
       </form>
  
       {status && (
-        <p style={{ marginTop: "1rem", color: "#DAA520" }}>
+        <p className="burn-status">
           {status}{" "}
           {txHash && (
             <a
               href={explorerTxBase + txHash}
               target="_blank"
               rel="noreferrer"
-              style={{ color: "#DAA520", textDecoration: "underline" }}
             >
-              view on explorer
+              ver en el explorador
             </a>
           )}
         </p>
       )}
-    </div>
+    </section>
   );
 }
- 
-const panel = {
-  background: "#1e1e1e",
-  border: "1px solid #333",
-  borderRadius: 12,
-  padding: 16,
-  marginTop: 16,
-  boxShadow: "0 4px 10px rgba(0,0,0,0.35)",
-};
- 
-const inputStyle = {
-  flex: 1,
-  padding: "0.5rem 0.75rem",
-  borderRadius: 8,
-  border: "1px solid #444",
-  backgroundColor: "#2a2a2a",
-  color: "#DAA520",
-  fontSize: "0.95rem",
-};

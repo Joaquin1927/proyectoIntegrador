@@ -1,21 +1,23 @@
 // src/components/web3dashboard/Dashboard.jsx
 import { useEffect, useMemo, useState } from "react";
 import * as ethersNS from "ethers";
+import { Activity, CircleDollarSign, Database, ExternalLink, Flame, ShieldCheck, WalletCards } from "lucide-react";
 import { useCO2X } from "../web3/useCO2X";
 import { CONTRACT_ADDRESS, ABI } from "../web3/contractConfig";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import TransactionHistory from "./TransactionHistory";
 import BurnForm from "./BurnForm";
-import mintForm from "./mintForm";
+import MintForm from "./mintForm";
+import AdminTransferPanel from "./AdminTransferPanel";
 import { useToast } from "../ui/Toaster";
 import { withTx } from "../utils/tx";
-import { toastMessageFromError, logEthersError } from "../utils/errors";
+import { logEthersError } from "../utils/errors";
 import { readProvider } from "../utils/provider";
 import ConnectWalletButton from '../components/ConnectWalletButton';
 import '../styles/dashboard.css';
  
 export default function Dashboard() {
-  const { account, chainId, transfer, simulateTransfer } = useCO2X();
+  const { account, chainId } = useCO2X();
  
   const [symbol, setSymbol] = useState("");
   const [decimals, setDecimals] = useState(18);
@@ -123,29 +125,6 @@ export default function Dashboard() {
     );
   };
  
-  // Transfer
-  const [to, setTo] = useState("");
-  const [amount, setAmount] = useState("");
-  const onTransfer = async () => {
-    if (!account) return toast.error("Connect your wallet.");
-    if (!to || !amount) return toast.error("Enter recipient and amount.");
-    if (integerOnly && String(amount).includes(".")) {
-      return toast.error("This token only accepts integer amounts (1, 2, 3…).");
-    }
-    try {
-      await simulateTransfer(to, amount);
-      await withTx(
-        toast,
-        () => transfer(to, amount),
-        { pending: "Sending…", success: "Transfer confirmed ✅", op: "transfer", context: { to, amount } }
-      );
-      setAmount(""); setTo("");
-    } catch (e) {
-      logEthersError(e, { op: "transfer.catch", to, amount });
-      toast.error(toastMessageFromError(e));
-    }
-  };
- 
   // Chart data
   const sup = Number(supply ?? 0);
   const bur = Number(burned ?? 0);
@@ -160,43 +139,67 @@ export default function Dashboard() {
       : "https://polygonscan.com/tx/";
  
   return (
-    <div className="dashboard section section--light">
-      <div className="container">
-        <div className="dashboard-header">
-        <h1 className="dashboard-title">CO₂X Dashboard</h1>
-        <div className="dashboard-wallet">
-          <ConnectWalletButton />
+    <div className="admin-chain-dashboard">
+      <div className="admin-chain-shell">
+        <header className="admin-chain-hero">
+          <div>
+            <span className="chain-eyebrow">CO₂X · BLOCKCHAIN CONTROL CENTER</span>
+            <h1>Tesorería digital</h1>
+            <p>Supervisá el suministro y ejecutá operaciones seguras sobre Polygon Amoy.</p>
+          </div>
+          <div className="admin-chain-wallet">
+            <div className={`network-status ${account ? "network-status--online" : ""}`}>
+              <span />
+              {account ? "Wallet conectada" : "Wallet desconectada"}
+            </div>
+            <ConnectWalletButton />
+          </div>
+        </header>
+
+        <div className="chain-environment-note">
+          <ShieldCheck size={19} />
+          <div><strong>Entorno de demostración</strong><span>Los tokens de esta red no representan créditos de carbono con valor financiero o regulatorio.</span></div>
+          <a href={`https://amoy.polygonscan.com/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
+            Ver contrato <ExternalLink size={14} />
+          </a>
         </div>
-      </div>
- 
-        {/* Disclaimer */}
-        <div className="dashboard-disclaimer alert alert--info">
-          ⚠️ Test Environment<br />
-          The tokens and values shown here are for testing and demonstration only.<br />
-          They do not represent carbon credits, removals, or offsets, and have no environmental, financial, or compliance value.
+
+        {paused && <div className="chain-warning">El contrato está pausado. Las operaciones quedarán bloqueadas.</div>}
+
+        <div className="chain-stats-grid">
+          <StatCard icon={<Database />} label="Suministro circulante" value={supply ? `${formatStat(supply)} ${symbol}` : "—"} accent="green" />
+          <StatCard icon={<Flame />} label="Tokens retirados" value={burned ? `${formatStat(burned)} ${symbol}` : "—"} accent="orange" />
+          <StatCard icon={<Activity />} label="Emisión histórica" value={ever ? `${formatStat(ever)} ${symbol}` : "—"} accent="blue" />
+          <StatCard icon={<WalletCards />} label="Saldo de la wallet" value={account && balance ? `${formatStat(balance)} ${symbol}` : "—"} accent="gold" />
         </div>
  
-        {/* Connection badge */}
-        <div className="dashboard-connection">
-          {!!account ? (
-            <span className="badge badge--ok">Wallet connected</span>
-          ) : (
-            <span className="badge badge--warn">🔌 Connect wallet to interact</span>
-          )}
-        </div>
- 
-        {paused && <div className="alert alert--warn">Contract paused.</div>}
- 
-        {/* Add to MetaMask */}
         {account && (
-          <div className="dashboard-actions">
-            <button onClick={addTokenToMetaMask} className="btn btn--gold">
-              Add CO2X to MetaMask
+          <div className="chain-quick-actions">
+            <div><CircleDollarSign size={18} /><span>Contrato {isPrivileged ? "administrador/verificador" : "conectado"}</span></div>
+            <button onClick={addTokenToMetaMask} className="chain-secondary-action">
+              Agregar CO₂X a MetaMask
             </button>
           </div>
         )}
- 
-        {/* Mint (owner / verifier) */}
+
+        {!account && (
+          <section className="wallet-empty-state">
+            <WalletCards size={34} />
+            <h2>Conectá la wallet administradora</h2>
+            <p>La conexión es necesaria para transferir, mintear o retirar tokens.</p>
+            <ConnectWalletButton />
+          </section>
+        )}
+
+        {account && (
+          <AdminTransferPanel
+            balance={balance}
+            symbol={symbol}
+            integerOnly={integerOnly}
+            onTransferred={() => setReloadKey((key) => key + 1)}
+          />
+        )}
+
         {account && isPrivileged && (
           <MintForm
             symbol={symbol}
@@ -207,93 +210,44 @@ export default function Dashboard() {
           />
         )}
  
-        {/* Transfer */}
-        {account && (
-          <div className="panel">
-            <h3 className="panel-title">Transfer</h3>
-            <div className="form-grid">
-              <input
-                className="input"
-                placeholder="Recipient 0x…"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              />
-              <input
-                className="input"
-                placeholder={integerOnly ? `Integer amount (${symbol || "CO2X"})` : `Amount (${symbol || "CO2X"})`}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                type="number"
-                inputMode={integerOnly ? "numeric" : "decimal"}
-                step={integerOnly ? "1" : "any"}
-              />
-              <button onClick={onTransfer} className="btn btn--gold">Send</button>
-            </div>
-            <small className="muted">
-              {integerOnly
-                ? "This token only accepts integer amounts."
-                : `Decimals allowed (decimals = ${decimals}).`}
-            </small>
-          </div>
-        )}
- 
-        {/* Burn */}
         {account && <BurnForm />}
  
-        {/* Stats */}
-        <div className="grid-cards">
-          <StatCard label="Total Supply" value={supply ? `${supply} ${symbol}` : "..."} />
-          <StatCard label="Total Burned" value={burned ? `${burned} ${symbol}` : "..."} />
-          <StatCard label="Ever Minted" value={ever ? `${ever} ${symbol}` : "..."} />
-          {account && <StatCard label="Your Balance" value={balance ? `${balance} ${symbol}` : "..."} />}
-          {account && <StatCard label="You Burned" value={userBurned ? `${userBurned} ${symbol}` : "0"} />}
-        </div>
- 
-        {/* Chart */}
-        <div className="panel">
-          <h3 className="panel-title">Supply Breakdown</h3>
+        <section className="chain-panel supply-panel">
+          <div className="chain-panel__header chain-panel__header--compact">
+            <div><span className="chain-eyebrow">ANALÍTICA</span><h2>Distribución del suministro</h2></div>
+            {account && <span className="personal-burn">Retiraste {formatStat(userBurned || 0)} {symbol}</span>}
+          </div>
           <div className="chart-box">
             <ResponsiveContainer>
               <PieChart>
                 <Pie dataKey="value" data={chartData} outerRadius={90} label>
                   {/* SVG soporta CSS variables en fill/stroke */}
-                  <Cell key="circulating" fill="var(--olive)" />
-                  <Cell key="burned" fill="#9aa0a6" />
+                  <Cell key="circulating" fill="#2bd48d" />
+                  <Cell key="burned" fill="#ff9f65" />
                 </Pie>
                 <Tooltip />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
  
-        {/* History */}
         {account && <TransactionHistory />}
       </div>
     </div>
   );
 }
  
-function StatCard({ label, value }) {
+function StatCard({ icon, label, value, accent }) {
   return (
-    <div className="stat-card">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value">{value}</div>
+    <div className={`chain-stat-card chain-stat-card--${accent}`}>
+      <div className="chain-stat-card__icon">{icon}</div>
+      <div><div className="chain-stat-card__label">{label}</div><div className="chain-stat-card__value">{value}</div></div>
     </div>
   );
 }
- 
- 
 
- 
- 
-
- 
- 
-
- 
-
- 
-
-
- 
+function formatStat(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString("es-UY", { maximumFractionDigits: 3 }) : "0";
+}
