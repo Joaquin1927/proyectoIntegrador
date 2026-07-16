@@ -26,7 +26,7 @@ export default function Login() {
   return (
     <section className="panel">
       <h1>Login</h1>
-      <h1 style={{ color: "red" }}>DEPLOY TEST 13 JULIO - 11:15</h1>
+      <h1 style={{ color: "red" }}>DEPLOY TEST 16 JULIO - 15:30</h1>
       <div className="actions">
         <button className="primary" onClick={submit}>
           Iniciar sesión
