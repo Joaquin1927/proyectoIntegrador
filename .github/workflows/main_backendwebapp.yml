@@ -28,4 +28,4 @@ jobs:
         with:
           app-name: 'BackendWebApp'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./proyectoIntegradorBack/target/*.jar
+          package: ./proyectoIntegradorBack/target/proyectoIntegradorBack-1.0-SNAPSHOT.jar
