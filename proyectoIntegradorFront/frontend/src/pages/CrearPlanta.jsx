@@ -1,295 +1,152 @@
-import { useState, useEffect } from "react";
-import axios from "../api/axios";
+import { useEffect, useState } from "react";
+import { Building2, CheckCircle2, FileJson, FileText, MapPin, Plus, Trash2, Upload, UserRound } from "lucide-react";
 import { authFetch } from "../api/authFetch";
-import { useMsal } from "@azure/msal-react";
+
+const API = import.meta.env.VITE_API_URL;
+const INITIAL_FORM = { nombre: "", empresaId: "", direccion: "", managerEmail: "", metadata: "{}", pozos: [{ nombre: "" }] };
 
 export default function CrearPlanta() {
-  const API = import.meta.env.VITE_API_URL;
-  const { instance, accounts } = useMsal();
-
-useEffect(() => {
-const cargarEmpresas = async () => {
-try {
-const response = await instance.acquireTokenSilent({
-scopes: [
-"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
-],
-account: accounts[0],
-});
- 
-const token = response.accessToken;
- 
-const res = await axios.get(
-`${API}/empresas`,
-{
-headers: {
-Authorization: `Bearer ${token}`,
-},
-}
-);
- 
-console.log("EMPRESAS:", res.data);
- 
-setEmpresas(res.data);
- 
-} catch (err) {
-console.error("Error cargando empresas", err);
-}
-};
- 
-cargarEmpresas();
- 
-}, [instance, accounts, API]);
-  const [form, setForm] = useState({
-    nombre: "",
-    empresaId: "",
-    direccion: "",
-    managerEmail: "",
-    metadata: "{}",
-    pozos: [{ nombre: "" }],
-  });
+  const [form, setForm] = useState(INITIAL_FORM);
   const [empresas, setEmpresas] = useState([]);
   const [pdf, setPdf] = useState(null);
+  const [jsonFileName, setJsonFileName] = useState("");
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const updateField = (field, value) => {
-    setForm({ ...form, [field]: value });
-  };
+  useEffect(() => {
+    const cargarEmpresas = async () => {
+      try {
+        const response = await authFetch(`${API}/empresas`);
+        if (!response.ok) throw new Error("No se pudieron cargar las empresas");
+        setEmpresas(await response.json());
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoadingCompanies(false);
+      }
+    };
+    cargarEmpresas();
+  }, []);
 
-  const addPozo = () => {
-    setForm({ ...form, pozos: [...form.pozos, { nombre: "" }] });
-  };
+  const updateField = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+  const addPozo = () => setForm((current) => ({ ...current, pozos: [...current.pozos, { nombre: "" }] }));
+  const updatePozo = (index, value) => setForm((current) => ({ ...current, pozos: current.pozos.map((pozo, i) => i === index ? { ...pozo, nombre: value } : pozo) }));
+  const removePozo = (index) => setForm((current) => ({ ...current, pozos: current.pozos.filter((_, i) => i !== index) }));
 
-  const updatePozo = (index, value) => {
-    const updated = [...form.pozos];
-    updated[index].nombre = value;
-    setForm({ ...form, pozos: updated });
-  };
-
-  const removePozo = (index) => {
-    const updated = [...form.pozos];
-    updated.splice(index, 1);
-    setForm({ ...form, pozos: updated });
-  };
-  const handleJson = (e) => {
-    const file = e.target.files?.[0];
+  const handleJson = (event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const json = JSON.parse(event.target.result);
-      const {
-        nombre,
-        empresa,
-        empresaId: jsonEmpresaId,
-        direccion,
-        managerEmail,
-        pozos,
-        ...metadata
-      } = json;
-      let empresaId = "";
-      if (jsonEmpresaId) {
-        empresaId = jsonEmpresaId;
-      } else if (empresa) {
-        const encontrada = empresas.find(
-          (emp) => emp.nombre.toLowerCase() === empresa.toLowerCase(),
-        );
-        if (encontrada) {
-          empresaId = encontrada.id;
-        }
+    reader.onload = ({ target }) => {
+      try {
+        const json = JSON.parse(target.result);
+        const { nombre, empresa, empresaId, direccion, managerEmail, pozos, ...metadata } = json;
+        const matchedCompany = empresas.find((item) => item.nombre?.toLowerCase() === empresa?.toLowerCase());
+        setForm({
+          nombre: nombre || "",
+          empresaId: empresaId || matchedCompany?.id || "",
+          direccion: direccion || "",
+          managerEmail: managerEmail || "",
+          metadata: JSON.stringify(metadata, null, 2),
+          pozos: pozos?.length ? pozos : [{ nombre: "" }],
+        });
+        setJsonFileName(file.name);
+        setError("");
+      } catch {
+        setError("El archivo seleccionado no contiene un JSON válido");
       }
-      setForm({
-        nombre: nombre || "",
-        empresaId,
-        direccion: direccion || "",
-        managerEmail: managerEmail || "",
-        metadata: JSON.stringify(metadata, null, 2),
-        pozos: pozos?.length ? pozos : [{ nombre: "" }],
-      });
-      setError("");
     };
     reader.readAsText(file);
   };
-  const validar = () => {
+
+  const validate = () => {
     if (!form.nombre.trim()) return "El nombre de la planta es obligatorio";
-    if (!form.empresaId) return "Debe seleccionar una empresa";
+    if (!form.empresaId) return "Seleccioná la empresa responsable";
     if (!form.direccion.trim()) return "La dirección es obligatoria";
-    if (!form.managerEmail.trim()) return "El email del manager es obligatorio";
-
-    if (!form.pozos.length) return "Debe agregar al menos un pozo";
-    if (form.pozos.some((p) => !p.nombre.trim()))
-      return "Todos los pozos deben tener nombre";
-
-    if (!pdf) return "Debe subir el PDF técnico";
-
-    try {
-      JSON.parse(form.metadata);
-    } catch {
-      return "El campo metadata debe ser JSON válido";
-    }
-
+    if (!/^\S+@\S+\.\S+$/.test(form.managerEmail)) return "Ingresá un email de manager válido";
+    if (!form.pozos.length || form.pozos.some((pozo) => !pozo.nombre.trim())) return "Todos los pozos deben tener nombre";
+    if (!pdf) return "Adjuntá el PDF técnico obligatorio";
+    try { JSON.parse(form.metadata); } catch { return "La metadata debe ser JSON válido"; }
     return null;
   };
 
-  const submit = async () => {
-    const err = validar();
-    if (err) {
-      setError(err);
-      return;
-    }
+  const submit = async (event) => {
+    event.preventDefault();
+    const validationError = validate();
+    if (validationError) return setError(validationError);
+
+    setSubmitting(true);
+    setError("");
+    setSuccess(false);
     try {
-      console.log("FORM:", form);
-      const payload = {
-        nombre: form.nombre,
-        empresa: {
-          id: parseInt(form.empresaId),
-        },
-        direccion: form.direccion,
-        managerEmail: form.managerEmail,
-        metadata: form.metadata,
-        pozos: form.pozos,
-      };
-      console.log("PAYLOAD:", payload);
-      const fd = new FormData();
-      fd.append(
-        "data",
-        new Blob([JSON.stringify(payload)], {
-          type: "application/json",
-        }),
-      );
-      fd.append("pdf", pdf);
-      const res = await authFetch(`${API}/plantas`, {
-        method: "POST",
-        body: fd,
-      });
-
-      console.log("STATUS:", res.status);
-
-      const text = await res.text();
-      console.log("STATUS:", res.status);
-      console.log("RESPONSE:", text);
-      if (!res.ok) {
-        let message = "Error al registrar la planta";
-        try {
-          message = JSON.parse(text).message;
-        } catch {}
+      const payload = { ...form, empresa: { id: Number(form.empresaId) }, empresaId: undefined };
+      const data = new FormData();
+      data.append("data", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+      data.append("pdf", pdf);
+      const response = await authFetch(`${API}/plantas`, { method: "POST", body: data });
+      const body = await response.text();
+      if (!response.ok) {
+        let message = "No se pudo registrar la planta";
+        try { message = JSON.parse(body).message || message; } catch { /* respuesta sin JSON */ }
         throw new Error(message);
       }
-      alert("Planta registrada correctamente");
-    } catch (e) {
-      console.error(e);
-      setError(e.message || "Error al registrar la planta");
+      setSuccess(true);
+      setForm(INITIAL_FORM);
+      setPdf(null);
+      setJsonFileName("");
+    } catch (err) {
+      setError(err.message || "No se pudo registrar la planta");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <section className="content">
-      <h1>🏭 Registrar Planta</h1>
-      <p className="muted">Alta de plantas con pozos, metadata y PDF técnico</p>
+    <main className="facility-page">
+      <header className="facility-hero">
+        <div className="facility-hero__icon"><Building2 size={28} /></div>
+        <div><span className="facility-eyebrow">GESTIÓN OPERATIVA</span><h1>Registrar planta</h1><p>Centralizá la información de la instalación, sus pozos y la documentación técnica.</p></div>
+        <div className="facility-progress"><span>ALTA DE INSTALACIÓN</span><strong>Datos + evidencia</strong></div>
+      </header>
 
-      {error && (
-        <div
-          className="panel"
-          style={{
-            borderColor: "var(--danger)",
-            color: "var(--danger)",
-            marginBottom: "16px",
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {error && <div className="facility-alert facility-alert--error">{error}</div>}
+      {success && <div className="facility-alert facility-alert--success"><CheckCircle2 size={19} /> Planta registrada correctamente.</div>}
 
-      <div className="panel">
-        <div className="grid two">
-          <div className="field">
-            <label>Nombre de la planta</label>
-            <input
-              value={form.nombre}
-              onChange={(e) => updateField("nombre", e.target.value)}
-            />
+      <form className="facility-form" onSubmit={submit}>
+        <section className="facility-card">
+          <SectionTitle number="01" title="Información general" subtitle="Identificación y responsable de la instalación" />
+          <div className="facility-grid">
+            <Field icon={<Building2 />} label="Nombre de la planta"><input value={form.nombre} onChange={(event) => updateField("nombre", event.target.value)} placeholder="Ej. Planta Norte" /></Field>
+            <Field icon={<Building2 />} label="Empresa"><select value={form.empresaId} onChange={(event) => updateField("empresaId", event.target.value)} disabled={loadingCompanies}><option value="">{loadingCompanies ? "Cargando empresas…" : "Seleccionar empresa"}</option>{empresas.map((empresa) => <option key={empresa.id} value={empresa.id}>{empresa.nombre}</option>)}</select></Field>
+            <Field icon={<MapPin />} label="Dirección"><input value={form.direccion} onChange={(event) => updateField("direccion", event.target.value)} placeholder="Dirección de la instalación" /></Field>
+            <Field icon={<UserRound />} label="Email del manager"><input type="email" value={form.managerEmail} onChange={(event) => updateField("managerEmail", event.target.value)} placeholder="manager@empresa.com" /></Field>
           </div>
+        </section>
 
-          <div className="field">
-            <label>Empresa</label>
-            <select
-              value={form.empresaId || ""}
-              onChange={(e) => updateField("empresaId", e.target.value)}
-            >
-              <option value="" disabled>
-                Seleccionar empresa
-              </option>
-               
-              {empresas.map((empresa) => (
-                <option key={empresa.id} value={empresa.id}>
-                  {empresa.nombre}
-                </option>
-              ))}
-            </select>
+        <section className="facility-card">
+          <SectionTitle number="02" title="Pozos asociados" subtitle={`${form.pozos.length} ${form.pozos.length === 1 ? "pozo configurado" : "pozos configurados"}`} />
+          <div className="facility-wells">{form.pozos.map((pozo, index) => <div className="facility-well" key={index}><span>{String(index + 1).padStart(2, "0")}</span><input value={pozo.nombre} onChange={(event) => updatePozo(index, event.target.value)} placeholder={`Nombre del pozo ${index + 1}`} />{form.pozos.length > 1 && <button type="button" onClick={() => removePozo(index)} aria-label={`Quitar pozo ${index + 1}`}><Trash2 size={17} /></button>}</div>)}</div>
+          <button className="facility-add" type="button" onClick={addPozo}><Plus size={17} /> Agregar otro pozo</button>
+        </section>
+
+        <section className="facility-card">
+          <SectionTitle number="03" title="Evidencia técnica" subtitle="Documentación necesaria para validar la instalación" />
+          <div className="facility-uploads">
+            <UploadBox icon={<FileJson />} label="Datos de planta (opcional)" hint="Importá y completá el formulario desde un archivo .json" fileName={jsonFileName}><input type="file" accept=".json,application/json" onChange={handleJson} /></UploadBox>
+            <UploadBox icon={<FileText />} label="PDF técnico" hint="Documento técnico obligatorio en formato PDF" fileName={pdf?.name}><input type="file" accept="application/pdf" onChange={(event) => setPdf(event.target.files?.[0] || null)} /></UploadBox>
           </div>
+          <label className="facility-metadata"><span>Metadata JSON</span><textarea value={form.metadata} onChange={(event) => updateField("metadata", event.target.value)} spellCheck="false" /></label>
+        </section>
 
-          <div className="field">
-            <label>Dirección</label>
-            <input
-              value={form.direccion}
-              onChange={(e) => updateField("direccion", e.target.value)}
-            />
-          </div>
-
-          <div className="field">
-            <label>Email del manager</label>
-            <input
-              value={form.managerEmail}
-              onChange={(e) => updateField("managerEmail", e.target.value)}
-            />
-          </div>
-        </div>
-        <h3>Pozos</h3>
-        {form.pozos.map((pozo, i) => (
-          <div className="field" key={i}>
-            <label>Pozo {i + 1}</label>
-
-            <div
-              className="actions"
-              style={{ justifyContent: "space-between" }}
-            >
-              <input
-                placeholder={`Nombre del pozo ${i + 1}`}
-                value={pozo.nombre}
-                onChange={(e) => updatePozo(i, e.target.value)}
-                style={{ flex: 1 }}
-              />
-
-              {/* Solo mostrar botón si hay más de 1 pozo */}
-              {form.pozos.length > 1 && (
-                <button className="danger small" onClick={() => removePozo(i)}>
-                  ✖ Quitar
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-        <button className="ghost small" onClick={addPozo}>
-          ➕ Agregar Pozo
-        </button>
-        <h3>JSON de Planta</h3> 
-        <div className="field">
-          <input type="file" accept=".json" onChange={handleJson} />
-        </div>
-        <h3>PDF Técnico (obligatorio)</h3>
-        <div className="field">
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => setPdf(e.target.files[0])}
-          />
-          <span className="hint">Debe ser un archivo PDF válido</span>
-        </div>
-        <div className="actions">
-          <button className="primary" onClick={submit}>
-            Registrar Planta
-          </button>
-        </div>
-      </div>
-    </section>
+        <footer className="facility-submit"><div><ShieldCheckIcon /><span><strong>Registro protegido</strong>La información quedará asociada a la empresa seleccionada.</span></div><button type="submit" disabled={submitting}>{submitting ? <><span className="button-spinner" /> Registrando…</> : <><CheckCircle2 size={18} /> Registrar planta</>}</button></footer>
+      </form>
+    </main>
   );
 }
+
+function SectionTitle({ number, title, subtitle }) { return <div className="facility-section-title"><span>{number}</span><div><h2>{title}</h2><p>{subtitle}</p></div></div>; }
+function Field({ icon, label, children }) { return <label className="facility-field"><span>{icon}{label}</span>{children}</label>; }
+function UploadBox({ icon, label, hint, fileName, children }) { return <label className={`facility-upload ${fileName ? "facility-upload--ready" : ""}`}><span className="facility-upload__icon">{fileName ? <CheckCircle2 /> : icon}</span><strong>{fileName || label}</strong><small>{fileName ? "Archivo listo para enviar" : hint}</small><span className="facility-upload__action"><Upload size={14} /> Seleccionar archivo</span>{children}</label>; }
+function ShieldCheckIcon() { return <CheckCircle2 size={22} />; }
