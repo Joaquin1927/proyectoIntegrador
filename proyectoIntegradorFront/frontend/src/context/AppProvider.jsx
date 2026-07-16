@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 import { AppContext } from "./AppContext";
-import { apiGet } from "../api/apiClient";
 
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  console.log("REQUEST:", config.url);
+  console.log("TOKEN ENVIADO:", !!token);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+import { apiGet } from "../api/apiClient";
 
 const DB_KEY = "co2x_db_v1";
 
@@ -18,14 +27,6 @@ export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
   const [backendActivo, setBackendActivo] = useState(true);
   const [notificaciones, setNotificaciones] = useState([]);
-
-  // Cargar plantas
-  useEffect(() => {
-    axios
-      .get(`${API}/plantas`)
-      .then((res) => setPlantas(res.data))
-      .catch((err) => console.error("Error cargando plantas", err));
-  }, [API]);
 
   // Restaurar usuario
   useEffect(() => {
@@ -58,17 +59,30 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!user) return;
     cargarPaquetes();
+    cargarPlantas();
   }, [user]);
 
   useEffect(() => {
     savePaquetes(paquetes);
   }, [paquetes]);
+  const cargarPlantas = async () => {
+  try {
+    const res = await axios.get(`${API}/plantas`);
 
+    console.log("PLANTAS:", res.data);
+
+    setPlantas(res.data);
+  } catch (err) {
+    console.error("ERROR CARGANDO PLANTAS", err);
+  }
+};
   const reloadNotificaciones = async () => {
     if (!user?.email) return;
 
     try {
-      const res = await axios.get(`${API}/notificaciones/noleidas/${user.email}`);
+      const res = await axios.get(
+        `${API}/notificaciones/noleidas/${user.email}`,
+      );
       console.log("NOTIFICACIONES:", res.data);
       setNotificaciones(res.data);
     } catch (err) {
@@ -80,35 +94,23 @@ export function AppProvider({ children }) {
     reloadNotificaciones();
   }, [user]);
 
-  
-useEffect(() => {
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        await apiGet(`${API}/test/health`, false);
 
-  const checkBackend = async () => {
-    try {
-      await apiGet(
-        `${API}/test/health`,
-        false
-      );
+        setBackendActivo(true);
+      } catch {
+        setBackendActivo(false);
+      }
+    };
 
-      setBackendActivo(true);
+    checkBackend();
 
-    } catch {
+    const interval = setInterval(checkBackend, 5000);
 
-      setBackendActivo(false);
-    }
-  };
-
-  checkBackend();
-
-  const interval = setInterval(
-    checkBackend,
-    5000
-  );
-
-  return () => clearInterval(interval);
-
-}, []);
-
+    return () => clearInterval(interval);
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -136,7 +138,7 @@ useEffect(() => {
         cargarPaquetes,
         backendActivo,
         notificaciones,
-        reloadNotificaciones,   // 👈 CLAVE
+        reloadNotificaciones, // 👈 CLAVE
       }}
     >
       {children}

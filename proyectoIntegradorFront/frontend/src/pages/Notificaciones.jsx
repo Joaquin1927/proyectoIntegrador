@@ -13,7 +13,8 @@ export default function Notificaciones() {
   useEffect(() => {
     if (!user?.email) return;
 
-    axios.get(`${API}/notificaciones/${user.email}`)
+    axios
+      .get(`${API}/notificaciones/${user.email}`)
       .then((res) => setNotificaciones(res.data))
       .catch(console.error);
   }, [user]);
@@ -29,7 +30,15 @@ export default function Notificaciones() {
           <p>{n.mensaje}</p>
           <small>{new Date(n.fecha).toLocaleString()}</small>
 
-          <button onClick={() => navigate(`/paquete/${n.paqueteId}`)}>
+          <button
+            onClick={() =>
+              navigate(
+                user.rol === "auditor"
+                  ? `/auditar/${n.paqueteId}`
+                  : `/paquete/${n.paqueteId}`,
+              )
+            }
+          >
             Ver
           </button>
         </div>

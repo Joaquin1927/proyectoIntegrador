@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useApp } from "./context/AppContext";
 import Notificaciones from "./pages/Notificaciones";
@@ -12,6 +12,9 @@ import Historial from "./pages/Historial";
 import Auditar from "./pages/Auditar";
 import PaqueteDetalle from "./pages/PaqueteDetalle";
 import EditarPaquete from "./pages/EditarPaquete";
+import Aprobados from "./pages/Aprobados";
+import Ayuda from "./pages/Ayuda";
+import CrearPlanta from "./pages/CrearPlanta";
 
 import "./styles.css";
 
@@ -21,8 +24,12 @@ export default function App() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  const authInitializationStarted = useRef(false);
 
 useEffect(() => {
+  if (authInitializationStarted.current) return;
+  authInitializationStarted.current = true;
+
   const init = async () => {
     try {
       await instance.initialize();
@@ -127,6 +134,22 @@ useEffect(() => {
 
         <Route path="/paquete/:id" element={<PaqueteDetalle />} />
         <Route path="/editar/:id" element={<EditarPaquete />} />
+
+        <Route
+            path="aprobados"
+            element={
+              isAuthenticated
+                ? <Aprobados />
+                : <Navigate to="/" />
+            }
+          />
+
+          <Route path="/plantas/crear" element={<CrearPlanta />} />
+
+        <Route
+          path="ayuda"
+          element={isAuthenticated ? <Ayuda /> : <Navigate to="/" />}
+        />
 
       </Route>
     </Routes>

@@ -7,9 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
     @RestController
     @RequestMapping("/auditoria")
+    @PreAuthorize("hasRole('AUDITOR')")
     public class AuditoriaController {
 
         @Autowired
@@ -26,10 +28,11 @@ import java.util.Map;
 
         @PostMapping("/{id}/rechazar")
         public ResponseEntity<?> rechazar(
-                @PathVariable Integer id) {
+                @PathVariable Integer id,
+                @RequestBody Map<String, Object> body) {
 
             return ResponseEntity.ok(
-                    auditoriaService.rechazar(id)
+                    auditoriaService.rechazar(id, (String) body.get("comentario"))
             );
         }
 
@@ -57,4 +60,3 @@ import java.util.Map;
         }
 
     }
-

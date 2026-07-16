@@ -1,7 +1,9 @@
 package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.PlantaDTO;
+import com.co2x.dmrv.entity.Empresa;
 import com.co2x.dmrv.entity.Planta;
+import com.co2x.dmrv.repository.EmpresaRepository;
 import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.utils.Factory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +20,66 @@ public class PlantaService {
     @Autowired
     private Factory factory;
 
+    @Autowired
+    private EmpresaRepository empresaRepo;
+
+    @Autowired
+    private SecurityService securityService;
+
     public PlantaDTO crear(PlantaDTO dto) {
-
-        Planta entity = factory.toPlantaEntity(dto);
-        Planta guardada = plantaRepo.save(entity);
-
-        return factory.toPlantaDTO(guardada);
+        System.out.println("=== ENTRE A PLANTA SERVICE ===");
+        System.out.println(dto);
+        securityService.validarAdmin();
+        if (dto.getNombre() == null || dto.getNombre().isBlank()) {
+            throw new RuntimeException("Nombre obligatorio");
+        }
+        if (dto.getEmpresa() == null) {
+            throw new RuntimeException("Empresa obligatoria");
+        }
+        if (dto.getDireccion() == null || dto.getDireccion().isBlank()) {
+            throw new RuntimeException("Dirección obligatoria");
+        }
+        if (dto.getManagerEmail() == null || dto.getManagerEmail().isBlank()) {
+            throw new RuntimeException("ManagerEmail obligatorio");
+        }
+        if (dto.getMetadata() == null) {
+            dto.setMetadata("{}");
+        }
+        Empresa empresa;
+        if (dto.getEmpresa().getId() != null) {
+            empresa = empresaRepo
+                    .findById(dto.getEmpresa().getId())
+                    .orElseThrow(
+                            () -> new RuntimeException(
+                                    "Empresa no encontrada"
+                            )
+                    );
+        } else if (
+                dto.getEmpresa().getNombre() != null
+                        && !dto.getEmpresa().getNombre().isBlank()
+        ) {
+            empresa = empresaRepo
+                    .findByNombreIgnoreCase(
+                            dto.getEmpresa().getNombre()
+                    )
+                    .orElseThrow(
+                            () -> new RuntimeException(
+                                    "Empresa no encontrada"
+                            )
+                    );
+        } else {
+            throw new RuntimeException(
+                    "Empresa obligatoria"
+            );
+        }
+        Planta entity =
+                factory.toPlantaEntity(dto);
+        entity.setEmpresa(empresa);
+        Planta guardada =
+                plantaRepo.save(entity);
+        return factory.toPlantaDTO(
+                guardada
+        );
     }
 
     public List<PlantaDTO> listar() {
@@ -34,8 +90,14 @@ public class PlantaService {
     }
 
     public Planta getEntity(Integer id) {
+
         System.out.println("BUSCANDO PLANTA: " + id);
+
         return plantaRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Planta no encontrada"));
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Planta no encontrada"
+                        )
+                );
     }
 }

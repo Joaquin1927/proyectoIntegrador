@@ -1,50 +1,41 @@
 package com.co2x.dmrv.entity;
 
-import com.co2x.dmrv.dto.PlantaDTO;
-import com.co2x.dmrv.entity.PaqueteCO2;
-import com.co2x.dmrv.entity.Reporte;
 import jakarta.persistence.*;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
 
 @Data
 @Entity
-@Table(name = "Planta")
-public class Planta extends PlantaDTO {
+@Table(name = "planta")
+public class Planta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "nombre")
+    @Column(nullable = false, unique = true)
     private String nombre;
 
-    @Column(name = "direccion")
-    private String direccion;
-
-    @Column(name = "latitud")
-    private Double latitud;
-
-    @Column(name = "longitud")
-    private Double longitud;
-
-    // ✅ RELACIÓN CON EMPRESA (ESTA FALTABA)
     @ManyToOne
-    @JoinColumn(name = "empresa")
+    @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
 
-    // =========================
-    // Relaciones
-    // =========================
+    @Column(nullable = false)
+    private String direccion;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "planta")
-    private List<PaqueteCO2> paquetesCO2;
+    @Column(nullable = false)
+    private String managerEmail;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "planta")
-    private List<Reporte> reportes;
+    @Column(columnDefinition = "json")
+    private String metadata;
+
+    @OneToMany(
+            mappedBy = "planta",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Pozo> pozos;
+
+    @Column(name = "pdf_tecnico")
+    private String pdfTecnico;
 }

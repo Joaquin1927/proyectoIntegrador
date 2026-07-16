@@ -1,18 +1,9 @@
-import { useApp } from "../context/AppContext";
-import { useNavigate } from "react-router-dom";
 import { msalInstance } from "../auth/msalConfig";
 
 export default function Login() {
-  const { setUser } = useApp();
-  const navigate = useNavigate();
-
   const submit = async () => {
     try {
       await msalInstance.initialize();
-      console.log("CLIENT_ID:", import.meta.env.VITE_CLIENT_ID);
-      console.log("AUTHORITY:", import.meta.env.VITE_AUTHORITY);
-      console.log("REDIRECT_URI:", import.meta.env.VITE_REDIRECT_URI);
-      console.log("API_URL:", import.meta.env.VITE_API_URL);
       await msalInstance.loginRedirect({
         scopes: [import.meta.env.VITE_SCOPE],
         prompt: "select_account",
@@ -29,7 +20,7 @@ export default function Login() {
       <h1 style={{ color: "red" }}>DEPLOY TEST 16 JULIO - 15:30</h1>
       <div className="actions">
         <button className="primary" onClick={submit}>
-          Iniciar sesión
+          Iniciar sesión con Microsoft
         </button>
       </div>
     </section>

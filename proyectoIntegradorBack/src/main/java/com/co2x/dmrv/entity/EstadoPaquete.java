@@ -7,4 +7,5 @@ public enum EstadoPaquete {
     APROBADO,
     RECHAZADO,
     MINTEADO,
+
 }

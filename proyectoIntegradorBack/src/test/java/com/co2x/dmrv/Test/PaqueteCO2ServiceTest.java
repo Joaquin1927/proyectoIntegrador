@@ -6,37 +6,47 @@ import com.co2x.dmrv.entity.PaqueteCO2;
 import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.repository.PaqueteCO2Repository;
 import com.co2x.dmrv.service.PaqueteCO2Service;
+import com.co2x.dmrv.service.HistorialService;
 import com.co2x.dmrv.service.PlantaService;
+import com.co2x.dmrv.service.SecurityService;
 import com.co2x.dmrv.utils.Factory;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
+import java.time.LocalDate;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class PaqueteCO2ServiceTest {
 
-    @MockBean
+    @Mock
     private PaqueteCO2Repository paqueteRepo;
 
-    @MockBean
+    @Mock
     private PlantaService plantaService;
 
-    @MockBean
+    @Mock
     private Factory factory;
 
-    @Autowired
+    @Mock
+    private SecurityService securityService;
+
+    @Mock
+    private HistorialService historialService;
+
+    @InjectMocks
     private PaqueteCO2Service service;
 
 
@@ -49,23 +59,26 @@ class PaqueteCO2ServiceTest {
         plantaDTO.setId(1);
 
         dto.setPlanta(plantaDTO);
+        dto.setCaptureDate(LocalDate.of(2026, 7, 1));
 
         dto.setMetadata("{\"tonCO2eq\": 10}");
 
         PaqueteCO2 entity = new PaqueteCO2();
+        entity.setId(1);
 
         Planta planta = new Planta();
         planta.setId(1);
 
         when(plantaService.getEntity(1)).thenReturn(planta);
         when(factory.toPaqueteEntity(any(), eq(planta))).thenReturn(entity);
-        when(paqueteRepo.save(any())).thenReturn(entity);
+        when(securityService.getCurrentUserEmail()).thenReturn("empleado@test.com");
+        when(paqueteRepo.saveAndFlush(any())).thenReturn(entity);
         when(factory.toPaqueteDTO(any())).thenReturn(dto);
 
         PaqueteCO2DTO result = service.crear(dto);
 
         assertNotNull(result);
-        verify(paqueteRepo).save(any());
+        verify(paqueteRepo).saveAndFlush(any());
     }
 
     @Test
