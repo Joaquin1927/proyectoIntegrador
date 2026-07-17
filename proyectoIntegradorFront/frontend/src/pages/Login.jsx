@@ -17,7 +17,7 @@ export default function Login() {
   return (
     <section className="panel">
       <h1>Login</h1>
-      <h1 style={{ color: "red" }}>DEPLOY TEST 16 JULIO - 14:00</h1>
+      <h1 style={{ color: "red" }}>DEPLOY TEST 17 JULIO - 14:23</h1>
       <div className="actions">
         <button className="primary" onClick={submit}>
           Iniciar sesión con Microsoft
