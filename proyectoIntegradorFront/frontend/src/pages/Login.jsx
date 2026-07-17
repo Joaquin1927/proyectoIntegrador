@@ -18,6 +18,7 @@ export default function Login() {
     <section className="panel">
       <h1>Login</h1>
       <div className="actions">
+        <h2>DEPLOY 17/7 13:30</h2>
         <button className="primary" onClick={submit}>
           Iniciar sesión con Microsoft
         </button>
