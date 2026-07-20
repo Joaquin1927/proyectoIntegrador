@@ -2,6 +2,7 @@ import { useApp } from "../context/AppContext";
 import { useState, useEffect, useRef } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
+import { getAccessToken } from "../utils/getAccessToken";
 import axios from "axios";
 
 export default function Header() {
@@ -60,11 +61,10 @@ export default function Header() {
     setOpen(false);
     if (user?.email) {
       console.log("MARCANDO LEIDAS");
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
-      });
-      const token = response.accessToken;
+      const token = await getAccessToken(
+instance,
+accounts
+);
       await axios.post(
         `${API}/notificaciones/leer/${user.email}`,
         {},

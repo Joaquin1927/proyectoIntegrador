@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useMsal } from "@azure/msal-react";
+import { getAccessToken } from "../utils/getAccessToken";
 
 export default function Auditar() {
   const API = import.meta.env.VITE_API_URL;
@@ -20,12 +21,8 @@ export default function Auditar() {
 
   const aprobar = async () => {
     try {
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
-      });
-
-      const token = response.accessToken;
+      
+      const token = await getAccessToken(instance);
 
       await axios.post(
         `${API}/auditoria/${id}/aprobar`,
@@ -54,17 +51,12 @@ export default function Auditar() {
     }
 
     try {
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
-      });
-
-      const token = response.accessToken;
+      const token = await getAccessToken(instance);
 
       await axios.post(
         `${API}/auditoria/${id}/rechazar`,
         {
-          comentario: comentarioGeneral, 
+          comentario: comentarioGeneral,
         },
         {
           headers: {
@@ -113,32 +105,19 @@ export default function Auditar() {
     }
     console.log("BODY QUE ENVIO:", body);
     try {
-      
-  
-const response = await instance.acquireTokenSilent({
-  scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-  account: accounts[0],
-});
-    
-const token = response.accessToken;
+      const token = await getAccessToken(instance);
 
-await axios.post(
-  `${API}/auditoria/${id}/correccion`,
-  body,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
-
+      await axios.post(`${API}/auditoria/${id}/correccion`, body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       navigate(-1);
     } catch (err) {
       console.error("Error enviando corrección:", err);
     }
   };
-
 
   useEffect(() => {
     if (!user) return;
@@ -154,59 +133,51 @@ await axios.post(
   if (user.role.toLowerCase() !== "auditor") {
     return null;
   }
-const [error, setError] = useState(null);
-useEffect(() => {
-const cargarPaquete = async () => {
-try {
-const response = await instance.acquireTokenSilent({
-scopes: [
-"api://36920833-e50a-48be-b51a-e363b373c011/access_as_user",
-],
-account: accounts[0],
-});
- 
-const token = response.accessToken;
- 
-const res = await axios.get(`${API}/paquetes/${id}`, {
-headers: {
-Authorization: `Bearer ${token}`,
-},
-});
- 
-setPaquete(res.data);
-setError(null);
-} catch (err) {
-console.error("Error cargando paquete:", err);
- 
-if (err.response?.status === 401) {
-setError("Tu sesión expiró. Volvé a iniciar sesión.");
-} else if (err.response?.status === 403) {
-setError(
-"No tenés permisos para acceder a este paquete. Se requiere perfil de auditor."
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    const cargarPaquete = async () => {
+      try {
+        const token = await getAccessToken(
+instance,
+accounts
 );
-} else {
-setError(
-err.response?.data?.message ||
-"Ocurrió un error al cargar el paquete."
-);
-}
-}
-};if (accounts.length > 0) {
-cargarPaquete();
-}
-}, [id, accounts]);
+        const res = await axios.get(`${API}/paquetes/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setPaquete(res.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error cargando paquete:", err);
+        if (err.response?.status === 401) {
+          setError("Tu sesión expiró. Volvé a iniciar sesión.");
+        } else if (err.response?.status === 403) {
+          setError(
+            "No tenés permisos para acceder a este paquete. Se requiere perfil de auditor.",
+          );
+        } else {
+          setError(
+            err.response?.data?.message ||
+              "Ocurrió un error al cargar el paquete.",
+          );
+        }
+      }
+    };
+    if (accounts.length > 0) {
+      cargarPaquete();
+    }
+  }, [id, accounts]);
 
-if (error) {
-return (
-<div className="panel">
-<h3>Error</h3>
-<p>{error}</p>
-<button onClick={() => navigate("/dashboard")}>
-Volver
-</button>
-</div>
-);
-}
+  if (error) {
+    return (
+      <div className="panel">
+        <h3>Error</h3>
+        <p>{error}</p>
+        <button onClick={() => navigate("/dashboard")}>Volver</button>
+      </div>
+    );
+  }
 
   if (!paquete) return <p>Cargando...</p>;
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import axios from "axios";
+import { getAccessToken } from "../utils/getAccessToken";
 
 export default function RegistrarEmpresa() {
   const API = import.meta.env.VITE_API_URL;
@@ -68,13 +69,12 @@ export default function RegistrarEmpresa() {
     try {
       setLoading(true);
 
-      const response = await instance.acquireTokenSilent({
-        scopes: [import.meta.env.VITE_SCOPE],
-        account: accounts[0],
-      });
+      const token = await getAccessToken(instance);
 
-      const token = response.accessToken;
-      console.log("📤 Enviando datos al backend:", JSON.stringify(form, null, 2));
+      console.log(
+        "📤 Enviando datos al backend:",
+        JSON.stringify(form, null, 2),
+      );
       console.log("TOKEN ENVIADO: " + token);
 
       const res = await axios.post(`${API}/empresas`, form, {

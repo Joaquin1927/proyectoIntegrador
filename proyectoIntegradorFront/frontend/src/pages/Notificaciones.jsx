@@ -3,6 +3,9 @@ import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
+import { getAccessToken } from "../utils/getAccessToken";
+
+
 export default function Notificaciones() {
   const API = import.meta.env.VITE_API_URL;
   const { instance, accounts } = useMsal();
@@ -15,11 +18,10 @@ export default function Notificaciones() {
     if (!user?.email) return;
     const cargarNotificaciones = async () => {
       try {
-        const response = await instance.acquireTokenSilent({
-          scopes: [import.meta.env.VITE_SCOPE],
-          account: accounts[0],
-        });
-        const token = response.accessToken;
+        const token = await getAccessToken(
+instance,
+accounts
+);
         const res = await axios.get(`${API}/notificaciones/${user.email}`, {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
+import { getAccessToken } from "../utils/getAccessToken";
 
 export default function Registrar() {
   const { plantas, paquetes, setPaquetes, user } = useApp();
@@ -87,11 +88,10 @@ export default function Registrar() {
 
   const saveAll = async () => {
     try {
-      const response = await instance.acquireTokenSilent({
-        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
-        account: accounts[0],
-      });
-      const token = response.accessToken;
+      const token = await getAccessToken(
+instance,
+accounts
+);
       const results = [];
       const errores = [];
       let successCount = 0;

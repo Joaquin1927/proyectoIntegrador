@@ -5,12 +5,7 @@ const obtenerToken = async () => {
   if (!account) return null;
 
   try {
-    const response = await msalInstance.acquireTokenSilent({
-      scopes: [import.meta.env.VITE_SCOPE],
-      account
-    });
-
-    return response.accessToken;
+    const token = await getAccessToken(instance);
   } catch (err) {
     console.error("Error obteniendo token:", err);
     return null;
@@ -31,7 +26,7 @@ export const apiGet = async (url, requireAuth = true) => {
 
 export const apiPost = async (url, body, requireAuth = true) => {
   const headers = {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   };
 
   if (requireAuth) {
@@ -43,6 +38,6 @@ export const apiPost = async (url, body, requireAuth = true) => {
   return fetch(url, {
     method: "POST",
     headers,
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
 };

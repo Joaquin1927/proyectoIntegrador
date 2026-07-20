@@ -16,6 +16,7 @@ import Aprobados from "./pages/Aprobados";
 import Ayuda from "./pages/Ayuda";
 import CrearPlanta from "./pages/CrearPlanta";
 import RegistrarEmpresa from "./pages/RegistrarEmpresa";
+import { getAccessToken } from "./utils/getAccessToken";
 
 import "./styles.css";
 
@@ -49,14 +50,8 @@ export default function App() {
           return;
         }
 
-        instance.setActiveAccount(account);
 
-        const response = await instance.acquireTokenSilent({
-          scopes: [import.meta.env.VITE_SCOPE],
-          account,
-        });
-
-        const token = response.accessToken;
+        const token = await getAccessToken(instance);
         localStorage.setItem("token", token);
 
         const payload = JSON.parse(atob(token.split(".")[1]));

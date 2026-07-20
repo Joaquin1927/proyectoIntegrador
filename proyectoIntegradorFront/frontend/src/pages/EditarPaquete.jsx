@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { authFetch } from "../api/authFetch";
 import { useMsal } from "@azure/msal-react";
+import { getAccessToken } from "../utils/getAccessToken";
+
+
 export default function EditarPaquete() {
   const { id } = useParams();
   const { user } = useApp();
@@ -27,14 +30,10 @@ const cargar = async () => {
 
   try {
 
-    const response = await instance.acquireTokenSilent({
-      scopes: [
-        "api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"
-      ],
-      account: accounts[0],
-    });
-
-    const token = response.accessToken;
+    const token = await getAccessToken(
+instance,
+accounts
+);
 
     const res = await authFetch(
       `${API}/paquetes/${id}/edicion`,
@@ -88,14 +87,10 @@ const cargar = async () => {
 
   try {
 
-    const response = await instance.acquireTokenSilent({
-      scopes: [
-        "api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"
-      ],
-      account: accounts[0],
-    });
-
-    const token = response.accessToken;
+    const token = await getAccessToken(
+instance,
+accounts
+);
 
     const res = await authFetch(
       `${API}/paquetes/${id}/corregir`,

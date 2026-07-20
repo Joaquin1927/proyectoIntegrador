@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import DashboardImp from "../web3dashboard/dashboardImp";
 import { useMsal } from "@azure/msal-react";
+import { getAccessToken } from "../utils/getAccessToken";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -163,11 +164,10 @@ export default function Dashboard() {
       const account = instance.getActiveAccount();
       if (!account) return;
 
-      const response = await instance.acquireTokenSilent({
-        account,
-      });
-
-      const accessToken = response.accessToken;
+      const token = await getAccessToken(
+instance,
+accounts
+);
 
       const aprobados = paquetesUsuario.filter(
         (p) => (p.estado || "").toUpperCase() === "APROBADO"
