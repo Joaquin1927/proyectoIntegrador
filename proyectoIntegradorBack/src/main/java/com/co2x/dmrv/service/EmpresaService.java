@@ -20,8 +20,6 @@ public class EmpresaService {
     }
 
     public List<EmpresaDTO> listar() {
-
-        // 🔐 Solo ADMIN puede listar empresas
         securityService.validarAdmin();
 
         return empresaRepo.findAll()
@@ -31,27 +29,31 @@ public class EmpresaService {
     }
 
     public EmpresaDTO crear(EmpresaDTO dto) {
-
-        // 🔐 Solo ADMIN puede crear empresas
+        System.out.println("ENTRO A CREAR EMPRESA");
+        System.out.println("DTO: " + dto.getNombre());
         securityService.validarAdmin();
-
+        System.out.println("VALIDACION ADMIN OK");
         empresaRepo.findByNombreIgnoreCase(dto.getNombre())
                 .ifPresent(e -> {
                     throw new RuntimeException("Ya existe una empresa con ese nombre");
                 });
-
+        System.out.println("NO EXISTE EMPRESA");
         Empresa empresa = new Empresa();
         empresa.setNombre(dto.getNombre());
-
         Empresa guardada = empresaRepo.save(empresa);
-
+        System.out.println("EMPRESA GUARDADA");
         return toDTO(guardada);
     }
 
     private EmpresaDTO toDTO(Empresa empresa) {
         EmpresaDTO dto = new EmpresaDTO();
-        dto.setId(empresa.getId());
+        //dto.setId(empresa.getId());
         dto.setNombre(empresa.getNombre());
+        dto.setNumeroCorporacion(empresa.getNumeroCorporacion());
+        dto.setNumeroEmpresa(empresa.getNumeroEmpresa());
+        dto.setDireccion(empresa.getDireccion());
+        dto.setDirectores(empresa.getDirectores());
+        dto.setContacto(empresa.getContacto());
         return dto;
     }
 }
