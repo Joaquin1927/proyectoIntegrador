@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useMsal } from "@azure/msal-react";
 
 export default function Notificaciones() {
   const API = import.meta.env.VITE_API_URL;
+  const { instance, accounts } = useMsal();
   const { user } = useApp();
   const navigate = useNavigate();
 
@@ -12,12 +14,25 @@ export default function Notificaciones() {
 
   useEffect(() => {
     if (!user?.email) return;
-
-    axios
-      .get(`${API}/notificaciones/${user.email}`)
-      .then((res) => setNotificaciones(res.data))
-      .catch(console.error);
-  }, [user]);
+    const cargarNotificaciones = async () => {
+      try {
+        const response = await instance.acquireTokenSilent({
+          scopes: [import.meta.env.VITE_SCOPE],
+          account: accounts[0],
+        });
+        const token = response.accessToken;
+        const res = await axios.get(`${API}/notificaciones/${user.email}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setNotificaciones(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    cargarNotificaciones();
+  }, [user, instance, accounts]);
 
   if (!user) return <p>Cargando...</p>;
 
