@@ -39,11 +39,9 @@ public class NotificacionController {
 
         securityService.validarUsuarioSolicitado(usuario);
 
-        System.out.println("USUARIO NOTIF: " + usuario);
 
         var lista = repo.findByUsuarioAndLeidoFalse(usuario);
 
-        System.out.println("ENCONTRADAS: " + lista.size());
 
         lista.forEach(n ->
                 System.out.println(
@@ -81,13 +79,16 @@ public class NotificacionController {
                 .toList();
     }
 
-    // ✔️ Marcar todas como leídas
     @PostMapping("/leer/{usuario}")
     public void marcarLeidas(@PathVariable String usuario) {
+
         securityService.validarUsuarioSolicitado(usuario);
-        List<Notificacion> lista = repo.findByUsuarioAndLeidoFalse(usuario);
+
+        List<Notificacion> lista =
+                repo.findByUsuarioAndLeidoFalse(usuario);
+
         lista.forEach(n -> n.setLeido(true));
-        System.out.println("set leido");
+
         repo.saveAll(lista);
     }
 

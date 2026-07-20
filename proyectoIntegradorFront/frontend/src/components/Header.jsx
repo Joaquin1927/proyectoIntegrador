@@ -13,7 +13,7 @@ export default function Header() {
     reloadNotificaciones,
   } = useApp();
 
-  const { instance } = useMsal();
+  const { instance, accounts } = useMsal();
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -57,17 +57,25 @@ export default function Header() {
 
   const cerrarDropdown = async () => {
     console.log("CERRANDO DROPDOWN");
-
     setOpen(false);
-
     if (user?.email) {
       console.log("MARCANDO LEIDAS");
-
-      await axios.post(`${API}/notificaciones/leer/${user.email}`);
-
+      const response = await instance.acquireTokenSilent({
+        scopes: ["api://36920833-e50a-48be-b51a-e363b373c011/access_as_user"],
+        account: accounts[0],
+      });
+      const token = response.accessToken;
+      await axios.post(
+        `${API}/notificaciones/leer/${user.email}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
       await reloadNotificaciones();
     }
-
     setDropdownNotifs([]);
   };
 
