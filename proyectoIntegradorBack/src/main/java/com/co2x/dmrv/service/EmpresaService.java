@@ -3,6 +3,8 @@ package com.co2x.dmrv.service;
 import com.co2x.dmrv.dto.EmpresaDTO;
 import com.co2x.dmrv.entity.Empresa;
 import com.co2x.dmrv.repository.EmpresaRepository;
+import com.co2x.dmrv.utils.Factory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,11 +14,16 @@ public class EmpresaService {
 
     private final EmpresaRepository empresaRepo;
     private final SecurityService securityService;
+    private final Factory factory;
 
-    public EmpresaService(EmpresaRepository empresaRepo,
-                          SecurityService securityService) {
+    public EmpresaService(
+            EmpresaRepository empresaRepo,
+            SecurityService securityService,
+            Factory factory) {
+
         this.empresaRepo = empresaRepo;
         this.securityService = securityService;
+        this.factory = factory;
     }
 
     public List<EmpresaDTO> listar() {
@@ -24,7 +31,7 @@ public class EmpresaService {
 
         return empresaRepo.findAll()
                 .stream()
-                .map(this::toDTO)
+                .map(factory::toEmpresaDTO)
                 .toList();
     }
 
@@ -38,22 +45,12 @@ public class EmpresaService {
                     throw new RuntimeException("Ya existe una empresa con ese nombre");
                 });
         System.out.println("NO EXISTE EMPRESA");
-        Empresa empresa = new Empresa();
-        empresa.setNombre(dto.getNombre());
-        Empresa guardada = empresaRepo.save(empresa);
-        System.out.println("EMPRESA GUARDADA");
-        return toDTO(guardada);
+        Empresa empresa =
+                factory.toEmpresaEntity(dto);
+        Empresa guardada =
+                empresaRepo.save(empresa);
+        return factory.toEmpresaDTO(guardada);
     }
 
-    private EmpresaDTO toDTO(Empresa empresa) {
-        EmpresaDTO dto = new EmpresaDTO();
-        //dto.setId(empresa.getId());
-        dto.setNombre(empresa.getNombre());
-        dto.setNumeroCorporacion(empresa.getNumeroCorporacion());
-        dto.setNumeroEmpresa(empresa.getNumeroEmpresa());
-        dto.setDireccion(empresa.getDireccion());
-        dto.setDirectores(empresa.getDirectores());
-        dto.setContacto(empresa.getContacto());
-        return dto;
-    }
+
 }

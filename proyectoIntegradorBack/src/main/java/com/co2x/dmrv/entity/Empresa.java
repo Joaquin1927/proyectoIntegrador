@@ -21,10 +21,10 @@ public class Empresa {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name = "numero_corporacion", nullable = false)
+    @Column(name = "numero_corporacion")
     private String numeroCorporacion;
 
-    @Column(name = "numero_empresa", nullable = false)
+    @Column(name = "numero_empresa")
     private String numeroEmpresa;
 
     @Column(name = "direccion", nullable = false)
