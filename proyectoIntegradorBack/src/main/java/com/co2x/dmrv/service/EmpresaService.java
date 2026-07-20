@@ -9,27 +9,32 @@ import java.util.List;
 
 @Service
 public class EmpresaService {
-    private final EmpresaRepository empresaRepo;
 
-    public EmpresaService(EmpresaRepository empresaRepo) {
+    private final EmpresaRepository empresaRepo;
+    private final SecurityService securityService;
+
+    public EmpresaService(EmpresaRepository empresaRepo,
+                          SecurityService securityService) {
         this.empresaRepo = empresaRepo;
+        this.securityService = securityService;
     }
+
     public List<EmpresaDTO> listar() {
+
+        // 🔐 Solo ADMIN puede listar empresas
+        securityService.validarAdmin();
+
         return empresaRepo.findAll()
                 .stream()
                 .map(this::toDTO)
                 .toList();
     }
-    private EmpresaDTO toDTO(Empresa empresa) {
-        EmpresaDTO dto = new EmpresaDTO();
-        dto.setId(empresa.getId());
-        dto.setNombre(empresa.getNombre());
-        return dto;
-    }
 
     public EmpresaDTO crear(EmpresaDTO dto) {
 
-        // Validación simple
+        // 🔐 Solo ADMIN puede crear empresas
+        securityService.validarAdmin();
+
         empresaRepo.findByNombreIgnoreCase(dto.getNombre())
                 .ifPresent(e -> {
                     throw new RuntimeException("Ya existe una empresa con ese nombre");
@@ -43,4 +48,10 @@ public class EmpresaService {
         return toDTO(guardada);
     }
 
+    private EmpresaDTO toDTO(Empresa empresa) {
+        EmpresaDTO dto = new EmpresaDTO();
+        dto.setId(empresa.getId());
+        dto.setNombre(empresa.getNombre());
+        return dto;
+    }
 }

@@ -3,15 +3,14 @@ import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
-
 export default function Notificaciones() {
   const API = import.meta.env.VITE_API_URL;
   const { instance, accounts } = useMsal();
   const { user } = useApp();
   const navigate = useNavigate();
-
+ 
   const [notificaciones, setNotificaciones] = useState([]);
-
+ 
   useEffect(() => {
     if (!user?.email) return;
     const cargarNotificaciones = async () => {
@@ -33,18 +32,17 @@ export default function Notificaciones() {
     };
     cargarNotificaciones();
   }, [user, instance, accounts]);
-
   if (!user) return <p>Cargando...</p>;
-
+ 
   return (
     <div className="panel">
       <h2>Notificaciones</h2>
-
+ 
       {notificaciones.map((n) => (
         <div key={n.id}>
           <p>{n.mensaje}</p>
           <small>{new Date(n.fecha).toLocaleString()}</small>
-
+ 
           <button
             onClick={() =>
               navigate(
