@@ -162,9 +162,42 @@ public class Factory {
         return dto;
     }
 
+    public Empresa toEmpresaEntity(EmpresaDTO dto) {
+        Empresa empresa = new Empresa();
+        empresa.setId(dto.getId());
+        empresa.setNombre(dto.getNombre());
+        empresa.setNumeroCorporacion(dto.getNumeroCorporacion());
+        empresa.setNumeroEmpresa(dto.getNumeroEmpresa());
+        empresa.setDireccion(dto.getDireccion());
+        empresa.setDirectores(dto.getDirectores());
+        empresa.setContacto(dto.getContacto());
+        return empresa;
+    }
 
+    public EmpresaDTO toEmpresaDTO(Empresa empresa) {
 
+        EmpresaDTO dto = new EmpresaDTO();
 
+        dto.setId(empresa.getId());
+        dto.setNombre(empresa.getNombre());
+        dto.setNumeroCorporacion(
+                empresa.getNumeroCorporacion()
+        );
+        dto.setNumeroEmpresa(
+                empresa.getNumeroEmpresa()
+        );
+        dto.setDireccion(
+                empresa.getDireccion()
+        );
+        dto.setDirectores(
+                empresa.getDirectores()
+        );
+        dto.setContacto(
+                empresa.getContacto()
+        );
+
+        return dto;
+    }
 
 }
 
