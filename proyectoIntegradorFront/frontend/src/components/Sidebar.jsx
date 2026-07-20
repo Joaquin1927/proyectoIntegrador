@@ -58,6 +58,9 @@ export default function Sidebar() {
                 <Link to="/empresa/registrar" className="nav-item">
                   🏢 Registrar Empresa
                 </Link>
+                <Link to="/empresas" className="nav-item">
+                  📋 Listar Empresas
+                </Link>
               </>
             )}
 
