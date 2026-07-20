@@ -1,6 +1,5 @@
 package com.co2x.dmrv.entity;
 
-import com.co2x.dmrv.entity.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -22,7 +21,7 @@ public class Empresa {
 
 
     @OneToMany(mappedBy = "empresa")
-    private List<Usuario> usuarios;
+    private List<Usuario> empleados;
 
     @OneToMany(mappedBy = "empresa")
     @JsonIgnore

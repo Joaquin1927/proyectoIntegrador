@@ -2,9 +2,8 @@ package com.co2x.dmrv.controller;
 
 import com.co2x.dmrv.dto.EmpresaDTO;
 import com.co2x.dmrv.service.EmpresaService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -18,4 +17,10 @@ public class EmpresaController {
     public List<EmpresaDTO> listar() {
         return empresaService.listar();
     }
+
+    @PostMapping
+    public EmpresaDTO crear(@RequestBody EmpresaDTO dto) {
+        return empresaService.crear(dto);
+    }
+
 }

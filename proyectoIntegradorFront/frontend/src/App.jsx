@@ -15,6 +15,7 @@ import EditarPaquete from "./pages/EditarPaquete";
 import Aprobados from "./pages/Aprobados";
 import Ayuda from "./pages/Ayuda";
 import CrearPlanta from "./pages/CrearPlanta";
+import RegistrarEmpresa from "./pages/RegistrarEmpresa";
 
 import "./styles.css";
 
@@ -26,65 +27,64 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const authInitializationStarted = useRef(false);
 
-useEffect(() => {
-  if (authInitializationStarted.current) return;
-  authInitializationStarted.current = true;
+  useEffect(() => {
+    if (authInitializationStarted.current) return;
+    authInitializationStarted.current = true;
 
-  const init = async () => {
-    try {
-      await instance.initialize();
+    const init = async () => {
+      try {
+        await instance.initialize();
 
-      const redirectResponse = await instance.handleRedirectPromise();
+        const redirectResponse = await instance.handleRedirectPromise();
 
-      if (redirectResponse?.account) {
-        instance.setActiveAccount(redirectResponse.account);
-      }
+        if (redirectResponse?.account) {
+          instance.setActiveAccount(redirectResponse.account);
+        }
 
-      const account =
-        instance.getActiveAccount() ||
-        instance.getAllAccounts()[0];
+        const account =
+          instance.getActiveAccount() || instance.getAllAccounts()[0];
 
-      if (!account) {
+        if (!account) {
+          setUser(null);
+          return;
+        }
+
+        instance.setActiveAccount(account);
+
+        const response = await instance.acquireTokenSilent({
+          scopes: [import.meta.env.VITE_SCOPE],
+          account,
+        });
+
+        const token = response.accessToken;
+        localStorage.setItem("token", token);
+
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const roles = payload.roles || [];
+
+        let role = "empleado";
+        if (roles.includes("ADMIN")) role = "admin";
+        else if (roles.includes("AUDITOR")) role = "auditor";
+
+        setUser({
+          email: payload.upn || payload.unique_name,
+          role,
+        });
+
+        if (window.location.pathname === "/") {
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("Error inicializando autenticacion:", error);
+        localStorage.removeItem("token");
         setUser(null);
-        return;
+      } finally {
+        setLoading(false);
       }
+    };
 
-      instance.setActiveAccount(account);
-
-      const response = await instance.acquireTokenSilent({
-        scopes: [import.meta.env.VITE_SCOPE],
-        account,
-      });
-
-      const token = response.accessToken;
-      localStorage.setItem("token", token);
-
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const roles = payload.roles || [];
-
-      let role = "empleado";
-      if (roles.includes("ADMIN")) role = "admin";
-      else if (roles.includes("AUDITOR")) role = "auditor";
-
-      setUser({
-        email: payload.upn || payload.unique_name,
-        role,
-      });
-
-      if (window.location.pathname === "/") {
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Error inicializando autenticacion:", error);
-      localStorage.removeItem("token");
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  init();
-}, [accounts, instance, navigate, setUser]);
+    init();
+  }, [accounts, instance, navigate, setUser]);
 
   // ✅ evitar render mientras MSAL carga
   if (loading) {
@@ -96,7 +96,6 @@ useEffect(() => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-
         {/* ✅ LOGIN */}
         <Route index element={<Login />} />
 
@@ -136,21 +135,27 @@ useEffect(() => {
         <Route path="/editar/:id" element={<EditarPaquete />} />
 
         <Route
-            path="aprobados"
-            element={
-              isAuthenticated
-                ? <Aprobados />
-                : <Navigate to="/" />
-            }
-          />
+          path="aprobados"
+          element={isAuthenticated ? <Aprobados /> : <Navigate to="/" />}
+        />
 
-          <Route path="/plantas/crear" element={<CrearPlanta />} />
+        <Route path="/plantas/crear" element={<CrearPlanta />} />
 
         <Route
           path="ayuda"
           element={isAuthenticated ? <Ayuda /> : <Navigate to="/" />}
         />
 
+        <Route
+          path="/empresa/registrar"
+          element={
+            user && user.role === "admin" ? (
+              <RegistrarEmpresa />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
       </Route>
     </Routes>
   );

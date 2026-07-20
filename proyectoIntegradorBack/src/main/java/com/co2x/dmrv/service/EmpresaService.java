@@ -26,4 +26,21 @@ public class EmpresaService {
         dto.setNombre(empresa.getNombre());
         return dto;
     }
+
+    public EmpresaDTO crear(EmpresaDTO dto) {
+
+        // Validación simple
+        empresaRepo.findByNombreIgnoreCase(dto.getNombre())
+                .ifPresent(e -> {
+                    throw new RuntimeException("Ya existe una empresa con ese nombre");
+                });
+
+        Empresa empresa = new Empresa();
+        empresa.setNombre(dto.getNombre());
+
+        Empresa guardada = empresaRepo.save(empresa);
+
+        return toDTO(guardada);
+    }
+
 }
