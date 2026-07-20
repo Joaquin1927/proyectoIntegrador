@@ -16,6 +16,7 @@ import Aprobados from "./pages/Aprobados";
 import Ayuda from "./pages/Ayuda";
 import CrearPlanta from "./pages/CrearPlanta";
 import RegistrarEmpresa from "./pages/RegistrarEmpresa";
+import ListarEmpresas from "./pages/ListarEmpresas";
 
 import "./styles.css";
 
@@ -145,6 +146,8 @@ export default function App() {
           path="ayuda"
           element={isAuthenticated ? <Ayuda /> : <Navigate to="/" />}
         />
+
+        <Route path="/empresas" element={<ListarEmpresas />} />
 
         <Route
           path="/empresa/registrar"
