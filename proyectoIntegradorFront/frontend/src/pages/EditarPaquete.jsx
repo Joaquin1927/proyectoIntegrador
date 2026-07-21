@@ -3,7 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { authFetch } from "../api/authFetch";
 import { useMsal } from "@azure/msal-react";
+import { useToast } from "../ui/Toaster";
+import { LoadingState } from "../ui/Feedback";
 export default function EditarPaquete() {
+  const toast = useToast();
   const { id } = useParams();
   const { user } = useApp();
   const navigate = useNavigate();
@@ -82,7 +85,7 @@ const cargar = async () => {
   const guardar = async () => {
 
   if (Object.keys(cambios).length === 0) {
-    alert("Debes modificar al menos un campo");
+    toast.error("Debés modificar al menos un campo");
     return;
   }
 
@@ -116,7 +119,7 @@ const cargar = async () => {
       throw new Error("Error en backend");
     }
 
-    alert("Corrección enviada ✅");
+    toast.success("Corrección enviada correctamente");
 
     navigate("/historial");
 
@@ -124,11 +127,11 @@ const cargar = async () => {
 
     console.error("Error guardando:", err);
 
-    alert("Error al guardar");
+    toast.error(err.message || "Error al guardar la corrección");
   }
 };
 
-  if (!data) return <p>Cargando...</p>;
+  if (!data) return <LoadingState title="Cargando paquete" text="Preparando los campos para edición…" />;
 
   return (
     <section className="panel">

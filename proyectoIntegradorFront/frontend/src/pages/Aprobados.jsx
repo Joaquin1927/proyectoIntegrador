@@ -45,7 +45,7 @@ export default function Aprobados() {
     if (!userEmail || !userRole) return;
 
     if (userRole !== "admin") {
-      alert("acceso exclusivo para administradores");
+      console.warn("Acceso exclusivo para administradores");
       navigate("/dashboard");
       return;
     }

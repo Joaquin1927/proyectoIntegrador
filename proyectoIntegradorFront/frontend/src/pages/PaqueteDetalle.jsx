@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { apiGet } from "../api/apiClient";
+import { LoadingState } from "../ui/Feedback";
 
 export default function PaqueteDetalle() {
   const { id } = useParams();
@@ -61,7 +62,7 @@ export default function PaqueteDetalle() {
     cargarHistorialCompleto();
   }, [user]);
 
-  if (!paquete) return <p>Cargando...</p>;
+  if (!paquete) return <LoadingState title="Cargando paquete" text="Recuperando su trazabilidad y evidencia…" />;
   const historialSinUltimo = historialCompleto.filter(
     (h) => h.id !== ultimoHistorial?.id,
   );

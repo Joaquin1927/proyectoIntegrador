@@ -17,6 +17,7 @@ import Ayuda from "./pages/Ayuda";
 import CrearPlanta from "./pages/CrearPlanta";
 import RegistrarEmpresa from "./pages/RegistrarEmpresa";
 import ListarEmpresas from "./pages/ListarEmpresas";
+import { LoadingState } from "./ui/Feedback";
 
 import "./styles.css";
 
@@ -89,7 +90,7 @@ export default function App() {
 
   // ✅ evitar render mientras MSAL carga
   if (loading) {
-    return <p>Cargando...</p>;
+    return <LoadingState title="Iniciando CO₂X" text="Preparando tu espacio de trabajo…" />;
   }
 
   const isAuthenticated = !!user; // ✅ CLAVE

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { authFetch } from "../api/authFetch";
+import { LoadingState } from "../ui/Feedback";
 
 const ESTADOS = [
   "PENDIENTE", "EN_REVISION", "EN_REVISION_CORREGIDO",
@@ -85,7 +86,7 @@ export default function Historial() {
     URL.revokeObjectURL(url);
   };
 
-  if (!user) return <p>Cargando...</p>;
+  if (!user) return <LoadingState title="Preparando consulta" text="Validando tu sesión…" />;
 
   return (
     <section className="panel">
