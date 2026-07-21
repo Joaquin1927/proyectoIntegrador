@@ -26,6 +26,8 @@ public class PlantaService {
     @Autowired
     private SecurityService securityService;
 
+
+
     public PlantaDTO crear(PlantaDTO dto) {
         System.out.println("=== ENTRE A PLANTA SERVICE ===");
         System.out.println(dto);
@@ -100,4 +102,18 @@ public class PlantaService {
                         )
                 );
     }
+
+    public PlantaService(PlantaRepository plantaRepo, Factory plantaFactory) {
+        this.plantaRepo = plantaRepo;
+        this.factory = plantaFactory;
+    }
+
+    public List<PlantaDTO> listarPorEmpresa(Integer empresaId) {
+        return plantaRepo.findByEmpresa_Id(empresaId)
+                .stream()
+                .map(factory::toDTO)
+                .toList();
+    }
+
+
 }

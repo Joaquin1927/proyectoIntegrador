@@ -60,4 +60,9 @@ public class PlantaController {
                 dto
         );
     }
+
+    @GetMapping("/byEmpresa/{id}")
+    public List<PlantaDTO> listarPorEmpresa(@PathVariable Integer id) {
+        return plantaService.listarPorEmpresa(id);
+    }
 }

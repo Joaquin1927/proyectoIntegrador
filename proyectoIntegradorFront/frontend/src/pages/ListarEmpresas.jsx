@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import PlantasPorEmpresa from "../components/PlantasPorEmpresa.jsx";
 
 export default function ListarEmpresas() {
   const API = import.meta.env.VITE_API_URL;
@@ -53,6 +54,7 @@ export default function ListarEmpresas() {
     fetchEmpresas();
   }, []);
 
+
   if (loading) return <p>Cargando empresas...</p>;
   if (error) return <p className="error">{error}</p>;
 
@@ -72,6 +74,7 @@ export default function ListarEmpresas() {
               <th>Dirección</th>
               <th>Directores</th>
               <th>Contacto</th>
+              <th>Plantas</th>
             </tr>
           </thead>
           <tbody>
@@ -83,6 +86,9 @@ export default function ListarEmpresas() {
                 <td>{e.direccion}</td>
                 <td>{e.directores}</td>
                 <td>{e.contacto}</td>
+                <td>
+                  <PlantasPorEmpresa empresaId={e.id} />
+                </td>
               </tr>
             ))}
           </tbody>

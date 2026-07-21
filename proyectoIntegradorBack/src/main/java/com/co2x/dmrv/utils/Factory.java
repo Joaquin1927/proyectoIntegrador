@@ -71,7 +71,7 @@ public class Factory {
 
 
 
-    private NotificacionDTO toDTO(Notificacion n) {
+    public NotificacionDTO toDTO(Notificacion n) {
 
         NotificacionDTO dto = new NotificacionDTO();
 
@@ -159,6 +159,16 @@ public class Factory {
             );
         }
 
+        return dto;
+    }
+
+    public PlantaDTO toDTO(Planta planta) {
+        PlantaDTO dto = new PlantaDTO();
+        dto.setId(planta.getId());
+        dto.setNombre(planta.getNombre());
+        dto.setDireccion(planta.getDireccion());
+        dto.setManagerEmail(planta.getManagerEmail());
+        dto.setPdfTecnico(planta.getPdfTecnico());
         return dto;
     }
 
