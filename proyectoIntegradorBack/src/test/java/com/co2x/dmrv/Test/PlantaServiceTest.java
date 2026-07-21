@@ -246,4 +246,81 @@ class PlantaServiceTest {
                 ex.getMessage()
         );
     }
+
+    @Test
+    void deberiaListarPlantasPorEmpresa() {
+
+        Planta planta = new Planta();
+        planta.setId(10);
+
+        PlantaDTO dto = new PlantaDTO();
+        dto.setId(10);
+
+        when(plantaRepo.findByEmpresa_Id(5))
+                .thenReturn(List.of(planta));
+
+        when(factory.toPlantaDTO(planta))
+                .thenReturn(dto);
+
+        List<PlantaDTO> resultado =
+                plantaService.listarPorEmpresa(5);
+
+        assertEquals(1, resultado.size());
+        assertEquals(10, resultado.get(0).getId());
+
+        verify(plantaRepo).findByEmpresa_Id(5);
+    }
+
+
+    @Test
+    void listarPorEmpresaDebeDevolverListaVacia() {
+
+        when(plantaRepo.findByEmpresa_Id(99))
+                .thenReturn(List.of());
+
+        List<PlantaDTO> resultado =
+                plantaService.listarPorEmpresa(99);
+
+        assertTrue(resultado.isEmpty());
+    }
+
+
+    @Test
+    void listarPorEmpresaDebeFallarSiFactoryFalla() {
+
+        Planta planta = new Planta();
+
+        when(plantaRepo.findByEmpresa_Id(1))
+                .thenReturn(List.of(planta));
+
+        when(factory.toPlantaDTO(planta))
+                .thenThrow(new RuntimeException("Error en factory"));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> plantaService.listarPorEmpresa(1)
+        );
+
+        assertEquals("Error en factory", ex.getMessage());
+    }
+
+    @Test
+    void crearDebeFallarSiNoEsAdmin() {
+
+        PlantaDTO dto = new PlantaDTO();
+        dto.setNombre("Planta Norte");
+
+        doThrow(new RuntimeException("No autorizado"))
+                .when(securityService).validarAdmin();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> plantaService.crear(dto)
+        );
+
+        assertEquals("No autorizado", ex.getMessage());
+    }
+
+
+
 }

@@ -120,4 +120,53 @@ import static org.mockito.Mockito.*;
         verify(empresaRepo, never())
                 .save(any());
     }
+
+    @Test
+    void listarDebeFallarSiNoEsAdmin() {
+
+        doThrow(new RuntimeException("No autorizado"))
+                .when(securityService).validarAdmin();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> empresaService.listar()
+        );
+
+        assertEquals("No autorizado", ex.getMessage());
+    }
+
+    @Test
+    void crearDebeFallarSiFactoryDevuelveNull() {
+
+        EmpresaDTO dto = new EmpresaDTO();
+        dto.setNombre("Acme");
+
+        when(empresaRepo.findByNombreIgnoreCase("Acme"))
+                .thenReturn(Optional.empty());
+
+        when(factory.toEmpresaEntity(dto))
+                .thenReturn(null);
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> empresaService.crear(dto)
+        );
+
+        assertEquals("Error al convertir EmpresaDTO a entidad", ex.getMessage());
+    }
+
+    @Test
+    void listarDebeDevolverListaVacia() {
+
+        when(empresaRepo.findAll())
+                .thenReturn(List.of());
+
+        List<EmpresaDTO> resultado = empresaService.listar();
+
+        assertEquals(0, resultado.size());
+    }
+
+
+
+
 }
