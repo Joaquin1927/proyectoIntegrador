@@ -1,6 +1,7 @@
 package com.co2x.dmrv.service;
 
 import com.co2x.dmrv.dto.TransferTokenResultDTO;
+import com.co2x.dmrv.exceptions.BlockchainOperationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,6 @@ import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.crypto.Credentials;
 
 import org.web3j.tx.RawTransactionManager;
-import org.web3j.tx.gas.DefaultGasProvider;
 
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.datatypes.Function;
@@ -41,13 +41,19 @@ public class BlockchainService {
     private String contractAddress;
 
     public String mintToken(String wallet, Double amount, String certId) {
+        validateBlockchainConfiguration();
+        if (!org.web3j.crypto.WalletUtils.isValidAddress(wallet)) {
+            throw new BlockchainOperationException("La wallet de destino configurada no es válida");
+        }
+        if (amount == null || !Double.isFinite(amount) || amount <= 0) {
+            throw new BlockchainOperationException("El monto a mintear debe ser mayor a cero");
+        }
 
+        Web3j web3j = Web3j.build(new HttpService(rpcUrl));
         try {
             // =========================
             // CONEXIÓN
             // =========================
-            Web3j web3j = Web3j.build(new HttpService(rpcUrl));
-
             Credentials credentials = Credentials.create(privateKey);
 
             long chainId = 80002; // AMOY
@@ -58,9 +64,7 @@ public class BlockchainService {
             // =========================
             // DECIMALES (18)
             // =========================
-            BigInteger value = BigInteger.valueOf(
-                    (long) (amount * Math.pow(10, 18))
-            );
+            BigInteger value = toTokenUnits(BigDecimal.valueOf(amount));
 
             // =========================
             // FUNCIÓN mint
@@ -94,35 +98,38 @@ public class BlockchainService {
             );
 
             if (tx.getError() != null) {
-                System.out.println("❌ ERROR BLOCKCHAIN: " + tx.getError().getMessage());
-                throw new RuntimeException("Blockchain error: " + tx.getError().getMessage());
+                throw new BlockchainOperationException(
+                        friendlyBlockchainError(tx.getError().getMessage()));
             }
 
             String transactionHash = tx.getTransactionHash();
 
             if (transactionHash == null || transactionHash.isBlank()) {
-                throw new RuntimeException("Blockchain no devolvió el hash de la transacción");
+                throw new BlockchainOperationException("Polygon no devolvió el hash de la transacción");
             }
 
             System.out.println("🚀 TX HASH: " + transactionHash);
             return transactionHash;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error minting token", e);
+        } catch (BlockchainOperationException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new BlockchainOperationException(
+                    "No se pudo conectar con Polygon Amoy. Verificá el RPC y volvé a intentar.", exception);
+        } finally {
+            web3j.shutdown();
         }
     }
 
     public TransferTokenResultDTO transferToken(String destinationWallet, BigDecimal amount) {
+        validateBlockchainConfiguration();
         if (!org.web3j.crypto.WalletUtils.isValidAddress(destinationWallet)) {
             throw new IllegalArgumentException("La wallet de destino no es una dirección EVM válida");
         }
 
         BigInteger value;
         try {
-            value = amount.movePointRight(TOKEN_DECIMALS)
-                    .setScale(0, RoundingMode.UNNECESSARY)
-                    .toBigIntegerExact();
+            value = toTokenUnits(amount);
         } catch (ArithmeticException exception) {
             throw new IllegalArgumentException("El monto admite como máximo 18 decimales", exception);
         }
@@ -166,5 +173,38 @@ public class BlockchainService {
         } finally {
             web3j.shutdown();
         }
+    }
+
+    static BigInteger toTokenUnits(BigDecimal amount) {
+        return amount.movePointRight(TOKEN_DECIMALS)
+                .setScale(0, RoundingMode.UNNECESSARY)
+                .toBigIntegerExact();
+    }
+
+    private void validateBlockchainConfiguration() {
+        if (rpcUrl == null || rpcUrl.isBlank()) {
+            throw new BlockchainOperationException("Falta configurar BLOCKCHAIN_RPC_URL");
+        }
+        if (privateKey == null || privateKey.isBlank()) {
+            throw new BlockchainOperationException("Falta configurar BLOCKCHAIN_PRIVATE_KEY");
+        }
+        if (!org.web3j.crypto.WalletUtils.isValidAddress(contractAddress)) {
+            throw new BlockchainOperationException("BLOCKCHAIN_CONTRACT_ADDRESS no es válida");
+        }
+    }
+
+    private String friendlyBlockchainError(String message) {
+        String detail = message == null ? "respuesta desconocida" : message;
+        String normalized = detail.toLowerCase();
+        if (normalized.contains("insufficient funds")) {
+            return "La wallet owner no tiene suficiente POL para pagar el gas";
+        }
+        if (normalized.contains("onlyowner") || normalized.contains("not owner") || normalized.contains("verifier")) {
+            return "La wallet configurada no tiene permisos para mintear en el contrato";
+        }
+        if (normalized.contains("nonce")) {
+            return "Polygon rechazó el nonce de la transacción. Esperá unos segundos y reintentá";
+        }
+        return "Polygon rechazó el mint: " + detail;
     }
 }
