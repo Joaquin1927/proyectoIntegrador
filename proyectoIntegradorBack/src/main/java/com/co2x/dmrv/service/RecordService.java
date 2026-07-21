@@ -30,6 +30,7 @@ public class RecordService {
     public Record ensureIpfsCid(Record record) {
 
         if (record.getIpfsCid() != null && !record.getIpfsCid().isBlank()) {
+            System.out.println("CID existente reutilizado: " + record.getIpfsCid());
             return record;
         }
 
