@@ -1,122 +1,52 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ClipboardCheck, Eye, Filter, RefreshCw } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { apiGet } from "../api/apiClient";
+import { EmptyState, InlineAlert, LoadingState } from "../ui/Feedback";
 
 export default function Pendientes() {
   const { user, plantas } = useApp();
-
-  const [plantaSeleccionada, setPlantaSeleccionada] = useState(null);
-
   const navigate = useNavigate();
-
+  const [plantaSeleccionada, setPlantaSeleccionada] = useState(null);
   const [pendientes, setPendientes] = useState([]);
-
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
   const API = import.meta.env.VITE_API_URL;
   const userRole = user?.role?.toLowerCase();
 
-  async function cargarPendientes() {
+  const cargarPendientes = useCallback(async (background = false) => {
+    background ? setRefreshing(true) : setLoading(true);
     try {
-      const res = await apiGet(`${API}/paquetes/pendientes`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setPendientes(data);
-    } catch (err) {
-      console.error("Error cargando pendientes:", err);
-    }
-  }
+      const response = await apiGet(`${API}/paquetes/pendientes`);
+      const body = await response.json().catch(() => []);
+      if (!response.ok) throw new Error(body.message || `No se pudieron cargar los pendientes (${response.status})`);
+      setPendientes(body); setError("");
+    } catch (err) { setError(err.message || "No se pudieron cargar los pendientes"); }
+    finally { setLoading(false); setRefreshing(false); }
+  }, [API]);
 
   useEffect(() => {
     if (!userRole) return;
-    if (userRole !== "auditor") {
-      navigate("/dashboard");
-      return;
-    }
+    if (userRole !== "auditor") { navigate("/dashboard"); return; }
+    const initialLoad = setTimeout(() => cargarPendientes(), 0);
+    const interval = setInterval(() => cargarPendientes(true), 15000);
+    return () => { clearTimeout(initialLoad); clearInterval(interval); };
+  }, [cargarPendientes, navigate, userRole]);
 
-    let active = true;
-    const refresh = () => {
-      if (active) cargarPendientes();
-    };
-
-    refresh();
-    const interval = setInterval(refresh, 5000);
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [API, navigate, userRole]);
-
-  const pendientesFiltrados = plantaSeleccionada
-    ? pendientes.filter((p) => p.planta.id === plantaSeleccionada)
-    : pendientes;
-
-  if (!user) return <p>Cargando...</p>;
+  const filtered = useMemo(() => plantaSeleccionada ? pendientes.filter((item) => item.planta?.id === plantaSeleccionada) : pendientes, [pendientes, plantaSeleccionada]);
+  if (!user) return <LoadingState title="Preparando auditoría" text="Validando tu sesión y permisos." />;
   if (userRole !== "auditor") return null;
 
   return (
-    <section className="panel">
-      <h1>Pendientes de auditoría</h1>
-
-      <select
-        value={plantaSeleccionada ?? ""}
-        onChange={(e) => {
-          const value = e.target.value;
-          setPlantaSeleccionada(value === "" ? null : Number(value));
-        }}
-      >
-        <option value="">Todas las plantas</option>
-
-        {plantas?.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.nombre}
-          </option>
-        ))}
-      </select>
-
-      {pendientes.length === 0 ? (
-        <p className="muted">No hay paquetes pendientes.</p>
-      ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Planta</th>
-              <th>Fecha</th>
-              <th>Volumen</th>
-              <th>Estado</th>
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {pendientesFiltrados.map((p) => (
-              <tr key={p.id}>
-                <td>{p.id}</td>
-                <td>{p.planta?.nombre}</td>
-                <td>{p.captureDate}</td>
-                <td>{Number(p.tonCO2eq || 0).toFixed(3)}</td>
-
-                <td>
-                  <div className="estado-wrapper">
-                    <span>{p.estado}</span>
-
-                    {p.numeroRevision > 1 && (
-                      <span className="revision-badge">{p.numeroRevision}</span>
-                    )}
-                  </div>
-                </td>
-
-                <td>
-                  <button onClick={() => navigate(`/auditar/${p.id}`)}>
-                    Ver detalle
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-    </section>
+    <main className="review-page">
+      <header className="review-hero"><div className="review-hero__icon"><ClipboardCheck size={27} /></div><div><span className="entity-eyebrow">BANDEJA DE AUDITORÍA</span><h1>Pendientes de auditoría</h1><p>Revisá los paquetes enviados y continuá su circuito de validación.</p></div><span className="review-count"><strong>{pendientes.length}</strong> pendientes</span></header>
+      <section className="review-toolbar"><label><Filter size={15} /><span>Filtrar por planta</span><select value={plantaSeleccionada ?? ""} onChange={(event) => setPlantaSeleccionada(event.target.value === "" ? null : Number(event.target.value))}><option value="">Todas las plantas</option>{plantas?.map((planta) => <option key={planta.id} value={planta.id}>{planta.nombre}</option>)}</select></label><button onClick={() => cargarPendientes(true)} disabled={refreshing}>{refreshing ? <span className="button-spinner" /> : <RefreshCw size={15} />} Actualizar</button></section>
+      {error && <InlineAlert>{error}</InlineAlert>}
+      {loading ? <LoadingState title="Buscando paquetes pendientes" text="Consultando la bandeja de auditoría…" /> : filtered.length === 0 ? <EmptyState title={pendientes.length ? "Sin resultados para esta planta" : "La bandeja está al día"} text={pendientes.length ? "Probá seleccionando otra planta." : "No hay paquetes esperando revisión."} /> : <section className="review-table-card"><div className="table-scroll"><table className="review-table"><thead><tr><th>Paquete</th><th>Planta</th><th>Captura</th><th>Volumen</th><th>Estado</th><th /></tr></thead><tbody>{filtered.map((item) => <tr key={item.id}><td><strong>#{item.id}</strong></td><td>{item.planta?.nombre || "Sin planta"}</td><td>{formatDate(item.captureDate)}</td><td><strong>{Number(item.tonCO2eq || 0).toLocaleString("es-UY", { maximumFractionDigits: 3 })}</strong> tCO₂e</td><td><span className="review-status">Pendiente</span>{item.numeroRevision > 1 && <span className="review-revision">Rev. {item.numeroRevision}</span>}</td><td><button className="review-action" onClick={() => navigate(`/auditar/${item.id}`)}>Revisar <Eye size={15} /></button></td></tr>)}</tbody></table></div></section>}
+    </main>
   );
 }
+
+function formatDate(value) { if (!value) return "—"; return new Intl.DateTimeFormat("es-UY", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`)); }

@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useMsal } from "@azure/msal-react";
+import { useToast } from "../ui/Toaster";
+import { LoadingState } from "../ui/Feedback";
 
 export default function Auditar() {
   const API = import.meta.env.VITE_API_URL;
@@ -10,6 +12,7 @@ export default function Auditar() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { instance, accounts } = useMsal();
+  const toast = useToast();
 
   const [modoCorreccion, setModoCorreccion] = useState(false);
   const [comentarioGeneral, setComentarioGeneral] = useState("");
@@ -37,19 +40,19 @@ export default function Auditar() {
         },
       );
 
-      alert("✅ Paquete aprobado");
+      toast.success("Paquete aprobado correctamente");
 
       // ✅ simplemente navegar
       navigate("/pendientes");
     } catch (err) {
       console.error(err.response?.data || err);
-      alert("Error al aprobar");
+      toast.error(err.response?.data?.message || "Error al aprobar el paquete");
     }
   };
 
   const rechazar = async () => {
     if (!comentarioGeneral.trim()) {
-      alert("El comentario es obligatorio");
+      toast.error("El comentario es obligatorio");
       return;
     }
 
@@ -73,11 +76,11 @@ export default function Auditar() {
         },
       );
 
-      alert("❌ Paquete rechazado");
+      toast.success("Paquete rechazado y notificado");
       navigate("/pendientes");
     } catch (err) {
       console.error(err.response?.data || err);
-      alert("Error al rechazar paquete");
+      toast.error(err.response?.data?.message || "Error al rechazar el paquete");
     }
   };
 
@@ -103,12 +106,12 @@ export default function Auditar() {
     };
 
     if (campos.length === 0) {
-      alert("Debes marcar al menos un campo");
+      toast.error("Debés marcar al menos un campo");
       return;
     }
 
     if (!comentarioGeneral.trim()) {
-      alert("Debe ingresar un comentario general");
+      toast.error("Ingresá un comentario general");
       return;
     }
     console.log("BODY QUE ENVIO:", body);
@@ -144,12 +147,12 @@ await axios.post(
     if (!user) return;
 
     if (user.role.toLowerCase() !== "auditor") {
-      alert("acceso exclusivo para auditores");
+      toast.error("Esta sección es exclusiva para auditores");
       navigate("/dashboard");
     }
   }, [user]);
 
-  if (!user) return <p>Cargando...</p>;
+  if (!user) return <LoadingState title="Preparando auditoría" text="Validando tu sesión…" />;
 
   if (user.role.toLowerCase() !== "auditor") {
     return null;
@@ -208,7 +211,7 @@ Volver
 );
 }
 
-  if (!paquete) return <p>Cargando...</p>;
+  if (!paquete) return <LoadingState title="Cargando paquete" text="Recuperando metadata y evidencia…" />;
 
   const metadata = paquete?.metadata ? JSON.parse(paquete.metadata) : {};
   const volumen = paquete.tonCO2eq ?? metadata.tonCO2eq;

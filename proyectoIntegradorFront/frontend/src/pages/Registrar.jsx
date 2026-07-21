@@ -6,8 +6,11 @@ import TablePaquetes from "../components/TablePaquetes";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import { authFetch } from "../api/authFetch";
+import { useToast } from "../ui/Toaster";
+import { LoadingState } from "../ui/Feedback";
 
 export default function Registrar() {
+  const toast = useToast();
   const { plantas, paquetes, setPaquetes, user } = useApp();
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
@@ -46,7 +49,7 @@ err
 cargarUltimos();
  
 }, [API, user]);
-  if (!user) return <p>Cargando...</p>;
+  if (!user) return <LoadingState title="Preparando registro" text="Cargando plantas y permisos…" />;
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -177,20 +180,15 @@ cargarUltimos();
       setPaquetes((prev) => [...results, ...(prev || [])]);
       await cargarUltimos();
       if (successCount > 0 && errorCount === 0) {
-        alert(`Carga completada 🚀\n${successCount} paquetes registrados.`);
+        toast.success(`${successCount} paquetes registrados correctamente.`);
       } else if (successCount > 0 && errorCount > 0) {
-        alert(
-          `Carga parcial.\n` +
-            `${successCount} paquetes registrados.\n` +
-            `${errorCount} paquetes con error.\n\n` +
-            errores.join("\n"),
-        );
+        toast.info(`Carga parcial: ${successCount} registrados y ${errorCount} con error. ${errores.slice(0, 2).join(" · ")}`);
       } else {
-        alert(`No se registró ningún paquete.\n\n` + errores.join("\n"));
+        toast.error(`No se registró ningún paquete. ${errores.slice(0, 2).join(" · ")}`);
       }
     } catch (error) {
       console.error(error);
-      alert("Error obteniendo el token de autenticación.");
+      toast.error("No se pudo obtener el token de autenticación.");
     }
   };
 

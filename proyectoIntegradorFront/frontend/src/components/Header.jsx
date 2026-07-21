@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Bell, ChevronRight, Inbox, LogOut } from "lucide-react";
 
 export default function Header() {
   const API = import.meta.env.VITE_API_URL;
@@ -17,17 +18,10 @@ export default function Header() {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const [dropdownNotifs, setDropdownNotifs] = useState([]);
-  const [noLeidas, setNoLeidas] = useState(0);
+  const dropdownNotifs = notificaciones.filter((notification) => !notification.leido);
+  const noLeidas = dropdownNotifs.length;
 
   const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const nuevas = notificaciones.filter((n) => !n.leido);
-    setDropdownNotifs(nuevas);
-
-    setNoLeidas(nuevas.length);
-  }, [notificaciones]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -55,7 +49,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const cerrarDropdown = async () => {
+  async function cerrarDropdown() {
     console.log("CERRANDO DROPDOWN");
     setOpen(false);
     if (user?.email) {
@@ -76,8 +70,7 @@ export default function Header() {
       );
       await reloadNotificaciones();
     }
-    setDropdownNotifs([]);
-  };
+  }
 
   const toggleDropdown = async () => {
     if (!open) {
@@ -105,10 +98,7 @@ export default function Header() {
 
       <div className="top-actions">
         {user && (
-          <div
-            ref={dropdownRef}
-            style={{ position: "relative", display: "inline-block" }}
-          >
+          <div ref={dropdownRef} className="notification-center">
             <button
               className="ghost"
               onClick={(e) => {
@@ -116,33 +106,19 @@ export default function Header() {
                 toggleDropdown();
               }}
             >
-              🔔
+              <Bell size={17} />
               {noLeidas > 0 && <span className="badge">{noLeidas}</span>}
             </button>
 
             {open && (
-              <div
-                className="dropdown"
-                style={{
-                  position: "absolute",
-                  top: "40px",
-                  right: 0,
-                  width: "300px",
-                  background: "#1e1e1e",
-                  border: "1px solid #444",
-                  borderRadius: "8px",
-                  padding: "10px",
-                  zIndex: 9999,
-                  boxShadow: "0px 4px 10px rgba(0,0,0,0.3)",
-                }}
-              >
+              <div className="notification-dropdown">
+                <header><div><span>NOTIFICACIONES</span><strong>{noLeidas} nuevas</strong></div></header>
                 {dropdownNotifs.length === 0 ? (
-                  <p>No hay notificaciones nuevas</p>
+                  <div className="notification-empty"><Inbox size={22} /><p>No hay notificaciones nuevas</p></div>
                 ) : (
                   dropdownNotifs.map((n) => (
-                    <div key={n.id}>
-                      <p>{n.mensaje}</p>
-                      <small>{new Date(n.fecha).toLocaleString()}</small>
+                    <div className="notification-item" key={n.id}>
+                      <div><p>{n.mensaje}</p><small>{new Date(n.fecha).toLocaleString("es-UY")}</small></div>
                       <button
                         onClick={() => {
                           console.log("ROL:", user.role);
@@ -156,17 +132,13 @@ export default function Header() {
                           cerrarDropdown();
                         }}
                       >
-                        Ver
+                        <ChevronRight size={15} />
                       </button>
                     </div>
                   ))
                 )}
 
-                <div style={{ marginTop: "10px" }}>
-                  <button onClick={() => navigate("/notificaciones")}>
-                    Ver todas
-                  </button>
-                </div>
+                <button className="notification-all" onClick={() => navigate("/notificaciones")}>Ver todas las notificaciones</button>
               </div>
             )}
           </div>
@@ -175,9 +147,7 @@ export default function Header() {
         <div className="user-pill">{user ? user.email : "Invitado"}</div>
 
         {user && (
-          <button className="danger small" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
+          <button className="danger small logout-button" onClick={handleLogout}><LogOut size={14} /> Cerrar sesión</button>
         )}
       </div>
     </header>

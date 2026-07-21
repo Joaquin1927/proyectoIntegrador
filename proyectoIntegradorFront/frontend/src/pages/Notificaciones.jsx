@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
+import { LoadingState } from "../ui/Feedback";
 export default function Notificaciones() {
   const API = import.meta.env.VITE_API_URL;
   const { instance, accounts } = useMsal();
@@ -32,7 +33,7 @@ export default function Notificaciones() {
     };
     cargarNotificaciones();
   }, [user, instance, accounts]);
-  if (!user) return <p>Cargando...</p>;
+  if (!user) return <LoadingState title="Cargando notificaciones" text="Buscando las novedades más recientes…" />;
  
   return (
     <div className="panel">
