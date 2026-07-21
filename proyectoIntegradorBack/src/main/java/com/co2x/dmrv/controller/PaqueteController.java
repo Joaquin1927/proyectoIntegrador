@@ -68,7 +68,16 @@ public class PaqueteController {
 
 
 
-
+    @GetMapping("/usuario/{email}/ultimos")
+    @PreAuthorize("hasAnyRole('EMPLEADO','AUDITOR','ADMIN')")
+    public ResponseEntity<?> listarUltimosPorUsuario(
+            @PathVariable String email) {
+        System.out.println("ENTRO A ULTIMOS");
+        System.out.println("EMAIL ULTIMOS: " + email);
+        return ResponseEntity.ok(
+                paqueteService.listarUltimosPorUsuario(email)
+        );
+    }
 
 
 

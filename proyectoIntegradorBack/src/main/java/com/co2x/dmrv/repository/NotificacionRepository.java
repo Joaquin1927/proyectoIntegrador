@@ -11,4 +11,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
 
     List<Notificacion> findByUsuarioAndLeidoFalse(String usuario);
 
+    List<Notificacion> findByUsuarioOrderByFechaDesc(
+            String usuario
+    );
 }

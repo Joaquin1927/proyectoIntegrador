@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext";
 import TablePaquetes from "../components/TablePaquetes";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
+import { authFetch } from "../api/authFetch";
 
 export default function Registrar() {
   const { plantas, paquetes, setPaquetes, user } = useApp();
@@ -13,15 +14,40 @@ export default function Registrar() {
 
   const [rows, setRows] = useState([]);
   const { instance, accounts } = useMsal();
-  const paquetesUsuario = paquetes;
-
+  const [ultimosPaquetes, setUltimosPaquetes] = useState([]);
+const cargarUltimos = async () => {
+ 
+if (!user?.email) return;
+ 
+try {
+ 
+const res = await authFetch(
+`${API}/paquetes/usuario/${user.email}/ultimos`
+);
+ 
+const body = await res.json();
+ 
+setUltimosPaquetes(body);
+ 
+} catch (err) {
+ 
+console.error(
+"Error cargando últimos paquetes",
+err
+);
+ 
+}
+};
   useEffect(() => {
     if (!user) navigate("/");
   }, [user]);
-
+  useEffect(() => {
+ 
+cargarUltimos();
+ 
+}, [API, user]);
   if (!user) return <p>Cargando...</p>;
 
-  // ✅ PARSEAR ARCHIVO
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -92,6 +118,7 @@ export default function Registrar() {
         account: accounts[0],
       });
       const token = response.accessToken;
+      console.log("TOKEN OBTENIDO:", token);
       const results = [];
       const errores = [];
       let successCount = 0;
@@ -148,6 +175,7 @@ export default function Registrar() {
         }
       }
       setPaquetes((prev) => [...results, ...(prev || [])]);
+      await cargarUltimos();
       if (successCount > 0 && errorCount === 0) {
         alert(`Carga completada 🚀\n${successCount} paquetes registrados.`);
       } else if (successCount > 0 && errorCount > 0) {
@@ -257,7 +285,7 @@ export default function Registrar() {
 
       <div className="panel sub">
         <h2>Últimos paquetes cargados</h2>
-        <TablePaquetes items={paquetesUsuario} plantas={plantas} />
+        <TablePaquetes items={ultimosPaquetes} plantas={plantas} />
       </div>
     </section>
   );

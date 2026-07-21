@@ -63,17 +63,12 @@ public class NotificacionController {
 
 
 
-    // 📄 Obtener TODAS (para la página /notificaciones)
 
     @GetMapping("/{usuario}")
     public List<NotificacionDTO> getTodas(
             @PathVariable("usuario") String usuario) {
-
         securityService.validarUsuarioSolicitado(usuario);
-
-        System.out.println("USUARIO TODAS: " + usuario);
-
-        return repo.findByUsuario(usuario)
+        return repo.findByUsuarioOrderByFechaDesc(usuario)
                 .stream()
                 .map(this::toDTO)
                 .toList();

@@ -18,7 +18,9 @@ public interface PaqueteCO2Repository
 
     List<PaqueteCO2> findByEstadoIn(List<EstadoPaquete> estados);
     List<PaqueteCO2> findByCreatedBy(String createdBy);
-
+    List<PaqueteCO2> findTop5ByCreatedByOrderByIdDesc(
+            String createdBy
+    );
     boolean existsByDataFingerprint(String dataFingerprint);
 
     @Query("SELECT COUNT(p) FROM PaqueteCO2 p WHERE p.planta = :planta")

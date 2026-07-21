@@ -18,7 +18,6 @@ export function AppProvider({ children }) {
   const [paquetes, setPaquetes] = useState([]);
   const [user, setUser] = useState(null);
 
-  // ✅ cargar plantas
   useEffect(() => {
     axios.get(`${API}/plantas`)
       .then((res) => {
@@ -29,7 +28,6 @@ export function AppProvider({ children }) {
       });
   }, []);
 
-  // ✅ 🔥 NUEVA FUNCIÓN CENTRAL
   const cargarPaquetes = async () => {
     if (!user?.email) return;
 
@@ -37,10 +35,8 @@ export function AppProvider({ children }) {
       let res;
 
       if (user.role === "auditor") {
-        // ✅ el auditor necesita TODO
         res = await axios.get(`${API}/paquetes`);
       } else {
-        // ✅ el empleado solo lo suyo
         res = await axios.get(`${API}/paquetes/usuario/${user.email}`);
       }
 
@@ -52,18 +48,15 @@ export function AppProvider({ children }) {
     }
   };
 
-  // ✅ ejecutar cuando cambia usuario
   useEffect(() => {
     cargarPaquetes();
   }, [user?.email]);
 
-  // ✅ login
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // ✅ logout
   const logout = () => {
     setUser(null);
     setPaquetes([]);
@@ -72,7 +65,6 @@ export function AppProvider({ children }) {
     sessionStorage.clear();
   };
 
-  // ✅ restaurar usuario
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {

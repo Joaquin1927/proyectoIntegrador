@@ -141,6 +141,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .toList();
     }
 
+    public List<PaqueteCO2DTO> listarUltimosPorUsuario(
+            String email) {
+        securityService.validarUsuarioSolicitado(email);
+        return paqueteRepo
+                .findTop5ByCreatedByOrderByIdDesc(email)
+                .stream()
+                .map(factory::toPaqueteDTO)
+                .toList();
+    }
     public List<PaqueteCO2DTO> listarAprobados() {
 
         return paqueteRepo
