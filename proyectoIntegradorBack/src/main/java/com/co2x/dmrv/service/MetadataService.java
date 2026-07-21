@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.time.ZoneOffset;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
@@ -21,14 +22,23 @@ public class MetadataService {
 
         try {
 
-            Map<String, Object> metadata = new HashMap<>();
+            Map<String, Object> metadata = new LinkedHashMap<>();
 
             // =========================
             // CORE (SIEMPRE)
             // =========================
-            metadata.put("recordId", record.getId());
+            // Un paquete tiene un único record lógico. Usar el id del paquete y
+            // su fecha de captura mantiene el JSON estable incluso si una
+            // transacción de base de datos se revierte después de subir a IPFS.
+            metadata.put("recordId", record.getPaquete() != null
+                    ? record.getPaquete().getId()
+                    : record.getId());
             metadata.put("status", record.getStatus());
-            metadata.put("timestamp", System.currentTimeMillis());
+            metadata.put("timestamp", record.getPaquete() != null
+                    && record.getPaquete().getCaptureDate() != null
+                    ? record.getPaquete().getCaptureDate()
+                            .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+                    : 0L);
             metadata.put("auditor", record.getCreatedBy());
 
             // =========================
@@ -53,7 +63,7 @@ public class MetadataService {
             // =========================
             //  TOKENIZATION
             // =========================
-            Map<String, Object> tokenization = new HashMap<>();
+            Map<String, Object> tokenization = new LinkedHashMap<>();
 
             tokenization.put("receipt_id", null);
             tokenization.put("token_id", null);

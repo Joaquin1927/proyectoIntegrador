@@ -84,7 +84,16 @@ export default function Aprobados() {
       });
 
       const responseBody = await res.text();
-      if (!res.ok) throw new Error(responseBody || "Error al mintear");
+      if (!res.ok) {
+        let errorMessage = responseBody || "Error al mintear";
+        try {
+          const errorBody = JSON.parse(responseBody);
+          errorMessage = errorBody.message || errorMessage;
+        } catch {
+          // El backend anterior podía responder texto plano.
+        }
+        throw new Error(errorMessage);
+      }
 
       let result;
       try {

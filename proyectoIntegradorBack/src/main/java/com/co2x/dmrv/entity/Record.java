@@ -1,12 +1,11 @@
 package com.co2x.dmrv.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
+@Table(name = "record", uniqueConstraints =
+        @UniqueConstraint(name = "uk_record_paquete", columnNames = "paquete_id"))
 @Data
 public class Record {
 
@@ -23,6 +22,7 @@ public class Record {
 
     private String createdBy;
 
-    @ManyToOne
+    @OneToOne
+    @JoinColumn(name = "paquete_id", nullable = false, unique = true)
     private PaqueteCO2 paquete;
 }
