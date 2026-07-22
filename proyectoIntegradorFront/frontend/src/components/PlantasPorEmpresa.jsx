@@ -6,7 +6,6 @@ export default function PlantasPorEmpresa({ empresaId }) {
   const API = import.meta.env.VITE_API_URL;
   const { instance, accounts } = useMsal();
   const [plantas, setPlantas] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPlantas = async () => {
@@ -19,24 +18,22 @@ export default function PlantasPorEmpresa({ empresaId }) {
         const token = response.accessToken;
 
         const res = await axios.get(`${API}/plantas/byEmpresa/${empresaId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         setPlantas(res.data);
       } catch (err) {
         console.error("Error cargando plantas:", err);
         setPlantas([]);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchPlantas();
   }, [empresaId]);
 
-  if (loading) return <span>Cargando...</span>;
-
-  if (plantas.length === 0) return <span>Sin plantas</span>;
-
-  return <span>{plantas.map((p) => p.nombre).join(", ")}</span>;
+  return plantas.length > 0
+    ? plantas.map((p) => p.nombre).join(", ")
+    : "Sin plantas";
 }

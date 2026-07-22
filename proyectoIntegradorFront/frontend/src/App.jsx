@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useApp } from "./context/AppContext";
+
 import Notificaciones from "./pages/Notificaciones";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
@@ -17,8 +18,9 @@ import Ayuda from "./pages/Ayuda";
 import CrearPlanta from "./pages/CrearPlanta";
 import RegistrarEmpresa from "./pages/RegistrarEmpresa";
 import ListarEmpresas from "./pages/ListarEmpresas";
-import { LoadingState } from "./ui/Feedback";
+import SinRol from "./pages/SinRol";
 
+import { LoadingState } from "./ui/Feedback";
 import "./styles.css";
 
 export default function App() {
@@ -38,7 +40,6 @@ export default function App() {
         await instance.initialize();
 
         const redirectResponse = await instance.handleRedirectPromise();
-
         if (redirectResponse?.account) {
           instance.setActiveAccount(redirectResponse.account);
         }
@@ -64,6 +65,15 @@ export default function App() {
         const payload = JSON.parse(atob(token.split(".")[1]));
         const roles = payload.roles || [];
 
+        // 🔥 BLOQUEO DE USUARIOS SIN ROL
+        if (roles.length === 0) {
+          console.warn("Usuario sin rol. Bloqueando acceso.");
+          setUser(null);
+          navigate("/");
+          return;
+        }
+
+        // Asignación de rol válida
         let role = "empleado";
         if (roles.includes("ADMIN")) role = "admin";
         else if (roles.includes("AUDITOR")) role = "auditor";
@@ -88,20 +98,25 @@ export default function App() {
     init();
   }, [accounts, instance, navigate, setUser]);
 
-  // ✅ evitar render mientras MSAL carga
+  // Evitar render mientras MSAL carga
   if (loading) {
-    return <LoadingState title="Iniciando CO₂X" text="Preparando tu espacio de trabajo…" />;
+    return (
+      <LoadingState
+        title="Iniciando CO₂X"
+        text="Preparando tu espacio de trabajo…"
+      />
+    );
   }
 
-  const isAuthenticated = !!user; // ✅ CLAVE
+  const isAuthenticated = !!user;
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        {/* ✅ LOGIN */}
+        {/* LOGIN */}
         <Route index element={<Login />} />
 
-        {/* ✅ RUTAS PROTEGIDAS */}
+        {/* RUTAS PROTEGIDAS */}
         <Route
           path="dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
@@ -118,21 +133,16 @@ export default function App() {
         />
 
         <Route
-          path="registrar"
-          element={isAuthenticated ? <Registrar /> : <Navigate to="/" />}
-        />
-
-        <Route
           path="historial"
           element={isAuthenticated ? <Historial /> : <Navigate to="/" />}
         />
+
         <Route path="/auditar/:id" element={<Auditar />} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" />} />
 
         <Route path="/notificaciones" element={<Notificaciones />} />
-
         <Route path="/paquete/:id" element={<PaqueteDetalle />} />
         <Route path="/editar/:id" element={<EditarPaquete />} />
 
@@ -149,6 +159,9 @@ export default function App() {
         />
 
         <Route path="/empresas" element={<ListarEmpresas />} />
+
+        <Route path="/sin-rol" element={<SinRol />} />
+
 
         <Route
           path="/empresa/registrar"
