@@ -6,7 +6,6 @@ import com.co2x.dmrv.entity.Planta;
 import com.co2x.dmrv.repository.EmpresaRepository;
 import com.co2x.dmrv.repository.PlantaRepository;
 import com.co2x.dmrv.utils.Factory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,19 +13,24 @@ import java.util.List;
 @Service
 public class PlantaService {
 
-    @Autowired
-    private PlantaRepository plantaRepo;
+    private final PlantaRepository plantaRepo;
 
-    @Autowired
-    private Factory factory;
+    private final Factory factory;
 
-    @Autowired
-    private EmpresaRepository empresaRepo;
+    private final EmpresaRepository empresaRepo;
 
-    @Autowired
-    private SecurityService securityService;
+    private final SecurityService securityService;
 
-
+    public PlantaService(
+            PlantaRepository plantaRepo,
+            Factory factory,
+            EmpresaRepository empresaRepo,
+            SecurityService securityService) {
+        this.plantaRepo = plantaRepo;
+        this.factory = factory;
+        this.empresaRepo = empresaRepo;
+        this.securityService = securityService;
+    }
 
     public PlantaDTO crear(PlantaDTO dto) {
         System.out.println("=== ENTRE A PLANTA SERVICE ===");
@@ -103,15 +107,15 @@ public class PlantaService {
                 );
     }
 
-    public PlantaService(PlantaRepository plantaRepo, Factory plantaFactory) {
-        this.plantaRepo = plantaRepo;
-        this.factory = plantaFactory;
-    }
-
     public List<PlantaDTO> listarPorEmpresa(Integer empresaId) {
-        return plantaRepo.findByEmpresa_Id(empresaId)
+        return plantaRepo.findResumenByEmpresaId(empresaId)
                 .stream()
-                .map(factory::toDTO)
+                .map(planta -> {
+                    PlantaDTO dto = new PlantaDTO();
+                    dto.setId(planta.getId());
+                    dto.setNombre(planta.getNombre());
+                    return dto;
+                })
                 .toList();
     }
 

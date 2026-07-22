@@ -250,32 +250,29 @@ class PlantaServiceTest {
     @Test
     void deberiaListarPlantasPorEmpresa() {
 
-        Planta planta = new Planta();
-        planta.setId(10);
+        PlantaRepository.PlantaResumen planta =
+                mock(PlantaRepository.PlantaResumen.class);
+        when(planta.getId()).thenReturn(10);
+        when(planta.getNombre()).thenReturn("Planta Norte");
 
-        PlantaDTO dto = new PlantaDTO();
-        dto.setId(10);
-
-        when(plantaRepo.findByEmpresa_Id(5))
+        when(plantaRepo.findResumenByEmpresaId(5))
                 .thenReturn(List.of(planta));
-
-        when(factory.toPlantaDTO(planta))
-                .thenReturn(dto);
 
         List<PlantaDTO> resultado =
                 plantaService.listarPorEmpresa(5);
 
         assertEquals(1, resultado.size());
         assertEquals(10, resultado.get(0).getId());
+        assertEquals("Planta Norte", resultado.get(0).getNombre());
 
-        verify(plantaRepo).findByEmpresa_Id(5);
+        verify(plantaRepo).findResumenByEmpresaId(5);
     }
 
 
     @Test
     void listarPorEmpresaDebeDevolverListaVacia() {
 
-        when(plantaRepo.findByEmpresa_Id(99))
+        when(plantaRepo.findResumenByEmpresaId(99))
                 .thenReturn(List.of());
 
         List<PlantaDTO> resultado =
@@ -286,22 +283,17 @@ class PlantaServiceTest {
 
 
     @Test
-    void listarPorEmpresaDebeFallarSiFactoryFalla() {
+    void listarPorEmpresaDebePropagarErrorDelRepositorio() {
 
-        Planta planta = new Planta();
-
-        when(plantaRepo.findByEmpresa_Id(1))
-                .thenReturn(List.of(planta));
-
-        when(factory.toPlantaDTO(planta))
-                .thenThrow(new RuntimeException("Error en factory"));
+        when(plantaRepo.findResumenByEmpresaId(1))
+                .thenThrow(new RuntimeException("Error consultando plantas"));
 
         RuntimeException ex = assertThrows(
                 RuntimeException.class,
                 () -> plantaService.listarPorEmpresa(1)
         );
 
-        assertEquals("Error en factory", ex.getMessage());
+        assertEquals("Error consultando plantas", ex.getMessage());
     }
 
     @Test
