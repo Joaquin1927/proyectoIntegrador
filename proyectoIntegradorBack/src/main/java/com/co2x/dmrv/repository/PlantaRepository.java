@@ -10,15 +10,12 @@ import java.util.List;
 public interface PlantaRepository extends JpaRepository<Planta, Integer> {
     List<Planta> findByEmpresa_Id(Integer empresaId);
 
-    @Query(
-            value = """
-                    SELECT id, nombre
-                    FROM planta
-                    WHERE empresa_id = :empresaId
-                    ORDER BY nombre
-                    """,
-            nativeQuery = true
-    )
+    @Query("""
+            select p.id as id, p.nombre as nombre
+            from Planta p
+            where p.empresa.id = :empresaId
+            order by p.nombre
+            """)
     List<PlantaResumen> findResumenByEmpresaId(@Param("empresaId") Integer empresaId);
 
     interface PlantaResumen {
