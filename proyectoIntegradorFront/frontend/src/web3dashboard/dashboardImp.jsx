@@ -4,6 +4,7 @@ import { Activity, Database, ExternalLink, Flame, KeyRound, ShieldCheck, WalletC
 import { CONTRACT_ADDRESS, ABI } from "../web3/contractConfig";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import AdminTransferPanel from "./AdminTransferPanel";
+import MintedPackagesPanel from "./MintedPackagesPanel";
 import { logEthersError } from "../utils/errors";
 import { readProvider } from "../utils/provider";
 import "../styles/dashboard.css";
@@ -75,6 +76,8 @@ export default function Dashboard() {
         </div>
 
         <AdminTransferPanel ownerAddress={ownerAddress} balance={ownerBalance} symbol={symbol} integerOnly={integerOnly} onTransferred={() => setReloadKey((key) => key + 1)} />
+
+        <MintedPackagesPanel reloadKey={reloadKey} />
 
         <section className="chain-panel supply-panel">
           <div className="chain-panel__header chain-panel__header--compact"><div><span className="chain-eyebrow">ANALÍTICA</span><h2>Distribución del suministro</h2></div></div>

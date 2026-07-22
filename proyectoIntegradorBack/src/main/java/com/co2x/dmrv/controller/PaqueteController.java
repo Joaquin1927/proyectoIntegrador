@@ -4,6 +4,7 @@ import com.co2x.dmrv.dto.HistorialPaqueteDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.PaqueteEdicionDTO;
 import com.co2x.dmrv.dto.MintResultDTO;
+import com.co2x.dmrv.dto.PaqueteMinteadoDTO;
 import com.co2x.dmrv.repository.HistorialPaqueteRepository;
 import com.co2x.dmrv.service.MintingService;
 import com.co2x.dmrv.service.AuditoriaService;
@@ -203,6 +204,12 @@ public class PaqueteController {
         System.out.println("ENTRO A APROBADOS");
 
         return paqueteService.listarAprobados();
+    }
+
+    @GetMapping("/minteados")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<PaqueteMinteadoDTO> minteados() {
+        return paqueteService.listarMinteados();
     }
 
 

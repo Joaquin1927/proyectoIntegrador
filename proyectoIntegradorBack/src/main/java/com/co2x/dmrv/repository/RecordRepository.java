@@ -5,10 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface RecordRepository extends JpaRepository<Record, Long> {
 
     Optional<Record> findByPaqueteId(Integer paqueteId);
+
+    List<Record> findByBlockchainTxHashIsNotNullOrderByIdDesc();
 
 }

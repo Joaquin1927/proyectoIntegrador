@@ -3,6 +3,7 @@ package com.co2x.dmrv.service;
 import com.co2x.dmrv.dto.CampoConErrorDTO;
 import com.co2x.dmrv.dto.PaqueteCO2DTO;
 import com.co2x.dmrv.dto.PaqueteEdicionDTO;
+import com.co2x.dmrv.dto.PaqueteMinteadoDTO;
 import com.co2x.dmrv.entity.*;
 import com.co2x.dmrv.entity.Record;
 import com.co2x.dmrv.repository.*;
@@ -77,6 +78,9 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private RecordRepository recordRepo;
 
 
     @Autowired
@@ -156,6 +160,25 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                 .findByEstado(EstadoPaquete.APROBADO)
                 .stream()
                 .map(factory::toPaqueteDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaqueteMinteadoDTO> listarMinteados() {
+        return recordRepo.findByBlockchainTxHashIsNotNullOrderByIdDesc()
+                .stream()
+                .filter(record -> record.getPaquete() != null
+                        && record.getIpfsCid() != null
+                        && !record.getIpfsCid().isBlank())
+                .map(record -> {
+                    PaqueteCO2 paquete = record.getPaquete();
+                    return new PaqueteMinteadoDTO(
+                            paquete.getId(), paquete.getCertId(), paquete.getTonCO2eq(),
+                            paquete.getCaptureDate(),
+                            paquete.getPlanta() != null ? paquete.getPlanta().getNombre() : null,
+                            paquete.getAuditor(), paquete.getMetadata(), record.getIpfsCid(),
+                            record.getBlockchainTxHash());
+                })
                 .toList();
     }
 
