@@ -214,7 +214,7 @@ public class PaqueteController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<PaqueteMinteadoDTO> minteados() {
 
-        System.out.println("ENTRO A GET /paquetes/minteados");
+        System.out.println("MINTEADOS_BUILD_20260723");
 
         return paqueteService.listarMinteados();
     }
