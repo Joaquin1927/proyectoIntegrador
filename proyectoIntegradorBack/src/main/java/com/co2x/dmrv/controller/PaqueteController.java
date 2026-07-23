@@ -146,7 +146,9 @@ public class PaqueteController {
     }
 
 
-    @GetMapping("/{id}")
+    // Restringir la ruta dinámica evita que endpoints nominales como
+    // /minteados o /aprobados sean interpretados como IDs.
+    @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAnyRole('EMPLEADO','AUDITOR','ADMIN')")
     public ResponseEntity<PaqueteCO2DTO> obtener(
             @PathVariable("id") Integer id) {
