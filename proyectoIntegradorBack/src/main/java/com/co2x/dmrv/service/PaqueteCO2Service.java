@@ -165,6 +165,17 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
     @Transactional(readOnly = true)
     public List<PaqueteMinteadoDTO> listarMinteados() {
+
+        var records =
+                recordRepo.findByBlockchainTxHashIsNotNullOrderByIdDesc();
+
+        System.out.println("MINTEADOS: " + records.size());
+
+        records.forEach(record -> {
+            System.out.println(
+                    "RECORD ID=" + record.getId()
+            );
+        });
         return recordRepo.findByBlockchainTxHashIsNotNullOrderByIdDesc()
                 .stream()
                 .filter(record -> record.getPaquete() != null
@@ -172,6 +183,15 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                         && !record.getIpfsCid().isBlank())
                 .map(record -> {
                     PaqueteCO2 paquete = record.getPaquete();
+                    System.out.println(
+                            "PAQUETE ID: " + paquete.getId()
+                    );
+                    System.out.println(
+                            "PLANTA: " +
+                                    (paquete.getPlanta() != null
+                                            ? paquete.getPlanta().getNombre()
+                                            : "NULL")
+                    );
                     return new PaqueteMinteadoDTO(
                             paquete.getId(), paquete.getCertId(), paquete.getTonCO2eq(),
                             paquete.getCaptureDate(),

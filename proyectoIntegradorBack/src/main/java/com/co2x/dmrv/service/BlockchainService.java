@@ -111,13 +111,20 @@ public class BlockchainService {
             System.out.println("🚀 TX HASH: " + transactionHash);
             return transactionHash;
 
-        } catch (BlockchainOperationException exception) {
-            throw exception;
         } catch (Exception exception) {
+
+            System.out.println("================================");
+            System.out.println("ERROR BLOCKCHAIN REAL");
+            System.out.println("TIPO: " + exception.getClass().getName());
+            System.out.println("MENSAJE: " + exception.getMessage());
+
+            exception.printStackTrace();
+
+            System.out.println("================================");
+
             throw new BlockchainOperationException(
-                    "No se pudo conectar con Polygon Amoy. Verificá el RPC y volvé a intentar.", exception);
-        } finally {
-            web3j.shutdown();
+                    "No se pudo conectar con Polygon Amoy. Verificá el RPC y volvé a intentar.",
+                    exception);
         }
     }
 
