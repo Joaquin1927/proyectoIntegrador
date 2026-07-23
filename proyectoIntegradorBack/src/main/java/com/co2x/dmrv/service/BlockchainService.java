@@ -4,6 +4,8 @@ import com.co2x.dmrv.dto.TransferTokenResultDTO;
 import com.co2x.dmrv.exceptions.BlockchainOperationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
@@ -26,6 +28,8 @@ import java.util.Arrays;
 
 @Service
 public class BlockchainService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockchainService.class);
 
     private static final long CHAIN_ID = 80002L;
     private static final int TOKEN_DECIMALS = 18;
@@ -111,20 +115,16 @@ public class BlockchainService {
             System.out.println("🚀 TX HASH: " + transactionHash);
             return transactionHash;
 
+        } catch (BlockchainOperationException exception) {
+            LOGGER.error("Polygon rechazó el mint: {}", exception.getMessage(), exception);
+            throw exception;
         } catch (Exception exception) {
-
-            System.out.println("================================");
-            System.out.println("ERROR BLOCKCHAIN REAL");
-            System.out.println("TIPO: " + exception.getClass().getName());
-            System.out.println("MENSAJE: " + exception.getMessage());
-
-            exception.printStackTrace();
-
-            System.out.println("================================");
-
+            LOGGER.error("Falló la comunicación con Polygon Amoy", exception);
             throw new BlockchainOperationException(
                     "No se pudo conectar con Polygon Amoy. Verificá el RPC y volvé a intentar.",
                     exception);
+        } finally {
+            web3j.shutdown();
         }
     }
 

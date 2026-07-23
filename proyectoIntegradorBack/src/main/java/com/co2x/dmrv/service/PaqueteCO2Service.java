@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
@@ -40,6 +42,7 @@ import static java.util.Arrays.stream;
 
 @Service
 public class PaqueteCO2Service  implements PaqueteSubject {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PaqueteCO2Service.class);
     @Autowired
     private List<PaqueteObserver> observers;
     @Autowired
@@ -165,33 +168,16 @@ public class PaqueteCO2Service  implements PaqueteSubject {
 
     @Transactional(readOnly = true)
     public List<PaqueteMinteadoDTO> listarMinteados() {
+        List<Record> records = recordRepo.findByBlockchainTxHashIsNotNullOrderByIdDesc();
+        LOGGER.info("Records con hash blockchain encontrados para el dashboard: {}", records.size());
 
-        var records =
-                recordRepo.findByBlockchainTxHashIsNotNullOrderByIdDesc();
-
-        System.out.println("MINTEADOS: " + records.size());
-
-        records.forEach(record -> {
-            System.out.println(
-                    "RECORD ID=" + record.getId()
-            );
-        });
-        return recordRepo.findByBlockchainTxHashIsNotNullOrderByIdDesc()
+        List<PaqueteMinteadoDTO> minteados = records
                 .stream()
                 .filter(record -> record.getPaquete() != null
                         && record.getIpfsCid() != null
                         && !record.getIpfsCid().isBlank())
                 .map(record -> {
                     PaqueteCO2 paquete = record.getPaquete();
-                    System.out.println(
-                            "PAQUETE ID: " + paquete.getId()
-                    );
-                    System.out.println(
-                            "PLANTA: " +
-                                    (paquete.getPlanta() != null
-                                            ? paquete.getPlanta().getNombre()
-                                            : "NULL")
-                    );
                     return new PaqueteMinteadoDTO(
                             paquete.getId(), paquete.getCertId(), paquete.getTonCO2eq(),
                             paquete.getCaptureDate(),
@@ -200,6 +186,9 @@ public class PaqueteCO2Service  implements PaqueteSubject {
                             record.getBlockchainTxHash());
                 })
                 .toList();
+
+        LOGGER.info("Paquetes minteados con CID publicados en el dashboard: {}", minteados.size());
+        return minteados;
     }
 
     public List<PaqueteCO2DTO> buscar(
