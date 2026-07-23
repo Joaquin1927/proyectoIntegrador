@@ -18,7 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.time.LocalDate;
@@ -30,7 +31,8 @@ public class PaqueteController {
 
 
 
-
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PaqueteController.class);
 
 
 
@@ -209,6 +211,9 @@ public class PaqueteController {
     @GetMapping("/minteados")
     @PreAuthorize("hasRole('ADMIN')")
     public List<PaqueteMinteadoDTO> minteados() {
+
+        LOGGER.info("ENTRO A GET /paquetes/minteados");
+
         return paqueteService.listarMinteados();
     }
 
