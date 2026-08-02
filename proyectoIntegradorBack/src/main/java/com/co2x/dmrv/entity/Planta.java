@@ -3,6 +3,8 @@ package com.co2x.dmrv.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Data
 @Entity
@@ -26,6 +28,7 @@ public class Planta {
     @Column(nullable = false)
     private String managerEmail;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")
     private String metadata;
 

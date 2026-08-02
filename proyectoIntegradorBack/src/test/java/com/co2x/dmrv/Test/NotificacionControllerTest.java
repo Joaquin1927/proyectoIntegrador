@@ -59,7 +59,7 @@ import static org.mockito.Mockito.*;
             Notificacion n = new Notificacion();
             n.setUsuario("test@co2x.com");
 
-            when(repo.findByUsuario("test@co2x.com"))
+            when(repo.findByUsuarioOrderByFechaDesc("test@co2x.com"))
                     .thenReturn(List.of(n));
 
             var resultado =
@@ -71,7 +71,7 @@ import static org.mockito.Mockito.*;
                     .validarUsuarioSolicitado("test@co2x.com");
 
             verify(repo)
-                    .findByUsuario("test@co2x.com");
+                    .findByUsuarioOrderByFechaDesc("test@co2x.com");
         }
         @Test
         void debeMarcarTodasLasNotificacionesComoLeidas() {

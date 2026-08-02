@@ -107,7 +107,7 @@ export function AppProvider({ children }) {
 
     checkBackend();
 
-    const interval = setInterval(checkBackend, 5000);
+    const interval = setInterval(checkBackend, 30000);
 
     return () => clearInterval(interval);
   }, []);
