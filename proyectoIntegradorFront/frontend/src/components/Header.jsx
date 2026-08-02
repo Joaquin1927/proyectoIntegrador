@@ -30,7 +30,7 @@ export default function Header() {
 
     const interval = setInterval(() => {
       reloadNotificaciones();
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [user]);

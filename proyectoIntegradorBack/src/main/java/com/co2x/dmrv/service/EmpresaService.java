@@ -47,6 +47,9 @@ public class EmpresaService {
         System.out.println("NO EXISTE EMPRESA");
         Empresa empresa =
                 factory.toEmpresaEntity(dto);
+        if (empresa == null) {
+            throw new RuntimeException("Error al convertir EmpresaDTO a entidad");
+        }
         Empresa guardada =
                 empresaRepo.save(empresa);
         return factory.toEmpresaDTO(guardada);
